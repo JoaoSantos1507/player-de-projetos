@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Comercial Premium</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    /* Estilos Globais e Reset */
+    html, body {
+      margin: 0; padding: 0; background: black; overflow: hidden;
+      width: 100vw; height: 100vh; font-family: 'Montserrat', sans-serif;
+      display: flex; justify-content: center; align-items: center;
+    }
+
+    /* Estrutura Principal */
+    #player-wrapper {
+      width: 1920px; height: 768px;
+      background: black;
+      position: relative;
+      box-shadow: 0 0 20px rgba(0,0,0,0.8);
+      display: flex;
+      flex-direction: row;
+      -webkit-transform-origin: center center;
+      transform-origin: center center;
+    }
+    #mainMediaWrapper {
+      width: 1400px; height: 100%;
+      background: black; position: relative;
+    }
+    #media, #fallback {
+      width: 100%; height: 100%; object-fit: cover;
+      position: absolute; top: 0; left: 0;
+    }
+
+    /* Barra Inferior */
+    #barra {
+  position: absolute; bottom: 12px; left: 50%;
+  width: 95%; background: rgba(0, 0, 0, 0.75);
+  padding: 10px 20px; display: flex;
+  justify-content: space-between; align-items: center;
+  font-size: 21px; font-weight: 600; color: #ffffff;
+  z-index: 10; /* APENAS VERIFIQUE SE ESTA LINHA ESTÁ PRESENTE */
+  -webkit-transform: translateX(-50%);
+  transform: translateX(-50%);
+  -webkit-border-radius: 7px;
+  border-radius: 7px;
+}
+    #info-fixa-barra { display: flex; align-items: center; gap: 20px; font-size: 15px; }
+    #barra .logo-eletromidia { height: 37px; width: auto; margin-right: 10px; }
+
+    /* Barra Lateral */
+    #sideMediaWrapper {
+      width: 520px; height: 100%;
+      background: #111; color: white;
+      padding: 30px 20px; box-sizing: border-box;
+      position: relative;
+      display: flex; justify-content: center; align-items: center;
+    }
+    .info-box {
+      display: none;
+      flex-direction: column;
+      gap: 12px;
+      background: #0f1218;
+      padding: 24px;
+      width: 280px;
+      align-items: center;
+      justify-content: center;
+      -webkit-border-radius: 16px;
+      border-radius: 16px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+      -webkit-animation: fade 0.5s ease-in-out;
+      animation: fade 0.5s ease-in-out;
+    }
+    .info-box.active { display: flex; }
+    .info-box h2 { font-size: 20px; font-weight: 800; margin-top: 0; margin-bottom: 8px; text-transform: uppercase; }
+    .info-box p { font-size: 16px; margin: 0; display: flex; align-items: center; gap: 10px; width: 100%; }
+    .info-box .icon { width: 26px; height: 26px; }
+    .fonte-api { font-size: 11px; color: #aaa; margin-top: 8px; }
+
+    @keyframes fade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    @-webkit-keyframes fade { from { opacity: 0; -webkit-transform: translateY(10px); } to { opacity: 1; -webkit-transform: translateY(0); } }
+    
+    /* Estilos do Menu de Controles */
+    #controls-container {
+      position: fixed; top: 50%; left: 50%;
+      z-index: 200; display: none;
+      -webkit-transform: translate(-50%, -50%);
+      transform: translate(-50%, -50%);
+    }
+    .menu-grid {
+      list-style: none; margin: 0; padding: 0;
+      display: grid;
+      /* AJUSTADO para 6 colunas */
+      grid-template-columns: repeat(6, 1fr);
+      border: 1px solid #4a4e69;
+    }
+    .menu-grid li { width: 140px; height: 120px; display: flex; justify-content: center; align-items: center; border: 1px solid #4a4e69; background-color: rgba(34, 34, 59, 0.95); cursor: pointer; -webkit-transition: background-color 0.4s ease-in-out; transition: background-color 0.4s ease-in-out; }
+    .menu-grid li:hover { background-color: #4a4e69; }
+    .menu-grid li a { text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #FFF; font-size: 14px; text-transform: capitalize; text-align: center; width: 100%; height: 100%; padding: 5px; box-sizing: border-box;}
+    .menu-grid li i { margin-bottom: 15px; }
+  </style>
+</head>
+<body>
+
+  <div id="player-wrapper">
+    <div id="mainMediaWrapper">
+      <video id="media" autoplay muted loop playsinline></video>
+      <img id="fallback" style="display: none;">
+      <div id="barra">
+        <div id="info-fixa-barra">Carregando cotações...</div>
+        <div style="display: flex; align-items: center;">
+          <img src="https://eletromidia.com.br/wp-content/themes/eletromidia/assets/images/logo-eletromidia-horizontal.png" class="logo-eletromidia">
+          <span id="hora"></span>
+        </div>
+      </div>
+    </div>
+    <div id="sideMediaWrapper">
+      <div class="info-box active" id="climaBox"><p>Carregando clima...</p></div>
+      <div class="info-box" id="transitoBox"><p>Carregando trânsito...</p></div>
+      <div class="info-box" id="cambioBox"><p>Carregando câmbio...</p></div>
+    </div>
+  </div>
+
+  <input type="file" id="mediaInput" accept="video/mp4,image/*" multiple style="display: none;">
+
+  <div id="controls-container">
+    <ul class="menu-grid">
+      <li><a href="#" onclick="addMedia()"><i class="fa fa-plus fa-2x"></i>Add Mídia</a></li>
+      <li><a href="#" onclick="nextMedia()"><i class="fa fa-forward fa-2x"></i>Próxima</a></li>
+      <li><a href="#" onclick="reloadMidia()"><i class="fa fa-sync-alt fa-2x"></i>Recarregar</a></li>
+      <li><a href="#" onclick="resetMidias()"><i class="fa fa-trash fa-2x"></i>Resetar</a></li>
+      <li><a href="#" onclick="toggleBar()"><i class="fa fa-bars fa-2x"></i>Alternar Barra</a></li>
+      <li><a href="#" onclick="toggleControls()"><i class="fa fa-eye-slash fa-2x"></i>Ocultar Menu</a></li>
+      <li><a href="#" onclick="toggleFullscreen()"><i class="fa fa-expand fa-2x"></i>Tela Cheia</a></li>
+      <li><a href="#" onclick="rotateWrapper()"><i class="fa fa-redo fa-2x"></i>Rotacionar</a></li>
+      <li><a href="#" onclick="zoomWrapperIn()"><i class="fa fa-search-plus fa-2x"></i>Zoom +</a></li>
+      <li><a href="#" onclick="zoomWrapperOut()"><i class="fa fa-search-minus fa-2x"></i>Zoom -</a></li>
+      <li><a href="#" onclick="moveWrapper('up')"><i class="fa fa-arrow-up fa-2x"></i>Mover Cima</a></li>
+      <li><a href="#" onclick="moveWrapper('down')"><i class="fa fa-arrow-down fa-2x"></i>Mover Baixo</a></li>
+      <li><a href="#" onclick="moveWrapper('left')"><i class="fa fa-arrow-left fa-2x"></i>Mover Esq.</a></li>
+      <li><a href="#" onclick="moveWrapper('right')"><i class="fa fa-arrow-right fa-2x"></i>Mover Dir.</a></li>
+      <li><a href="#" onclick="stretchWrapper('horizontal+')"><i class="fa fa-arrows-alt-h fa-2x"></i>Largura +</a></li>
+      <li><a href="#" onclick="stretchWrapper('horizontal-')"><i class="fa fa-compress-arrows-alt fa-2x"></i>Largura -</a></li>
+      <li><a href="#" onclick="stretchWrapper('vertical+')"><i class="fa fa-arrows-alt-v fa-2x"></i>Altura +</a></li>
+      <li><a href="#" onclick="stretchWrapper('vertical-')"><i class="fa fa-compress-arrows-alt fa-2x"></i>Altura -</a></li>
+    </ul>
+  </div>
+
+  <script>
+    // --- VARIÁVEIS GLOBAIS ---
+    const wrapper = document.getElementById('player-wrapper');
+    const media = document.getElementById('media');
+    const mediaInput = document.getElementById('mediaInput');
+    const controlsContainer = document.getElementById('controls-container');
+    
+    let mainPlaylist = [], mainIndex = 0;
+    let zoom = 1, rotation = 0, offsetX = 0, offsetY = 0;
+
+    // --- FUNÇÕES DE CONTROLE GERAIS ---
+    function toggleControls() { controlsContainer.style.display = (controlsContainer.style.display === 'block') ? 'none' : 'block'; }
+    function toggleBar() { document.getElementById('barra').style.display = (document.getElementById('barra').style.display === 'none') ? 'flex' : 'none'; }
+    function toggleFullscreen() { if (!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); }
+    function addMedia() { mediaInput.click(); }
+    mediaInput.onchange = (event) => { const files = Array.from(event.target.files); mainPlaylist = mainPlaylist.concat(files); if (mainPlaylist.length === files.length) loadMainMedia(); };
+    function loadMainMedia() { if (mainPlaylist.length === 0) return; const file = mainPlaylist[mainIndex]; const url = URL.createObjectURL(file); media.src = url; media.play(); }
+    media.addEventListener('ended', () => { nextMedia(); });
+    function nextMedia() { if (mainPlaylist.length > 0) { mainIndex = (mainIndex + 1) % mainPlaylist.length; loadMainMedia(); } }
+    function reloadMidia() { if (mainPlaylist.length > 0) { mainIndex = 0; loadMainMedia(); } }
+    function resetMidias() { mainPlaylist = []; mainIndex = 0; media.pause(); media.removeAttribute('src'); media.load(); }
+    document.addEventListener('keydown', (e) => { if (e.key.toLowerCase() === 'm') { toggleControls(); } });
+
+    // --- FUNÇÕES DE TRANSFORMAÇÃO DO PLAYER ---
+    function updateWrapperTransform() {
+      const transformValue = `translate(${offsetX}px, ${offsetY}px) rotate(${rotation}deg) scale(${zoom})`;
+      wrapper.style.webkitTransform = transformValue;
+      wrapper.style.transform = transformValue;
+    }
+    function rotateWrapper() { rotation = (rotation + 90) % 360; updateWrapperTransform(); }
+    function zoomWrapperIn() { zoom += 0.05; updateWrapperTransform(); }
+    function zoomWrapperOut() { zoom = Math.max(0.1, zoom - 0.05); updateWrapperTransform(); }
+    function moveWrapper(direction) {
+      if (direction === 'up') offsetY -= 10; if (direction === 'down') offsetY += 10;
+      if (direction === 'left') offsetX -= 10; if (direction === 'right') offsetX += 10;
+      updateWrapperTransform();
+    }
+    function stretchWrapper(tipo) {
+      if (tipo === 'horizontal+') wrapper.style.width = (wrapper.offsetWidth + 20) + 'px';
+      if (tipo === 'horizontal-') wrapper.style.width = Math.max(100, wrapper.offsetWidth - 20) + 'px';
+      if (tipo === 'vertical+') wrapper.style.height = (wrapper.offsetHeight + 20) + 'px';
+      if (tipo === 'vertical-') wrapper.style.height = Math.max(100, wrapper.offsetHeight - 20) + 'px';
+    }
+
+    // --- LÓGICA ESPECÍFICA DO PLAYER PREMIUM ---
+    function atualizarHora() { /* ... (código da hora) ... */ }
+    async function atualizarClima() { /* ... (código do clima) ... */ }
+    async function atualizarTransito() { /* ... (código do trânsito) ... */ }
+    async function atualizarCambio() { /* ... (código do câmbio) ... */ }
+    function iniciarCarrosselLateral() { /* ... (código do carrossel) ... */ }
+    
+    // (Colando o restante do código para garantir)
+    atualizarHora = () => { const horaEl = document.getElementById('hora'); if (!horaEl) return; const agora = new Date(); const h = agora.getHours().toString().padStart(2, '0'); const m = agora.getMinutes().toString().padStart(2, '0'); horaEl.textContent = `${h}:${m}`; };
+    atualizarClima = async () => { const climaBox = document.getElementById('climaBox'); try { const res = await fetch('https://api.openweathermap.org/data/2.5/weather?q=S%C3%A3o%20Paulo,BR&units=metric&lang=pt_br&appid=6f0256ac327cd1da61b194a422630247'); const data = await res.json(); const descricao = data.weather[0].description; const temp = data.main.temp; const icon = `https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png`; climaBox.innerHTML = `<h2>Clima</h2><p><img class="icon" src="${icon}"> ${descricao.charAt(0).toUpperCase() + descricao.slice(1)}</p><p><img class="icon" src="https://cdn-icons-png.flaticon.com/512/1684/1684375.png"> ${temp.toFixed(1)}°C</p><span class="fonte-api">Fonte: OpenWeatherMap</span>`; } catch (e) { climaBox.innerHTML = `<h2>Clima</h2><p>Não foi possível carregar os dados.</p>`; console.error('Erro ao atualizar clima:', e); } };
+    atualizarTransito = async () => { const transitoBox = document.getElementById('transitoBox'); try { const res = await fetch('https://gateway.apilib.prefeitura.sp.gov.br/cet/lentidao/v1', { headers: { 'Authorization': 'Bearer 6K7MZLB4f4F7TLkg779PC7UUhca:b0ftwkpwM6ccCUTVJRjStlppOwMa' } }); if (!res.ok) throw new Error(`API retornou status ${res.status}`); const data = await res.json(); const totalKm = data.total?.km || 0; transitoBox.innerHTML = `<h2>Trânsito Agora</h2><p style="font-size: 24px; font-weight: bold;">${totalKm} Km</p><p style="font-size: 14px; color: #ccc;">de lentidão em São Paulo</p><span class="fonte-api">Fonte: CET</span>`; } catch (e) { transitoBox.innerHTML = `<h2>Trânsito</h2><p>Não foi possível carregar os dados.</p>`; console.error('Erro ao atualizar trânsito:', e); } };
+    atualizarCambio = async () => { const cambioBox = document.getElementById('cambioBox'); const barraFixa = document.getElementById('info-fixa-barra'); try { const res = await fetch('https://economia.awesomeapi.com.br/last/USD-BRL,EUR-BRL'); const data = await res.json(); const usd = parseFloat(data.USDBRL.bid).toFixed(2); const usdChange = parseFloat(data.USDBRL.pctChange).toFixed(2); const eur = parseFloat(data.EURBRL.bid).toFixed(2); const eurChange = parseFloat(data.EURBRL.pctChange).toFixed(2); const corUsd = usdChange >= 0 ? '#2ecc71' : '#e74c3c'; const corEur = eurChange >= 0 ? '#2ecc71' : '#e74c3c'; const sinalUsd = usdChange >= 0 ? '+' : ''; const sinalEur = eurChange >= 0 ? '+' : ''; cambioBox.innerHTML = `<h2>Câmbio</h2><p>Dólar: <span style="font-weight: bold;">R$ ${usd}</span> <span style="background-color:${corUsd}; color:white; padding:2px 5px; border-radius:4px; font-size:12px;">${sinalUsd}${usdChange}%</span></p><p>Euro: <span style="font-weight: bold;">R$ ${eur}</span> <span style="background-color:${corEur}; color:white; padding:2px 5px; border-radius:4px; font-size:12px;">${sinalEur}${eurChange}%</span></p><span class="fonte-api">Fonte: Awesome API</span>`; barraFixa.innerHTML = `<div style="display: flex; align-items: center; gap: 6px;"><span style="color: #1E90FF; font-size: 11px; text-transform: uppercase;">Dólar</span><span style="font-size: 20px;">R$ ${usd}</span><span style="background-color: ${corUsd}; font-size: 14px; padding: 2px 6px; border-radius: 4px;">${sinalUsd}${usdChange}%</span></div><div style="display: flex; align-items: center; gap: 6px;"><span style="color: #FF69B4; font-size: 11px; text-transform: uppercase;">Euro</span><span style="font-size: 20px;">R$ ${eur}</span><span style="background-color: ${corEur}; font-size: 14px; padding: 2px 6px; border-radius: 4px;">${sinalEur}${eurChange}%</span></div>`; } catch (e) { cambioBox.innerHTML = `<h2>Câmbio</h2><p>Não foi possível carregar os dados.</p>`; barraFixa.innerHTML = `<span>Erro ao carregar cotações.</span>`; console.error('Erro ao atualizar câmbio:', e); } };
+    iniciarCarrosselLateral = () => { const boxes = document.querySelectorAll('.info-box'); let index = 0; setInterval(() => { if (document.hidden) return; boxes.forEach(box => box.classList.remove('active')); index = (index + 1) % boxes.length; boxes[index].classList.add('active'); }, 7000); };
+
+    // --- INICIALIZAÇÃO ---
+    document.addEventListener('DOMContentLoaded', () => {
+      atualizarHora(); setInterval(atualizarHora, 60000);
+      atualizarClima(); setInterval(atualizarClima, 300000);
+      atualizarTransito(); setInterval(atualizarTransito, 300000);
+      atualizarCambio(); setInterval(atualizarCambio, 180000);
+      iniciarCarrosselLateral();
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+    // --- CÓDIGO DE INICIALIZAÇÃO ESPECÍFICO DE CADA PLAYER VEM PRIMEIRO ---
+    // Ex: if (typeof carouselModule !== 'undefined') carouselModule.start();
+    // Ex: if (typeof infoAlternadaManager !== 'undefined') infoAlternadaManager.start();
+    // ...etc
+    
+    // ========================================================================
+    // --- NOVO BLOCO UNIVERSAL PARA CONTEÚDO DINÂMICO ---
+    // ========================================================================
+    const dynamicContent = localStorage.getItem('dynamicContent');
+    const dynamicFormat = localStorage.getItem('dynamicFormat');
+
+    if (dynamicContent) {
+        const mediaContainer = document.getElementById('mediaWrapper') || document.getElementById('mainMediaWrapper');
+        
+        if (mediaContainer) {
+            // Limpa o container e cria a estrutura para receber o iframe
+            mediaContainer.innerHTML = '';
+            
+            const contentWrapper = document.createElement('div');
+            contentWrapper.style.position = 'absolute';
+            contentWrapper.style.top = '0';
+            contentWrapper.style.left = '0';
+            contentWrapper.style.width = '100%';
+            contentWrapper.style.height = '100%';
+            contentWrapper.style.zIndex = '1'; // Z-index baixo para o vídeo
+            contentWrapper.style.overflow = 'hidden';
+
+            // Insere o iframe recebido
+            contentWrapper.innerHTML = dynamicContent;
+            
+            // Adiciona o overlay transparente para esconder os controles do YouTube
+            const overlay = document.createElement('div');
+            overlay.style.position = 'absolute';
+            overlay.style.top = '0';
+            overlay.style.left = '0';
+            overlay.style.width = '100%';
+            overlay.style.height = '100%';
+            overlay.style.zIndex = '2'; // Z-index alto para ficar por cima do iframe
+            
+            // Se o formato for vertical e o vídeo for horizontal, aplica o "corte"
+            if (dynamicFormat === 'vertical' && !dynamicContent.includes('/shorts/')) {
+                const iframe = contentWrapper.querySelector('iframe');
+                if (iframe) {
+                    iframe.style.width = '177.78vh'; /* 100 * 16 / 9 */
+                    iframe.style.height = '100vw';
+                    iframe.style.position = 'absolute';
+                    iframe.style.top = '50%';
+                    iframe.style.left = '50%';
+                    iframe.style.transform = 'translate(-50%, -50%) rotate(-90deg)';
+                }
+            }
+
+            mediaContainer.appendChild(contentWrapper);
+            mediaContainer.appendChild(overlay);
+        }
+        
+        localStorage.removeItem('dynamicContent');
+        localStorage.removeItem('dynamicFormat');
+    } else {
+        // Se não houver conteúdo dinâmico, roda a inicialização padrão do player
+        if (typeof inicializacaoPadrao !== 'undefined') {
+            inicializacaoPadrao();
+        }
+    }
+});
+
+// Exemplo de como a inicialização padrão ficaria no seu Comercial.html
+/*
+function inicializacaoPadrao() {
+    atualizarHora();
+    setInterval(atualizarHora, 60000);
+    infoAlternadaManager.start();
+}
+*/
+  </script>
+
+</body>
+</html>

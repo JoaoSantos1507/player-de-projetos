@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Lançador de Players</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --hover-color: #ffa260;
+      --dark-bg-1: #121212;
+      --dark-bg-2: #1e1e1e;
+      --dark-border: #555;
+      --text-light: #e0e0e0;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Montserrat', sans-serif;
+      background-color: var(--dark-bg-1);
+      color: var(--text-light);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      text-align: center;
+    }
+
+    .container {
+      background-color: var(--dark-bg-2);
+      padding: 40px 60px;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    .logo {
+      max-width: 400px;
+      height: auto;
+      margin-bottom: 30px;
+    }
+
+    .player-links {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 20px;
+    }
+
+    .player-link {
+      background: none;
+      color: var(--text-light);
+      border: 2px solid var(--dark-border);
+      text-decoration: none;
+      padding: 1.5em 2em;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      transition: 0.25s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .player-link:hover,
+    .player-link:focus {
+      -webkit-transform: translateY(-0.25em);
+      transform: translateY(-0.25em);
+      -webkit-box-shadow: 0 0.5em 0.5em -0.4em var(--hover-color);
+      box-shadow: 0 0.5em 0.5em -0.4em var(--hover-color);
+      border-color: var(--hover-color);
+      color: #fff;
+    }
+
+    .player-link i {
+        font-size: 2em;
+        margin-bottom: 15px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <img src="img/01.png" alt="Logo da Empresa" class="logo">
+    
+    <div class="player-links">
+      <a href="Players/residencial.html" class="player-link">
+        <i class="far fa-building"></i>
+        Residencial
+      </a>
+      <a href="Players/comercial.html" class="player-link">
+        <i class="far fa-handshake"></i>
+        Comercial
+      </a>
+      <a href="Players/Comercial Premium.html" class="player-link">
+        <i class="far fa-gem"></i>
+        Premium
+      </a>
+      <a href="Players/comercial.html" class="player-link">
+        <i class="fas fa-plane"></i>
+        Aeroporto
+      </a>
+      <a href="Players/comercial.html" class="player-link">
+        <i class="fas fa-tv"></i>
+        TV Minuto
+      </a>
+      <a href="Players/vertical.html" class="player-link">
+        <i class="fas fa-mobile-alt"></i>
+        Totem Shopping
+      </a>
+      <a href="Players/vertical.html" class="player-link">
+        <i class="fas fa-train"></i>
+        Mub CPTM
+      </a>
+      <a href="Players/vertical.html" class="player-link">
+        <i class="fas fa-bus-alt"></i>
+        Abrigo
+      </a>
+      <a href="Players/led.html" class="player-link">
+        <i class="far fa-square"></i>
+        LEDs
+      </a>
+    </div>
+  </div>
+
+</body>
+</html>
