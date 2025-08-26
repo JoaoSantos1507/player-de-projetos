@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Lançador de Players</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+  
+  <style>
+    :root { --primary-color: #0d6efd; --hover-color: #ffa260; --dark-bg-1: #121212; --dark-bg-2: #1e1e1e; --dark-border: #555; --text-light: #e0e0e0; --text-muted: #aaa; }
+    body { margin: 0; font-family: 'Montserrat', sans-serif; background-color: var(--dark-bg-1); color: var(--text-light); display: flex; align-items: center; height: 100vh; overflow: hidden; }
+    #main-container { display: flex; width: 200vw; position: relative; transition: transform 0.6s cubic-bezier(0.77, 0, 0.175, 1); }
+    #main-container.yt-panel-active { transform: translateX(-100vw); }
+    .panel { width: 100vw; height: 100vh; display: flex; justify-content: center; align-items: center; flex-shrink: 0; box-sizing: border-box; padding: 20px; }
+    .container-content { position: relative; background-color: var(--dark-bg-2); padding: 40px 60px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; }
+    .logo { max-width: 400px; height: auto; margin-bottom: 30px; }
+    .player-links { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+    .player-link { background: none; color: var(--text-light); border: 2px solid var(--dark-border); text-decoration: none; padding: 1.5em 2em; border-radius: 8px; font-size: 16px; font-weight: 600; transition: 0.25s; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .player-link:hover, .player-link:focus { transform: translateY(-0.25em); box-shadow: 0 0.5em 0.5em -0.4em var(--hover-color); border-color: var(--hover-color); color: #fff; }
+    .player-link i { font-size: 2em; margin-bottom: 15px; }
+    #yt-trigger-button { position: absolute; top: 20px; left: 20px; width: 40px; height: 40px; background-color: #4a4e69; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background-color 0.3s; z-index: 10; }
+    #yt-trigger-button:hover { background-color: var(--primary-color); }
+    .back-button { position: absolute; top: 20px; left: 20px; cursor: pointer; font-size: 24px; color: var(--text-muted); }
+    #yt-panel .form-group { text-align: left; margin-bottom: 15px; }
+    #yt-panel label { display: block; margin-bottom: 5px; font-size: 14px; color: var(--text-muted); }
+    #yt-panel input, #yt-panel select, #yt-panel button { width: 100%; padding: 12px; box-sizing: border-box; border-radius: 5px; border: 1px solid var(--dark-border); background-color: #333; color: white; font-size: 16px; }
+    #yt-panel button { 
+  background-color: #fd5d0d;
+  cursor: pointer;
+  font-weight: bold;
+  margin-top: 10px;
+}
+    #yt-panel button:hover { background-color: #fd5d0d; }
+  </style>
+</head>
+<body>
+
+  <div id="main-container">
+    <div id="selection-panel" class="panel">
+      <div class="container-content">
+        <div id="yt-trigger-button" title="Carregar Mídia do YouTube"><i class="fas fa-link"></i></div>
+        <img src="img/01.png" alt="Logo da Empresa" class="logo">
+        <div class="player-links">
+            <a href="Players/Residencial.html" class="player-link"><i class="far fa-building"></i>Residencial</a>
+            <a href="Players/Comercial.html" class="player-link"><i class="far fa-handshake"></i>Comercial</a>
+            <a href="Players/Comercial Premium.html" class="player-link"><i class="far fa-gem"></i>Premium</a>
+            <a href="Players/Comercial.html" class="player-link"><i class="fas fa-plane"></i>Aeroporto</a>
+            <a href="Players/Comercial.html" class="player-link"><i class="fas fa-tv"></i>TV Minuto</a>
+            <a href="Players/vertical.html" class="player-link"><i class="fas fa-mobile-alt"></i>Totem</a>
+            <a href="Players/vertical.html" class="player-link"><i class="fas fa-train"></i>Mub CPTM</a>
+            <a href="Players/vertical.html" class="player-link"><i class="fas fa-bus-alt"></i>Abrigo</a>
+            <a href="Players/led.html" class="player-link"><i class="far fa-square"></i>LEDs</a>
+        </div>
+      </div>
+    </div>
+
+    <div id="yt-panel" class="panel">
+      <div class="container-content" style="width: 500px;">
+        <div class="back-button" title="Voltar"><i class="fas fa-arrow-left"></i></div>
+        <h2>Carregar Mídia Externa</h2>
+        <div class="form-group">
+            <label for="youtube-url">URL do Vídeo ou Short do YouTube</label>
+            <input type="text" id="youtube-url" placeholder="Cole o link aqui">
+        </div>
+        <div class="form-group">
+            <label for="player-select">Reproduzir em qual player?</label>
+            <select id="player-select">
+                <option value="Players/residencial.html" data-format="vertical">Residencial</option>
+                <option value="Players/comercial.html" data-format="horizontal">Comercial</option>
+                <option value="Players/Comercial Premium.html" data-format="horizontal">Comercial Premium</option>
+                <option value="Players/comercial.html" data-format="horizontal">Aeroporto</option>
+                <option value="Players/comercial.html" data-format="horizontal">TV Minuto</option>
+                <option value="Players/vertical.html" data-format="vertical">Totem Shopping</option>
+                <option value="Players/vertical.html" data-format="vertical">Mub CPTM</option>
+                <option value="Players/vertical.html" data-format="vertical">Abrigo</option>
+                <option value="Players/led.html" data-format="horizontal">LEDs</option>
+            </select>
+        </div>
+        <button id="play-button">Reproduzir no Player</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+    const mainContainer = document.getElementById('main-container');
+    const ytTriggerButton = document.getElementById('yt-trigger-button');
+    const backButton = document.querySelector('.back-button');
+    const playButton = document.getElementById('play-button');
+    const playerSelect = document.getElementById('player-select');
+    const youtubeUrlInput = document.getElementById('youtube-url');
+
+    ytTriggerButton.addEventListener('click', () => mainContainer.classList.add('yt-panel-active'));
+    backButton.addEventListener('click', () => mainContainer.classList.remove('yt-panel-active'));
+
+    function getYouTubeId(url) {
+        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=|shorts\/)([^#&?]*).*/;
+        const match = url.match(regExp);
+        return (match && match[2].length === 11) ? match[2] : null;
+    }
+
+    playButton.addEventListener('click', () => {
+        const url = youtubeUrlInput.value;
+        if (!url) {
+            alert('Por favor, insira uma URL do YouTube.');
+            return;
+        }
+
+        const videoId = getYouTubeId(url);
+        if (!videoId) {
+            alert('URL do YouTube inválida ou não foi possível extrair o ID.');
+            return;
+        }
+
+        const selectedOption = playerSelect.options[playerSelect.selectedIndex];
+        const selectedPlayerUrl = selectedOption.value;
+        const playerFormat = selectedOption.dataset.format;
+        
+        const embedUrl = `https://www.youtube.com/embed/${videoId}`;
+        const iframeCode = `<iframe width="100%" height="100%" src="${embedUrl}?autoplay=1&mute=1&controls=0&loop=1&playlist=${videoId}&playsinline=1" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+        
+        localStorage.setItem('dynamicContent', iframeCode);
+        localStorage.setItem('dynamicFormat', playerFormat);
+
+        window.location.href = selectedPlayerUrl;
+    });
+</script>
+
+</body>
+</html>
