@@ -29,7 +29,7 @@
 
     #media, #fallback {
       width: 100%; height: 100%;
-      object-fit: contain; /* ALTERADO DE 'cover' PARA 'contain' PARA EVITAR CORTES */
+      object-fit: contain; /* Garante que a mídia não seja cortada */
       position: absolute; top: 0; left: 0;
     }
 
@@ -45,6 +45,7 @@
       transform: translateX(-50%);
       -webkit-border-radius: 26px;
       border-radius: 26px;
+      transition: width 0.3s ease, bottom 0.3s ease; /* Adiciona transição suave */
     }
     #infoAlternada { display: flex; align-items: center; gap: 20px; transition: opacity 0.6s ease; }
     .relogio { font-size: 30px; font-weight: bold; display: flex; align-items: center; gap: 10px; }
@@ -144,7 +145,55 @@
     function toggleFullscreen() { if (!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); }
     function addMedia() { mediaInput.click(); }
     mediaInput.onchange = (event) => { const files = Array.from(event.target.files); mainPlaylist = mainPlaylist.concat(files); if (mainPlaylist.length === files.length) loadMainMedia(); };
-    function loadMainMedia() { if (mainPlaylist.length === 0) return; const file = mainPlaylist[mainIndex]; const url = URL.createObjectURL(file); media.src = url; media.play(); }
+    
+    function loadMainMedia() { 
+        if (mainPlaylist.length === 0) return; 
+        const file = mainPlaylist[mainIndex]; 
+        const url = URL.createObjectURL(file); 
+        media.src = url; 
+        media.play(); 
+        
+        // --- ALTERAÇÃO PRINCIPAL ---
+        // Adiciona um listener para quando os dados do vídeo forem carregados
+        media.onloadeddata = ajustarBarraInfo;
+    }
+    
+    // NOVA FUNÇÃO para ajustar a barra de informações dinamicamente
+    function ajustarBarraInfo() {
+        const barra = document.getElementById('barra');
+        const containerWidth = media.offsetWidth;
+        const containerHeight = media.offsetHeight;
+        const mediaWidth = media.videoWidth;
+        const mediaHeight = media.videoHeight;
+
+        // Se não tiver as dimensões do vídeo, não faz nada
+        if (!mediaWidth || !mediaHeight) return;
+
+        const containerRatio = containerWidth / containerHeight;
+        const mediaRatio = mediaWidth / mediaHeight;
+        
+        let renderedWidth, renderedHeight;
+
+        if (mediaRatio > containerRatio) {
+            // A mídia é mais larga que o contêiner (letterbox)
+            renderedWidth = containerWidth;
+            renderedHeight = containerWidth / mediaRatio;
+        } else {
+            // A mídia é mais alta ou tem a mesma proporção que o contêiner (pillarbox)
+            renderedHeight = containerHeight;
+            renderedWidth = containerHeight * mediaRatio;
+        }
+
+        // Calcula o espaço da barra preta na parte inferior
+        const bottomOffset = (containerHeight - renderedHeight) / 2;
+        
+        // Aplica os novos estilos à barra
+        // Usa 97% da largura da mídia visível
+        barra.style.width = (renderedWidth * 0.97) + 'px'; 
+        // Posiciona a barra 12px acima da borda inferior da mídia visível
+        barra.style.bottom = (bottomOffset + 12) + 'px';
+    }
+
     media.addEventListener('ended', () => { if (mainPlaylist.length > 0) { mainIndex = (mainIndex + 1) % mainPlaylist.length; loadMainMedia(); } });
     function reloadMidia() { if (mainPlaylist.length > 0) { mainIndex = 0; loadMainMedia(); } }
     function resetMidias() { mainPlaylist = []; mainIndex = 0; media.pause(); media.removeAttribute('src'); media.load(); }
