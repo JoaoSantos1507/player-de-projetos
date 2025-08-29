@@ -2,35 +2,198 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Lançador de Players</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
   
   <style>
-    :root { --primary-color: #0d6efd; --hover-color: #ffa260; --dark-bg-1: #121212; --dark-bg-2: #1e1e1e; --dark-border: #555; --text-light: #e0e0e0; --text-muted: #aaa; }
-    body { margin: 0; font-family: 'Montserrat', sans-serif; background-color: var(--dark-bg-1); color: var(--text-light); display: flex; align-items: center; height: 100vh; overflow: hidden; }
-    #main-container { display: flex; width: 200vw; position: relative; transition: transform 0.6s cubic-bezier(0.77, 0, 0.175, 1); }
-    #main-container.yt-panel-active { transform: translateX(-100vw); }
-    .panel { width: 100vw; height: 100vh; display: flex; justify-content: center; align-items: center; flex-shrink: 0; box-sizing: border-box; padding: 20px; }
-    .container-content { position: relative; background-color: var(--dark-bg-2); padding: 40px 60px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; }
-    .logo { max-width: 400px; height: auto; margin-bottom: 30px; }
-    .player-links { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
-    .player-link { background: none; color: var(--text-light); border: 2px solid var(--dark-border); text-decoration: none; padding: 1.5em 2em; border-radius: 8px; font-size: 16px; font-weight: 600; transition: 0.25s; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-    .player-link:hover, .player-link:focus { transform: translateY(-0.25em); box-shadow: 0 0.5em 0.5em -0.4em var(--hover-color); border-color: var(--hover-color); color: #fff; }
-    .player-link i { font-size: 2em; margin-bottom: 15px; }
-    #yt-trigger-button { position: absolute; top: 20px; left: 20px; width: 40px; height: 40px; background-color: #4a4e69; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background-color 0.3s; z-index: 10; }
-    #yt-trigger-button:hover { background-color: var(--primary-color); }
-    .back-button { position: absolute; top: 20px; left: 20px; cursor: pointer; font-size: 24px; color: var(--text-muted); }
-    #yt-panel .form-group { text-align: left; margin-bottom: 15px; }
-    #yt-panel label { display: block; margin-bottom: 5px; font-size: 14px; color: var(--text-muted); }
-    #yt-panel input, #yt-panel select, #yt-panel button { width: 100%; padding: 12px; box-sizing: border-box; border-radius: 5px; border: 1px solid var(--dark-border); background-color: #333; color: white; font-size: 16px; }
+    :root { 
+        --primary-color: #0d6efd; 
+        --hover-color: #ffa260; 
+        --dark-bg-1: #121212; 
+        --dark-bg-2: #1e1e1e; 
+        --dark-border: #555; 
+        --text-light: #e0e0e0; 
+        --text-muted: #aaa; 
+    }
+    
+    html {
+        box-sizing: border-box;
+    }
+    *, *:before, *:after {
+        box-sizing: inherit;
+    }
+
+    body { 
+        margin: 0; 
+        font-family: 'Montserrat', sans-serif; 
+        background-color: var(--dark-bg-1); 
+        color: var(--text-light); 
+        display: flex; 
+        align-items: center; 
+        height: 100vh; 
+        overflow: hidden; 
+    }
+    #main-container { 
+        display: flex; 
+        width: 200vw; 
+        position: relative; 
+        transition: transform 0.6s cubic-bezier(0.77, 0, 0.175, 1); 
+    }
+    #main-container.yt-panel-active { 
+        transform: translateX(-100vw); 
+    }
+    .panel { 
+        width: 100vw; 
+        height: 100vh; 
+        display: flex; 
+        justify-content: center; 
+        align-items: center; 
+        flex-shrink: 0; 
+        padding: 20px; 
+    }
+    .container-content { 
+        position: relative; 
+        background-color: var(--dark-bg-2); 
+        padding: 40px 60px; 
+        border-radius: 16px; 
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
+        text-align: center; 
+        width: 100%;
+        max-width: 900px; /* Aumenta a largura máxima no desktop */
+    }
+    .logo { 
+        max-width: 400px; 
+        height: auto; 
+        margin-bottom: 30px; 
+    }
+    .player-links { 
+        display: grid; 
+        grid-template-columns: repeat(3, 1fr); 
+        gap: 20px; 
+    }
+    .player-link { 
+        background: none; 
+        color: var(--text-light); 
+        border: 2px solid var(--dark-border); 
+        text-decoration: none; 
+        padding: 1.5em 2em; 
+        border-radius: 8px; 
+        font-size: 16px; 
+        font-weight: 600; 
+        transition: 0.25s; 
+        display: flex; 
+        flex-direction: column; 
+        align-items: center; 
+        justify-content: center; 
+    }
+    .player-link:hover, .player-link:focus { 
+        transform: translateY(-0.25em); 
+        box-shadow: 0 0.5em 0.5em -0.4em var(--hover-color); 
+        border-color: var(--hover-color); 
+        color: #fff; 
+    }
+    .player-link i { 
+        font-size: 2em; 
+        margin-bottom: 15px; 
+    }
+    #yt-trigger-button { 
+        position: absolute; 
+        top: 20px; 
+        left: 20px; 
+        width: 40px; 
+        height: 40px; 
+        background-color: #4a4e69; 
+        color: white; border-radius: 50%; 
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
+        cursor: pointer; 
+        transition: background-color 0.3s; 
+        z-index: 10; 
+    }
+    #yt-trigger-button:hover { 
+        background-color: var(--primary-color); 
+    }
+    .back-button { 
+        position: absolute; 
+        top: 20px; 
+        left: 20px; 
+        cursor: pointer; 
+        font-size: 24px; 
+        color: var(--text-muted); 
+    }
+    
+    /* Regras para o painel do YouTube */
+    #yt-panel .container-content {
+        max-width: 500px; /* Define a largura máxima no desktop, mas permite diminuir */
+    }
+    #yt-panel .form-group { 
+        text-align: left; 
+        margin-bottom: 15px; 
+    }
+    #yt-panel label { 
+        display: block; 
+        margin-bottom: 5px; 
+        font-size: 14px; 
+        color: var(--text-muted); 
+    }
+    #yt-panel input, #yt-panel select, #yt-panel button { 
+        width: 100%; 
+        padding: 12px; 
+        border-radius: 5px; 
+        border: 1px solid var(--dark-border); 
+        background-color: #333; 
+        color: white; 
+        font-size: 16px; 
+    }
     #yt-panel button { 
-  background-color: #fd5d0d;
-  cursor: pointer;
-  font-weight: bold;
-  margin-top: 10px;
-}
-    #yt-panel button:hover { background-color: #fd5d0d; }
+        background-color: #fd5d0d;
+        cursor: pointer;
+        font-weight: bold;
+        margin-top: 10px;
+    }
+    #yt-panel button:hover { 
+        background-color: #fd5d0d; 
+    }
+
+    /* --- Início das Regras de Responsividade --- */
+
+    /* Tablets e telas menores */
+    @media (max-width: 992px) {
+        .player-links {
+            grid-template-columns: repeat(2, 1fr); /* 2 colunas */
+        }
+        .container-content {
+            padding: 40px 30px;
+        }
+    }
+
+    /* Celulares */
+    @media (max-width: 768px) {
+        body {
+            overflow-y: auto; /* Permite rolar a tela se o conteúdo for grande */
+            align-items: flex-start;
+            padding-top: 5vh;
+        }
+        .panel {
+            height: auto;
+            min-height: 95vh;
+            align-items: flex-start;
+        }
+        .container-content {
+            width: 90%; /* Ocupa 90% da largura da tela */
+            padding: 30px 20px;
+        }
+        .logo {
+            max-width: 280px;
+        }
+        .player-links {
+            grid-template-columns: 1fr; /* 1 coluna */
+            gap: 15px;
+        }
+    }
   </style>
 </head>
 <body>
@@ -50,12 +213,14 @@
             <a href="Players/vertical.html" class="player-link"><i class="fas fa-train"></i>Mub CPTM</a>
             <a href="Players/vertical.html" class="player-link"><i class="fas fa-bus-alt"></i>Abrigo</a>
             <a href="Players/led.html" class="player-link"><i class="far fa-square"></i>LEDs</a>
+            <a href="Players/teste de midia.html" class="player-link"><i class="fas fa-vial"></i>Teste de Mídia</a>
+            <a href="Players/iTo.html" class="player-link"><i class="fas fa-cogs"></i>iTo</a>
         </div>
       </div>
     </div>
 
     <div id="yt-panel" class="panel">
-      <div class="container-content" style="width: 500px;">
+      <div class="container-content">
         <div class="back-button" title="Voltar"><i class="fas fa-arrow-left"></i></div>
         <h2>Carregar Mídia Externa</h2>
         <div class="form-group">
