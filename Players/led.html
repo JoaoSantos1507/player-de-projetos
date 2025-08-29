@@ -27,6 +27,8 @@
     }
     #mediaWrapper {
       flex-grow: 1; position: relative; background: #111;
+      /* Adicionado para o corte funcionar corretamente */
+      overflow: hidden;
     }
     #media, #fallback {
       width: 100%; height: 100%; object-fit: contain;
@@ -35,18 +37,20 @@
     
     /* Barra Comercial (para o preset Coluna) */
     #barra-comercial {
-    position: absolute; bottom: 0; left: 0;
-    width: 100%;
-    background: rgba(0,0,0,0.75);
-    color: white;
-    font-size: 14px;
-    display: none;
-    padding: 10px;
-    box-sizing: border-box;
-    justify-content: space-between;
-    align-items: center;
-    z-index: 10; /* Z-INDEX ADICIONADO AQUI */
-}
+        position: absolute;
+        bottom: 2px;
+        left: 2px;
+        width: calc(100% - 4px);
+        background: rgba(0,0,0,0.75);
+        color: white;
+        font-size: 14px;
+        display: none;
+        padding: 10px;
+        box-sizing: border-box;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 10;
+    }
     #barra-comercial #info-alternada { transition: opacity 0.5s ease; flex-grow: 1; }
     #barra-comercial #hora { font-size: 24px; font-weight: bold; }
 
@@ -70,7 +74,8 @@
     .menu-grid {
       list-style: none; margin: 0; padding: 0;
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
+      /* Alterado para 6 colunas para acomodar o novo botão */
+      grid-template-columns: repeat(6, 1fr);
       border: 1px solid #4a4e69;
     }
     .menu-grid li { width: 150px; height: 120px; display: flex; justify-content: center; align-items: center; border: 1px solid #4a4e69; background-color: rgba(34, 34, 59, 0.95); cursor: pointer; -webkit-transition: background-color 0.4s ease-in-out; transition: background-color 0.4s ease-in-out; }
@@ -102,6 +107,22 @@
     .modal-botoes button { background: #4a4e69; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; margin-left: 10px; }
     .modal-botoes button:hover { background: #5a5e79; }
 
+    /* NOVOS ESTILOS PARA A FUNÇÃO DE CORTE */
+    #selection-overlay {
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: rgba(0,0,0,0.5);
+        cursor: crosshair;
+        z-index: 50;
+        display: none;
+    }
+    #selection-box {
+        position: absolute;
+        border: 2px dashed #fff;
+        box-sizing: border-box;
+    }
+
   </style>
 </head>
 <body>
@@ -110,9 +131,14 @@
     <div id="mediaWrapper">
       <video id="media" autoplay muted loop playsinline></video>
       <img id="fallback" style="display: none;" />
+      <div id="selection-overlay">
+        <div id="selection-box"></div>
+      </div>
     </div>
     <div id="barra-comercial">
         <div id="info-alternada"></div>
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTSngqZzv7e6QBJRAN9L8zXvB9deAVNWW6tXQ&s" alt="Logo" style="height:24px; margin-right:10px; vertical-align:middle;">
+
         <span id="hora"></span>
     </div>
   </div>
@@ -164,6 +190,7 @@
       <li><a href="#" onclick="resetarLayout()"><i class="fa fa-undo fa-2x"></i>Resetar Layout</a></li>
       <li><a href="#" onclick="salvarConfiguracao()"><i class="fa fa-save fa-2x"></i>Salvar</a></li>
       <li><a href="#" onclick="carregarConfiguracao()"><i class="fa fa-folder-open fa-2x"></i>Carregar</a></li>
+      <li><a href="#" onclick="toggleCortar(this)"><i class="fa fa-crop-alt fa-2x"></i>Cortar Mídia</a></li>
     </ul>
   </div>
 
@@ -178,6 +205,13 @@
     const relogioBox = document.getElementById('relogio-box');
     const presetLivreModal = document.getElementById('preset-livre-modal');
     
+    // Novas variáveis para a função de corte
+    const selectionOverlay = document.getElementById('selection-overlay');
+    const selectionBox = document.getElementById('selection-box');
+    let cortarAtivo = false;
+    let isSelecting = false;
+    let startX, startY, startWidth, startHeight, startLeft, startTop;
+
     let mediaAtiva = media; let moverAtivo = false; let isDragging = false;
     let offsetX = 0, offsetY = 0; let rotacaoAtual = 0; let commercialBarInterval = null;
 
@@ -187,7 +221,7 @@
     function toggleBarraComercial() { barraComercial.style.display = (barraComercial.style.display === 'flex') ? 'none' : 'flex'; }
     function addMedia() { mediaInput.click(); }
     mediaInput.onchange = (event) => { const file = event.target.files[0]; if (!file) return; const url = URL.createObjectURL(file); if (file.type.startsWith('video')) { fallback.style.display = 'none'; media.style.display = 'block'; media.src = url; media.play(); mediaAtiva = media; } else { media.style.display = 'none'; fallback.style.display = 'block'; fallback.src = url; mediaAtiva = fallback; } };
-    function resetMidias() { media.pause(); media.removeAttribute('src'); fallback.removeAttribute('src'); media.load(); }
+    function resetMidias() { media.pause(); media.removeAttribute('src'); fallback.removeAttribute('src'); media.load(); resetarCorte(); }
     document.addEventListener('keydown', (e) => { if (e.key.toLowerCase() === 'm') { toggleControls(); } });
     
     // --- FUNÇÕES ESPECÍFICAS DO PLAYER LED ---
@@ -195,9 +229,29 @@
     playerContainer.addEventListener('mousedown', (e) => { if (!moverAtivo) return; isDragging = true; offsetX = e.clientX - playerContainer.offsetLeft; offsetY = e.clientY - playerContainer.offsetTop; });
     document.addEventListener('mousemove', (e) => { if (isDragging && moverAtivo) { playerContainer.style.left = `${e.clientX - offsetX}px`; playerContainer.style.top = `${e.clientY - offsetY}px`; playerContainer.style.transform = `none`; } });
     document.addEventListener('mouseup', () => { isDragging = false; });
-    function ajustarModo(modo, element) { document.querySelectorAll('.menu-grid a[onclick*="ajustarModo"]').forEach(a => a.classList.remove('active')); element.classList.add('active'); media.style.objectFit = modo; fallback.style.objectFit = modo; }
+    
+    function ajustarModo(modo, element) { 
+        document.querySelectorAll('.menu-grid a[onclick*="ajustarModo"]').forEach(a => a.classList.remove('active')); 
+        element.classList.add('active'); 
+        resetarCorte(); // Reseta o corte ao aplicar um modo de ajuste
+        media.style.objectFit = modo; 
+        fallback.style.objectFit = modo; 
+    }
+    
     function rotacionarMidia() { rotacaoAtual = (rotacaoAtual + 90) % 360; const transformValue = `rotate(${rotacaoAtual}deg)`; mediaAtiva.style.webkitTransform = transformValue; mediaAtiva.style.transform = transformValue; }
-    function resetarLayout() { barraComercial.style.display = 'none'; relogioBox.style.display = 'none'; if (commercialBarInterval) clearInterval(commercialBarInterval); playerContainer.style.top = '50%'; playerContainer.style.left = '50%'; playerContainer.style.width = '768px'; playerContainer.style.height = '600px'; playerContainer.style.transform = 'translate(-50%, -50%)'; }
+    
+    function resetarLayout() { 
+        barraComercial.style.display = 'none'; 
+        relogioBox.style.display = 'none'; 
+        if (commercialBarInterval) clearInterval(commercialBarInterval); 
+        playerContainer.style.top = '50%'; 
+        playerContainer.style.left = '50%'; 
+        playerContainer.style.width = '768px'; 
+        playerContainer.style.height = '600px'; 
+        playerContainer.style.transform = 'translate(-50%, -50%)'; 
+        resetarCorte(); // Adicionado para resetar o corte também
+    }
+
     function aplicarLayout(preset) {
         resetarLayout(); playerContainer.style.transform = 'none';
         if (preset === 'mub') { playerContainer.style.top = '0px'; playerContainer.style.left = '0px'; playerContainer.style.width = '960px'; playerContainer.style.height = '480px'; }
@@ -205,7 +259,10 @@
         else if (preset === 'coluna') {
             playerContainer.style.top = '0px'; playerContainer.style.left = '0px'; playerContainer.style.width = '768px'; playerContainer.style.height = '960px';
             barraComercial.style.display = 'flex';
-            const informacoes = [ `<div style="display: flex; align-items: center; gap: 8px;"><span style="font-size: 10px; color: #ccc;">ÍNDICES</span><span>IBOV</span><span style="color: #2ecc71;">+0,4%</span><span style="background: #2ecc71; color: white; font-size: 9px; padding: 2px 4px; border-radius: 4px;">137.824</span></div>`, `<div style="display: flex; align-items: center; gap: 8px;"><span style="font-size: 10px; color: #ccc;">DÓLAR</span><span style="font-weight: bold;">R$ 5,45</span><span style="background-color: #e74c3c; color: white; font-size: 9px; padding: 2px 4px; border-radius: 4px;">-0.27%</span></div>` ];
+            const informacoes = [ 
+                `<div style="display: flex; align-items: center; gap: 8px;"><img src='https://cdn-icons-png.flaticon.com/512/3358/3358623.png' style='height: 18px; margin-right: 8px;' alt='Ícone Mercado'><span style="font-size: 10px; color: #ccc;">ÍNDICES</span><span>IBOV</span><span style="color: #2ecc71;">+0,4%</span><span style="background: #2ecc71; color: white; font-size: 9px; padding: 2px 4px; border-radius: 4px;">137.824</span></div>`, 
+                `<div style="display: flex; align-items: center; gap: 8px;"><img src='https://cdn-icons-png.flaticon.com/512/3358/3358623.png' style='height: 18px; margin-right: 8px;' alt='Ícone Mercado'><span style="font-size: 10px; color: #ccc;">DÓLAR</span><span style="font-weight: bold;">R$ 5,45</span><span style="background-color: #e74c3c; color: white; font-size: 9px; padding: 2px 4px; border-radius: 4px;">-0.27%</span></div>` 
+            ];
             let infoIndex = 0;
             const updateInfo = () => { const infoEl = document.getElementById('info-alternada'); infoEl.style.opacity = 0; setTimeout(() => { infoEl.innerHTML = informacoes[infoIndex]; infoEl.style.opacity = 1; infoIndex = (infoIndex + 1) % informacoes.length; }, 500); };
             const horaEl = document.getElementById('hora');
@@ -217,9 +274,93 @@
     function abrirModalPresetLivre() { controlsContainer.style.display = 'none'; presetLivreModal.style.display = 'block'; }
     function fecharModalPresetLivre() { presetLivreModal.style.display = 'none'; }
     function aplicarPresetLivre() { const x = document.getElementById('input-x').value; const y = document.getElementById('input-y').value; const largura = document.getElementById('input-largura').value; const altura = document.getElementById('input-altura').value; resetarLayout(); playerContainer.style.transform = 'none'; playerContainer.style.left = `${x}px`; playerContainer.style.top = `${y}px`; playerContainer.style.width = `${largura}px`; playerContainer.style.height = `${altura}px`; fecharModalPresetLivre(); }
-    function salvarConfiguracao() { const config = { posicao: { top: playerContainer.style.top, left: playerContainer.style.left }, tamanho: { width: playerContainer.style.width, height: playerContainer.style.height }, transform: playerContainer.style.transform, modoAjuste: media.style.objectFit || 'contain' }; localStorage.setItem('configPlayerLED', JSON.stringify(config)); alert('Configuração salva!'); }
-    function carregarConfiguracao() { const configStr = localStorage.getItem('configPlayerLED'); if (!configStr) { alert('Nenhuma configuração salva.'); return; } const config = JSON.parse(configStr); resetarLayout(); playerContainer.style.top = config.posicao.top; playerContainer.style.left = config.posicao.left; playerContainer.style.width = config.tamanho.width; playerContainer.style.height = config.tamanho.height; playerContainer.style.transform = config.transform; const modoBtn = document.querySelector(`.menu-grid a[onclick*="'${config.modoAjuste}'"]`); if (modoBtn) ajustarModo(config.modoAjuste, modoBtn); alert('Configuração carregada!'); }
+    function salvarConfiguracao() { const config = { posicao: { top: playerContainer.style.top, left: playerContainer.style.left }, tamanho: { width: playerContainer.style.width, height: playerContainer.style.height }, transform: playerContainer.style.transform, modoAjuste: media.style.objectFit || 'contain', clipPath: mediaAtiva.style.clipPath || 'none' }; localStorage.setItem('configPlayerLED', JSON.stringify(config)); alert('Configuração salva!'); }
+    function carregarConfiguracao() { const configStr = localStorage.getItem('configPlayerLED'); if (!configStr) { alert('Nenhuma configuração salva.'); return; } const config = JSON.parse(configStr); resetarLayout(); playerContainer.style.top = config.posicao.top; playerContainer.style.left = config.posicao.left; playerContainer.style.width = config.tamanho.width; playerContainer.style.height = config.tamanho.height; playerContainer.style.transform = config.transform; const modoBtn = document.querySelector(`.menu-grid a[onclick*="'${config.modoAjuste}'"]`); if (modoBtn) ajustarModo(config.modoAjuste, modoBtn); if (config.clipPath && config.clipPath !== 'none') { mediaAtiva.style.clipPath = config.clipPath; } alert('Configuração carregada!'); }
     
+    // --- NOVAS FUNÇÕES PARA O CORTE DE MÍDIA ---
+    function toggleCortar(element) {
+        cortarAtivo = !cortarAtivo;
+        element.classList.toggle('active', cortarAtivo);
+        selectionOverlay.style.display = cortarAtivo ? 'block' : 'none';
+        playerContainer.style.cursor = cortarAtivo ? 'crosshair' : 'default';
+        if (moverAtivo) {
+            toggleMover(document.querySelector('#move-button-li a'));
+        }
+    }
+    
+    function resetarCorte() {
+        mediaAtiva.style.clipPath = '';
+        mediaAtiva.style.transform = `rotate(${rotacaoAtual}deg)`; // Mantém a rotação
+        mediaAtiva.style.width = '100%';
+        mediaAtiva.style.height = '100%';
+        mediaAtiva.style.top = '0';
+        mediaAtiva.style.left = '0';
+        document.querySelector('.menu-grid a[onclick*="ajustarModo(\'contain\'"]').classList.add('active');
+    }
+
+    selectionOverlay.addEventListener('mousedown', (e) => {
+        if (!cortarAtivo) return;
+        e.preventDefault();
+        isSelecting = true;
+        startX = e.clientX - selectionOverlay.getBoundingClientRect().left;
+        startY = e.clientY - selectionOverlay.getBoundingClientRect().top;
+        selectionBox.style.left = `${startX}px`;
+        selectionBox.style.top = `${startY}px`;
+        selectionBox.style.width = '0px';
+        selectionBox.style.height = '0px';
+        selectionBox.style.display = 'block';
+    });
+
+    selectionOverlay.addEventListener('mousemove', (e) => {
+        if (!isSelecting) return;
+        const currentX = e.clientX - selectionOverlay.getBoundingClientRect().left;
+        const currentY = e.clientY - selectionOverlay.getBoundingClientRect().top;
+        const width = currentX - startX;
+        const height = currentY - startY;
+
+        selectionBox.style.width = `${Math.abs(width)}px`;
+        selectionBox.style.height = `${Math.abs(height)}px`;
+        selectionBox.style.left = `${width > 0 ? startX : currentX}px`;
+        selectionBox.style.top = `${height > 0 ? startY : currentY}px`;
+    });
+
+    selectionOverlay.addEventListener('mouseup', (e) => {
+        if (!isSelecting) return;
+        isSelecting = false;
+        selectionBox.style.display = 'none';
+        
+        const rect = {
+            x: parseFloat(selectionBox.style.left),
+            y: parseFloat(selectionBox.style.top),
+            width: parseFloat(selectionBox.style.width),
+            height: parseFloat(selectionBox.style.height)
+        };
+
+        if (rect.width > 0 && rect.height > 0) {
+            const containerWidth = selectionOverlay.offsetWidth;
+            const containerHeight = selectionOverlay.offsetHeight;
+
+            const scaleX = containerWidth / rect.width;
+            const scaleY = containerHeight / rect.height;
+
+            const newWidth = mediaAtiva.offsetWidth * scaleX;
+            const newHeight = mediaAtiva.offsetHeight * scaleY;
+
+            const newLeft = -rect.x * scaleX;
+            const newTop = -rect.y * scaleY;
+            
+            // Aplica a transformação para simular o corte e o zoom
+            mediaAtiva.style.objectFit = 'cover'; // Garante que a imagem se ajuste bem
+            mediaAtiva.style.width = `${newWidth}px`;
+            mediaAtiva.style.height = `${newHeight}px`;
+            mediaAtiva.style.top = `${newTop}px`;
+            mediaAtiva.style.left = `${newLeft}px`;
+
+             // Desativa o modo de corte
+            toggleCortar(document.querySelector('.menu-grid a[onclick*="toggleCortar"]'));
+        }
+    });
+
     // --- INICIALIZAÇÃO PADRÃO ---
     function startPlayerLogic() {
         // O player LED não tem lógica que inicia sozinha.
