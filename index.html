@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Player de Projetos e Eventos</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+  
+  <style>
+    :root { 
+        --primary-color: #0d6efd; 
+        --hover-color: #ffa260; 
+        --dark-bg-1: #121212; 
+        --dark-bg-2: #1e1e1e; 
+        --dark-border: #555; 
+        --text-light: #e0e0e0; 
+        --text-muted: #aaa; 
+        --ia-color: #8e44ad;
+    }
+    
+    html { box-sizing: border-box; }
+    *, *:before, *:after { box-sizing: inherit; }
+
+    body { 
+        margin: 0; 
+        font-family: 'Montserrat', sans-serif; 
+        background-color: var(--dark-bg-1); 
+        color: var(--text-light); 
+        display: flex; 
+        align-items: center; 
+        height: 100vh; 
+        overflow: hidden; 
+    }
+
+    #main-container { 
+        display: flex; 
+        width: 300vw; 
+        position: relative; 
+        transition: transform 0.6s cubic-bezier(0.77, 0, 0.175, 1); 
+    }
+    #main-container.source-choice-active { transform: translateX(-100vw); }
+    #main-container.url-input-active { transform: translateX(-200vw); }
+
+    .panel { 
+        width: 100vw; 
+        height: 100vh; 
+        display: flex; 
+        justify-content: center; 
+        align-items: center; 
+        flex-shrink: 0; 
+        padding: 20px; 
+    }
+    .container-content { 
+        position: relative; 
+        background-color: var(--dark-bg-2); 
+        padding: 40px 60px; 
+        border-radius: 16px; 
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
+        text-align: center; 
+        width: 100%;
+        max-width: 900px; 
+    }
+    .logo { max-width: 400px; height: auto; margin-bottom: 30px; }
+    .player-links { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .player-link { 
+        background: none; color: var(--text-light); border: 2px solid var(--dark-border); 
+        text-decoration: none; padding: 1.5em 2em; border-radius: 8px; font-size: 16px; 
+        font-weight: 600; transition: 0.25s; display: flex; flex-direction: column; 
+        align-items: center; justify-content: center; cursor: pointer;
+    }
+    .player-link:hover, .player-link:focus { 
+        transform: translateY(-0.25em); box-shadow: 0 0.5em 0.5em -0.4em var(--hover-color); 
+        border-color: var(--hover-color); color: #fff; 
+    }
+    .player-link i { font-size: 2em; margin-bottom: 15px; }
+    
+    #media-trigger-button { 
+        position: absolute; top: 20px; left: 20px; width: 40px; height: 40px; 
+        background-color: #4a4e69; color: white; border-radius: 50%; display: flex; 
+        align-items: center; justify-content: center; cursor: pointer; 
+        transition: background-color 0.3s; z-index: 10; 
+    }
+    #media-trigger-button:hover { background-color: var(--primary-color); }
+
+    #ia-generator-button {
+        position: absolute; top: 20px; left: 70px; width: 40px; height: 40px;
+        color: white; border-radius: 50%; display: flex; align-items: center;
+        justify-content: center; cursor: pointer; z-index: 10;
+        transition: all 0.4s ease;
+        background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+        background-size: 400% 400%;
+    }
+    #ia-generator-button:hover {
+        animation: gradient-animation 3s ease infinite;
+        transform: scale(1.1) rotate(15deg);
+        box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+    }
+    @keyframes gradient-animation {
+        0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; }
+    }
+
+    .back-button { position: absolute; top: 20px; left: 20px; cursor: pointer; font-size: 24px; color: var(--text-muted); }
+    .form-panel .container-content, .choice-panel .container-content { max-width: 500px; }
+    .form-group { text-align: left; margin-bottom: 15px; }
+    .form-group.inline { display: flex; gap: 10px; align-items: flex-end; }
+    .form-group.inline .input-wrapper { flex-grow: 1; }
+    label { display: block; margin-bottom: 5px; font-size: 14px; color: var(--text-muted); }
+    input, select, button { 
+        width: 100%; padding: 12px; border-radius: 5px; border: 1px solid var(--dark-border); 
+        background-color: #333; color: white; font-size: 16px; 
+    }
+    button { background-color: #fd5d0d; cursor: pointer; font-weight: bold; margin-top: 10px; }
+    button:hover { background-color: #e8540a; }
+
+    .source-choices { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+
+    #ia-modal {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background-color: rgba(0,0,0,0.8); display: flex; justify-content: center;
+        align-items: center; z-index: 1000; opacity: 0; visibility: hidden;
+        transition: opacity 0.3s, visibility 0.3s;
+    }
+    #ia-modal.visible { opacity: 1; visibility: visible; }
+    .ia-modal-content {
+        background-color: var(--dark-bg-2); padding: 30px 40px; border-radius: 16px;
+        width: 90%; max-width: 700px; position: relative;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    .ia-modal-close { position: absolute; top: 15px; right: 15px; font-size: 24px; color: var(--text-muted); cursor: pointer; }
+    #ia-generate-button { background-color: var(--ia-color); }
+
+    @media (max-width: 992px) { .player-links { grid-template-columns: repeat(2, 1fr); } .container-content { padding: 40px 30px; } }
+    @media (max-width: 768px) {
+        body { overflow-y: auto; align-items: flex-start; padding-top: 5vh; }
+        .panel { height: auto; min-height: 95vh; align-items: flex-start; }
+        .container-content { width: 90%; padding: 30px 20px; }
+        .logo { max-width: 280px; }
+        .player-links, .source-choices { grid-template-columns: 1fr; gap: 15px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="ia-modal">
+    <div class="ia-modal-content">
+        <div class="ia-modal-close" title="Fechar">&times;</div>
+        <h2><i class="fas fa-wand-magic-sparkles"></i> Gerador de Mídia Criativa</h2>
+        <p style="font-size: 14px; color: var(--text-muted); margin-top: -10px; margin-bottom: 20px;">Crie uma vinheta animada a partir de imagens da internet.</p>
+        
+        <div class="form-group inline">
+            <div class="input-wrapper">
+                <label for="ia-input-1">URL do Logo Principal*</label>
+                <input type="text" id="ia-input-1" placeholder="https://...">
+            </div>
+            <div>
+                <label>Efeito</label>
+                <select id="ia-anim-1">
+                    <option value="anim-fade-in-zoom">Aparecer com Zoom</option>
+                    <option value="anim-float">Flutuar Suave</option>
+                    <option value="anim-pulse">Pulsar Leve</option>
+                    <option value="anim-spin">Giro Lento</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group inline">
+             <div class="input-wrapper">
+                <label>URL Textura de Fundo (Opcional)</label>
+                <input type="text" id="ia-input-2" placeholder="https://...">
+            </div>
+            <div>
+                <label>Efeito</label>
+                <select id="ia-anim-2">
+                    <option value="anim-kenburns">Ken Burns</option>
+                    <option value="anim-fade-in">Aparecer Lentamente</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group inline">
+            <div class="input-wrapper">
+                <label>URL Elemento Gráfico 1 (Opcional)</label>
+                <input type="text" id="ia-input-3" placeholder="https://...">
+            </div>
+            <div>
+                <label>Efeito</label>
+                <select id="ia-anim-3">
+                    <option value="anim-slide-in-bottom">Surgir de Baixo</option>
+                    <option value="anim-slide-in-top">Surgir de Cima</option>
+                    <option value="anim-fade-in">Aparecer Lentamente</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="ia-player-select">Reproduzir em qual ambiente?</label>
+            <select id="ia-player-select">
+                <option value="Players/residencial.html" data-format="horizontal">Residencial</option>
+                <option value="Players/comercial.html" data-format="horizontal">Comercial</option>
+                <option value="Players/Comercial Premium.html" data-format="horizontal">Comercial Premium</option>
+                <option value="Players/comercial.html" data-format="horizontal">Aeroporto</option>
+                <option value="Players/comercial.html" data-format="horizontal">TV Minuto</option>
+                <option value="Players/vertical.html" data-format="vertical">Totem Shopping</option>
+                <option value="Players/vertical.html" data-format="vertical">Mub CPTM</option>
+                <option value="Players/vertical.html" data-format="vertical">Abrigo</option>
+                <option value="Players/led.html" data-format="horizontal">LEDs</option>
+            </select>
+        </div>
+        <button id="ia-generate-button">Gerar Mídia</button>
+    </div>
+  </div>
+
+
+  <div id="main-container">
+
+    <div id="selection-panel" class="panel">
+        <div class="container-content">
+            <div id="media-trigger-button" title="Carregar Mídia Online"><i class="fas fa-link"></i></div>
+            <div id="ia-generator-button" title="Gerador de Mídia Criativa"><i class="fas fa-wand-magic-sparkles"></i></div>
+            
+            <img src="img/01.png" alt="Logo da Empresa" class="logo">
+            <div class="player-links">
+                <a href="Players/Residencial.html" class="player-link"><i class="far fa-building"></i>Residencial</a>
+                <a href="Players/Comercial.html" class="player-link"><i class="far fa-handshake"></i>Comercial</a>
+                <a href="Players/Comercial Premium.html" class="player-link"><i class="far fa-gem"></i>Premium</a>
+                <a href="Players/Comercial.html" class="player-link"><i class="fas fa-plane"></i>Aeroporto</a>
+                <a href="Players/Tvminuto.html" class="player-link"><i class="fas fa-tv"></i>TV Minuto</a>
+                <a href="Players/vertical.html" class="player-link"><i class="fas fa-mobile-alt"></i>Totem</a>
+                <a href="Players/vertical.html" class="player-link"><i class="fas fa-train"></i>Mub CPTM</a>
+                <a href="Players/vertical.html" class="player-link"><i class="fas fa-bus-alt"></i>Abrigo</a>
+                <a href="Players/led.html" class="player-link"><i class="far fa-square"></i>LEDs</a>
+            </div>
+        </div>
+    </div>
+
+    <div id="source-choice-panel" class="panel choice-panel">
+        <div class="container-content">
+            <div class="back-button" title="Voltar"><i class="fas fa-arrow-left"></i></div>
+            <h2>Escolha a Fonte da Mídia</h2>
+            <div class="source-choices">
+                <a class="player-link" data-source="YouTube"><i class="fa-brands fa-youtube"></i>YouTube</a>
+                <a class="player-link" data-source="Drive"><i class="fa-brands fa-google-drive"></i>Google Drive</a>
+                <a href="https://sssinstagram.com/pt" target="_blank" class="player-link"><i class="fa-brands fa-instagram"></i>Instagram Conversor</a>
+                <a class="player-link" data-source="MP4"><i class="fa-solid fa-file-video"></i>Vídeo Direto (.MP4)</a>
+                <a href="Players/teste de midia.html" class="player-link"><i class="fa-solid fa-file-pdf"></i>Documento PDF</a>
+                <a class="player-link" data-source="Vimeo"><i class="fa-brands fa-vimeo-v"></i>Vimeo</a>
+            </div>
+        </div>
+    </div>
+
+    <div id="url-input-panel" class="panel form-panel">
+        <div class="container-content">
+            <div class="back-button" title="Voltar"><i class="fas fa-arrow-left"></i></div>
+            <h2 id="url-panel-title">Carregar Mídia</h2>
+            <div class="form-group">
+                <label for="media-url" id="url-panel-label">URL da Mídia</label>
+                <input type="text" id="media-url" placeholder="Cole o link aqui">
+            </div>
+            <div class="form-group">
+                <label for="player-select">Reproduzir em qual ambiente?</label>
+                <select id="player-select">
+                    <option value="Players/residencial.html">Residencial</option>
+                    <option value="Players/comercial.html">Comercial</option>
+                    <option value="Players/Comercial Premium.html">Comercial Premium</option>
+                    <option value="Players/comercial.html">Aeroporto</option>
+                    <option value="Players/comercial.html">TV Minuto</option>
+                    <option value="Players/vertical.html">Totem Shopping</option>
+                    <option value="Players/vertical.html">Mub CPTM</option>
+                    <option value="Players/vertical.html">Abrigo</option>
+                    <option value="Players/led.html">LEDs</option>
+                </select>
+            </div>
+            <button id="play-button">Reproduzir no Player</button>
+        </div>
+    </div>
+
+  </div>
+
+<script>
+    const mainContainer = document.getElementById('main-container');
+    let selectedSource = '';
+
+    const mediaTriggerButton = document.getElementById('media-trigger-button');
+    const backButtons = document.querySelectorAll('.back-button');
+    const sourceChoiceButtons = document.querySelectorAll('#source-choice-panel .player-link');
+    const playButton = document.getElementById('play-button');
+    const mediaUrlInput = document.getElementById('media-url');
+    const playerSelect = document.getElementById('player-select');
+    const urlPanelTitle = document.getElementById('url-panel-title');
+    const urlPanelLabel = document.getElementById('url-panel-label');
+
+    const iaGeneratorButton = document.getElementById('ia-generator-button');
+    const iaModal = document.getElementById('ia-modal');
+    const iaModalClose = document.querySelector('.ia-modal-close');
+    const iaGenerateButton = document.getElementById('ia-generate-button');
+    const iaPlayerSelect = document.getElementById('ia-player-select');
+    const iaInputs = {
+        logo: document.getElementById('ia-input-1'),
+        background: document.getElementById('ia-input-2'),
+        element1: document.getElementById('ia-input-3'),
+    };
+    const iaAnims = {
+        logo: document.getElementById('ia-anim-1'),
+        background: document.getElementById('ia-anim-2'),
+        element1: document.getElementById('ia-anim-3'),
+    }
+
+    mediaTriggerButton.addEventListener('click', () => mainContainer.classList.add('source-choice-active'));
+
+    backButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            if (mainContainer.classList.contains('url-input-active')) {
+                mainContainer.classList.remove('url-input-active');
+                mainContainer.classList.add('source-choice-active');
+            } else if (mainContainer.classList.contains('source-choice-active')) {
+                mainContainer.classList.remove('source-choice-active');
+            }
+        });
+    });
+
+    sourceChoiceButtons.forEach(button => {
+        if (button.dataset.source) {
+            button.addEventListener('click', () => {
+                selectedSource = button.dataset.source;
+                urlPanelTitle.textContent = `Carregar Mídia: ${button.textContent.trim()}`;
+                urlPanelLabel.textContent = `URL do ${button.textContent.trim()}`;
+                mediaUrlInput.value = ''; mediaUrlInput.focus();
+                mainContainer.classList.remove('source-choice-active');
+                mainContainer.classList.add('url-input-active');
+            });
+        }
+    });
+    
+    playButton.addEventListener('click', () => {
+        const url = mediaUrlInput.value.trim();
+        if (!url) { alert('Por favor, insira uma URL.'); return; }
+        let contentCode = '';
+        switch (selectedSource) {
+            case 'YouTube':
+                const youtubeId = getYouTubeId(url); if (!youtubeId) { alert('URL do YouTube inválida.'); return; }
+                contentCode = `<iframe width="100%" height="100%" src="https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${youtubeId}&playsinline=1" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope;" allowfullscreen></iframe>`;
+                break;
+            case 'Drive':
+                const driveId = getDriveId(url); if (!driveId) { alert('URL do Google Drive inválida.'); return; }
+                contentCode = `<iframe src="https://drive.google.com/file/d/${driveId}/preview?usp=drivesdk&autoplay=1" width="100%" height="100%" allow="autoplay" frameborder="0"></iframe>`;
+                break;
+            case 'MP4':
+                 contentCode = `<video src="${url}" width="100%" height="100%" autoplay loop muted playsinline style="object-fit: cover;"></video>`;
+                break;
+            case 'Vimeo':
+                const vimeoId = getVimeoId(url); if (!vimeoId) { alert('URL do Vimeo inválida.'); return; }
+                contentCode = `<iframe src="https://player.vimeo.com/video/${vimeoId}?autoplay=1&loop=1&autopause=0&muted=1&controls=0" width="100%" height="100%" frameborder="0" allow="autoplay; fullscreen"></iframe>`;
+                break;
+            default: alert('Fonte de mídia inválida.'); return;
+        }
+        if (contentCode) {
+            const selectedPlayerUrl = playerSelect.value;
+            localStorage.setItem('dynamicContent', contentCode);
+            window.location.href = selectedPlayerUrl;
+        }
+    });
+
+    iaGeneratorButton.addEventListener('click', () => iaModal.classList.add('visible'));
+    iaModalClose.addEventListener('click', () => iaModal.classList.remove('visible'));
+    iaModal.addEventListener('click', (e) => { if (e.target === iaModal) iaModal.classList.remove('visible'); });
+
+    async function getDominantColor(imageUrl) {
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.crossOrigin = "Anonymous";
+            img.src = imageUrl;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d', { willReadFrequently: true });
+                canvas.width = img.width; canvas.height = img.height;
+                ctx.drawImage(img, 0, 0);
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const data = imageData.data;
+                const colorCount = {};
+                let maxCount = 0; let dominantColor = null;
+                for (let i = 0; i < data.length; i += 4) {
+                    if(data[i] > 245 && data[i+1] > 245 && data[i+2] > 245) continue;
+                    if(data[i] < 10 && data[i+1] < 10 && data[i+2] < 10) continue;
+                    const rgb = `${data[i]},${data[i+1]},${data[i+2]}`;
+                    colorCount[rgb] = (colorCount[rgb] || 0) + 1;
+                    if (colorCount[rgb] > maxCount) { maxCount = colorCount[rgb]; dominantColor = rgb; }
+                }
+                resolve(`rgb(${dominantColor})`);
+            };
+            img.onerror = () => resolve('rgb(30,30,30)');
+        });
+    }
+
+    iaGenerateButton.addEventListener('click', async () => {
+        const urls = {
+            logo: iaInputs.logo.value.trim(),
+            background: iaInputs.background.value.trim(),
+            element1: iaInputs.element1.value.trim(),
+        };
+        const anims = {
+            logo: iaAnims.logo.value,
+            background: iaAnims.background.value,
+            element1: iaAnims.element1.value,
+        }
+
+        if (!urls.logo) { alert('Por favor, insira a URL do Logo Principal.'); return; }
+
+        iaGenerateButton.textContent = 'Analisando cores...';
+        iaGenerateButton.disabled = true;
+
+        const bgColor = await getDominantColor(urls.logo);
+        const selectedOption = iaPlayerSelect.options[iaPlayerSelect.selectedIndex];
+        const format = selectedOption.dataset.format; // 'vertical' ou 'horizontal'
+
+        iaGenerateButton.textContent = 'Criando animação...';
+
+        const contentCode = `
+            <style>
+                .ia-container { position: relative; width: 100%; height: 100%; overflow: hidden; background-color: ${bgColor}; }
+                .ia-container img { position: absolute; max-width: 100%; max-height: 100%; object-fit: contain; will-change: transform, opacity; }
+
+                /* Layouts Base */
+                .ia-bg { width: 100%; height: 100%; object-fit: cover; opacity: 0.3; }
+                .ia-logo { top: 50%; left: 50%; transform: translate(-50%, -50%); }
+                .ia-el1 { } /* Posicionamento por formato abaixo */
+                
+                /* Layouts por Formato */
+                .format-horizontal .ia-logo { max-width: 45%; max-height: 45%; }
+                .format-horizontal .ia-el1 { bottom: 8%; left: 5%; width: 20%; }
+                
+                .format-vertical .ia-logo { max-width: 65%; max-height: 40%; }
+                .format-vertical .ia-el1 { bottom: 10%; right: 10%; width: 35%; }
+                
+                /* Biblioteca de Animações em Loop */
+                .anim-fade-in-zoom { animation: fade-in-zoom 6s ease-in-out infinite alternate; }
+                .anim-float { animation: float 8s ease-in-out infinite alternate; }
+                .anim-pulse { animation: pulse 5s ease-in-out infinite alternate; }
+                .anim-spin { animation: spin 25s linear infinite; }
+                .anim-kenburns { animation: kenburns 30s ease-in-out infinite alternate; }
+                .anim-fade-in { animation: fade-in 8s ease-in-out infinite alternate; }
+                .anim-slide-in-bottom { animation: slide-in-bottom 10s ease-in-out infinite alternate; }
+                .anim-slide-in-top { animation: slide-in-top 10s ease-in-out infinite alternate; }
+
+                @keyframes fade-in-zoom { 0% { opacity: 0.7; transform: translate(-50%, -50%) scale(0.95); } 100% { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
+                @keyframes float { 0% { transform: translate(-50%, -52%); } 100% { transform: translate(-50%, -48%); } }
+                @keyframes pulse { 0% { transform: translate(-50%, -50%) scale(1); } 100% { transform: translate(-50%, -50%) scale(1.05); } }
+                @keyframes spin { 0% { transform: translate(-50%, -50%) rotate(0deg); } 100% { transform: translate(-50%, -50%) rotate(360deg); } }
+                @keyframes kenburns { 0% { transform: scale(1.1); } 100% { transform: scale(1); } }
+                @keyframes fade-in { 0% { opacity: 0.5; } 100% { opacity: 1; } }
+                @keyframes slide-in-bottom { 0% { transform: translateY(20px); opacity: 0.7; } 100% { transform: translateY(0); opacity: 1; } }
+                @keyframes slide-in-top { 0% { transform: translateY(-20px); opacity: 0.7; } 100% { transform: translateY(0); opacity: 1; } }
+            </style>
+            <div class="ia-container format-${format}">
+                ${urls.background ? `<img src="${urls.background}" class="ia-bg ${anims.background}">` : ''}
+                ${urls.logo ? `<img src="${urls.logo}" class="ia-logo ${anims.logo}">` : ''}
+                ${urls.element1 ? `<img src="${urls.element1}" class="ia-el1 ${anims.element1}">` : ''}
+            </div>
+        `;
+
+        const selectedPlayerUrl = iaPlayerSelect.value;
+        localStorage.setItem('dynamicContent', contentCode);
+        window.location.href = selectedPlayerUrl;
+
+        iaGenerateButton.textContent = 'Gerar Mídia';
+        iaGenerateButton.disabled = false;
+        iaModal.classList.remove('visible');
+    });
+
+    function getYouTubeId(url) {
+        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=|shorts\/)([^#&?]*).*/;
+        const match = url.match(regExp);
+        return (match && match[2] && match[2].length === 11) ? match[2] : null;
+    }
+    function getDriveId(url) {
+        const regExp = /\/file\/d\/([a-zA-Z0-9_-]+)/;
+        const match = url.match(regExp);
+        return match ? match[1] : null;
+    }
+    function getVimeoId(url) {
+        const regExp = /vimeo\.com\/(?:video\/)?(\d+)/;
+        const match = url.match(regExp);
+        return match ? match[1] : null;
+    }
+</script>
+</body>
+</html>

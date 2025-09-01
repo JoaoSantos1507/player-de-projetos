@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Comercial Premium</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    /* Estilos Globais e do Player */
+    html, body {
+      margin: 0; padding: 0; background: black; overflow: hidden;
+      width: 100vw; height: 100vh; font-family: 'Montserrat', sans-serif;
+      display: flex; justify-content: center; align-items: center;
+    }
+    #player-wrapper {
+      display: flex; flex-direction: row;
+      width: 1920px; height: 768px;
+      background: black; position: relative;
+      box-shadow: 0 0 20px rgba(0,0,0,0.8);
+      transform-origin: center center;
+    }
+    #mainMediaWrapper { width: 1400px; height: 100%; background: black; position: relative; }
+    #media, #fallback { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; }
+    #fallback { display: none; }
+    #barra {
+      position: absolute;
+      bottom: 12px;
+      /* AJUSTE DE POSICIONAMENTO: Ancora a barra pelas laterais */
+      left: 2.5%;
+      right: 2.5%;
+      background: rgb(0 0 0 / 75%);
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 21px;
+      font-weight: 600;
+      color: #ffffff;
+      border-radius: 7px;
+      z-index: 10;
+      transition: left 0.3s ease-in-out; /* Anima a propriedade 'left' */
+    }
+    #infoAlternada { min-width: 600px; transition: opacity 0.6s ease; overflow: hidden; white-space: nowrap; }
+    #barra img { height: 37px; width: auto; border-radius: 0px; margin-right: 10px; }
+    #barra div:last-child { display: flex; align-items: center; gap: 8px; }
+    #sideMediaWrapper {
+      width: 520px; height: 100%; background: #111; color: white;
+      padding: 30px 20px; box-sizing: border-box;
+      position: relative; display: flex;
+      justify-content: center; align-items: center;
+    }
+    .info-box {
+      display: none; flex-direction: column; gap: 12px;
+      background: #0f1218; border-radius: 16px; padding: 24px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+      align-items: center; justify-content: center;
+      width: 280px; animation: fade 0.5s ease-in-out;
+    }
+    .info-box.active {
+      display: flex;
+      min-height: 300px;
+    }
+    .info-box h2 { font-size: 20px; font-weight: 800; margin-bottom: 8px; text-transform: uppercase; text-align: center; }
+    .info-box p { font-size: 16px; margin: 0; display: flex; align-items: center; justify-content: flex-start; gap: 10px; width: 100%; }
+    .info-box .icon { width: 26px; height: 26px; }
+    .fonte-api { font-size: 11px; color: #aaa; margin-top: 8px; }
+    @keyframes fade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    #controls-container { position: fixed; top: 50%; left: 50%; z-index: 200; display: none; -webkit-transform: translate(-50%, -50%); transform: translate(-50%, -50%); }
+    .menu-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, 1fr); border: 1px solid #4a4e69; }
+    .menu-grid li { width: 160px; height: 130px; display: flex; justify-content: center; align-items: center; border: 1px solid #4a4e69; background-color: rgba(34, 34, 59, 0.95); cursor: pointer; transition: background-color 0.4s ease-in-out; }
+    .menu-grid li:hover { background-color: #4a4e69; }
+    .menu-grid li a { text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #FFF; font-size: 14px; text-transform: capitalize; text-align: center; width: 100%; height: 100%; padding: 5px; box-sizing: border-box;}
+    .menu-grid li i { margin-bottom: 15px; }
+    .icon-decorado {
+      width: 20px !important; height: 20px !important;
+      background: #ffffff;
+      padding: 4px;
+      border-radius: 6px !important;
+      filter: brightness(0.50) invert(1);
+      margin-right: 12px !important;
+    }
+    #cambioBox { text-align: center; }
+    #cambioBox .content { text-align: left; display: inline-block; }
+    .info-box-header, .info-box-footer { text-align: center; }
+    #cambioBox .content, #climaBox .content { display: inline-block; text-align: left; }
+    #transitoBox .content { display: flex; flex-direction: column; align-items: center; }
+  </style>
+</head>
+<body>
+
+  <div id="player-wrapper">
+    <div id="mainMediaWrapper">
+      <video id="media" autoplay muted playsinline></video>
+      <img id="fallback">
+      <div id="barra">
+        <div id="infoAlternada">Carregando...</div>
+        <div>
+          <img src="../img/logo-branca.png" alt="Logo">
+          <span id="hora"></span>
+        </div>
+      </div>
+    </div>
+    <div id="sideMediaWrapper">
+      <div class="info-box active" id="climaBox"><p>Carregando clima...</p></div>
+      <div class="info-box" id="transitoBox"><p>Carregando trânsito...</p></div>
+      <div class="info-box" id="cambioBox"><p>Carregando câmbio...</p></div>
+    </div>
+  </div>
+
+  <input type="file" id="mediaInput" accept="video/mp4,image/*" multiple onchange="addMedia(event)" style="display: none;">
+  
+  <div id="controls-container">
+    <ul class="menu-grid">
+      <li><a href="#" onclick="document.getElementById('mediaInput').click()"><i class="fa fa-plus fa-2x"></i>Add Mídia</a></li>
+      <li><a href="#" onclick="nextMedia()"><i class="fa fa-forward fa-2x"></i>Próxima</a></li>
+      <li><a href="#" onclick="reloadMidia()"><i class="fa fa-sync-alt fa-2x"></i>Recarregar</a></li>
+      <li><a href="#" onclick="resetMidias()"><i class="fa fa-trash fa-2x"></i>Resetar</a></li>
+      <li><a href="#" onclick="toggleControls()"><i class="fa fa-eye-slash fa-2x"></i>Ocultar Menu</a></li>
+      <li><a href="#" onclick="toggleBar()"><i class="fa fa-bars fa-2x"></i>Alternar Barra</a></li>
+      <li><a href="#" onclick="toggleFullscreen()"><i class="fa fa-expand fa-2x"></i>Tela Cheia</a></li>
+      <li><a href="#" onclick="rotatePlayer()"><i class="fa fa-redo fa-2x"></i>Rotacionar</a></li>
+      <li><a href="#" onclick="zoomIn()"><i class="fa fa-search-plus fa-2x"></i>Zoom +</a></li>
+      <li><a href="#" onclick="zoomOut()"><i class="fa fa-search-minus fa-2x"></i>Zoom -</a></li>
+      <li><a href="#" onclick="ajustarLarguraBarra('decrease')"><i class="fa fa-compress-arrows-alt fa-2x"></i>Largura Barra -</a></li>
+      <li><a href="#" onclick="ajustarLarguraBarra('increase')"><i class="fa fa-arrows-alt-h fa-2x"></i>Largura Barra +</a></li>
+      <li><a href="#" onclick="moveTemplate('up')"><i class="fa fa-arrow-up fa-2x"></i>Mover Cima</a></li>
+      <li><a href="#" onclick="moveTemplate('down')"><i class="fa fa-arrow-down fa-2x"></i>Mover Baixo</a></li>
+      <li><a href="#" onclick="moveTemplate('left')"><i class="fa fa-arrow-left fa-2x"></i>Mover Esq.</a></li>
+      <li><a href="#" onclick="moveTemplate('right')"><i class="fa fa-arrow-right fa-2x"></i>Mover Dir.</a></li>
+      <li><a href="#" onclick="stretchTemplate('horizontal+')"><i class="fa fa-arrows-alt-h fa-2x"></i>Largura +</a></li>
+      <li><a href="#" onclick="stretchTemplate('horizontal-')"><i class="fa fa-compress-arrows-alt fa-2x"></i>Largura -</a></li>
+      <li><a href="#" onclick="stretchTemplate('vertical+')"><i class="fa fa-arrows-alt-v fa-2x"></i>Altura +</a></li>
+      <li><a href="#" onclick="stretchTemplate('vertical-')"><i class="fa fa-compress-arrows-alt fa-2x"></i>Altura -</a></li>
+    </ul>
+  </div>
+
+<script>
+    // --- VARIÁVEIS GLOBAIS ---
+    const wrapper = document.getElementById('player-wrapper');
+    const media = document.getElementById('media');
+    const fallback = document.getElementById('fallback');
+    const mediaInput = document.getElementById('mediaInput');
+    const controlsContainer = document.getElementById('controls-container');
+    const infoAlternadaEl = document.getElementById('infoAlternada');
+    
+    let mainPlaylist = [], mainIndex = 0;
+    let zoom = 1, rotation = 0, offsetX = 0, offsetY = 0;
+
+    // --- LÓGICA DE MÍDIA E CONTROLES ---
+    function addMedia(event) {
+        const files = Array.from(event.target.files);
+        if (files.length === 0) return;
+        const playlistEstavaVazia = mainPlaylist.length === 0;
+        mainPlaylist = mainPlaylist.concat(files);
+        if (playlistEstavaVazia) {
+            mainIndex = 0;
+            loadMainMedia();
+        }
+    }
+    function loadMainMedia() {
+        if (mainPlaylist.length === 0) return;
+        const file = mainPlaylist[mainIndex];
+        const url = URL.createObjectURL(file);
+        if (file.type.startsWith('video')) {
+            fallback.style.display = 'none';
+            media.src = url;
+            media.style.display = 'block';
+            media.loop = false;
+            media.play();
+        } else if (file.type.startsWith('image')) {
+            media.pause();
+            media.style.display = 'none';
+            fallback.src = url;
+            fallback.style.display = 'block';
+        }
+    }
+    media.addEventListener('ended', () => { nextMedia(); });
+    function nextMedia() { if (mainPlaylist.length > 0) { mainIndex = (mainIndex + 1) % mainPlaylist.length; loadMainMedia(); } }
+    function reloadMidia() { if (mainPlaylist.length > 0) { mainIndex = 0; loadMainMedia(); } }
+    function resetMidias() { mainPlaylist = []; mainIndex = 0; media.pause(); media.removeAttribute('src'); fallback.style.display = 'none'; fallback.removeAttribute('src'); media.load(); }
+
+    // --- FUNÇÕES DE MANIPULAÇÃO DO PLAYER ---
+    function updateWrapperTransform() { wrapper.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${zoom}) rotate(${rotation}deg)`; }
+    function zoomIn() { zoom += 0.1; updateWrapperTransform(); }
+    function zoomOut() { zoom = Math.max(0.1, zoom - 0.1); updateWrapperTransform(); }
+    function rotatePlayer() { rotation = (rotation + 90) % 360; updateWrapperTransform(); }
+    function moveTemplate(direcao) {
+        if (direcao === 'up') offsetY -= 10; if (direcao === 'down') offsetY += 10;
+        if (direcao === 'left') offsetX -= 10; if (direcao === 'right') offsetX += 10;
+        updateWrapperTransform();
+    }
+    function stretchTemplate(tipo) {
+        let width = wrapper.offsetWidth; let height = wrapper.offsetHeight;
+        if (tipo === 'horizontal+') wrapper.style.width = `${width + 20}px`;
+        if (tipo === 'horizontal-') wrapper.style.width = `${Math.max(1000, width - 20)}px`;
+        if (tipo === 'vertical+') wrapper.style.height = `${height + 20}px`;
+        if (tipo === 'vertical-') wrapper.style.height = `${Math.max(400, height - 20)}px`;
+    }
+    
+    // --- FUNÇÕES DE CONTROLE DA INTERFACE ---
+    function toggleFullscreen() { if (!document.fullscreenElement) { document.documentElement.requestFullscreen(); } else { document.exitFullscreen(); } }
+    function toggleControls() { controlsContainer.style.display = (controlsContainer.style.display === 'block') ? 'none' : 'block'; }
+    function toggleBar() { document.getElementById('barra').style.display = document.getElementById('barra').style.display === 'none' ? 'flex' : 'none'; }
+    
+    // FUNÇÃO ATUALIZADA: Ajusta a propriedade 'left' para redimensionar a barra
+    function ajustarLarguraBarra(action) {
+        const barra = document.getElementById('barra');
+        // O valor padrão de 'left' vem do CSS (2.5%)
+        let currentLeft = parseFloat(barra.style.left);
+        if (isNaN(currentLeft)) {
+            currentLeft = 2.5;
+        }
+
+        if (action === 'increase') { // Aumentar largura = diminuir a margem esquerda
+            // Diminui o valor de 'left', com um limite mínimo de 0
+            currentLeft = Math.max(0, currentLeft - 1);
+        } else if (action === 'decrease') { // Diminuir largura = aumentar a margem esquerda
+            // Aumenta o valor de 'left', com um limite máximo de 25 
+            currentLeft = Math.min(25, currentLeft + 1);
+        }
+        
+        barra.style.left = `${currentLeft}%`;
+    }
+
+    document.addEventListener('keydown', (e) => { if (e.key.toLowerCase() === 'm') { toggleControls(); } });
+    
+    // --- LÓGICA DAS BARRAS DE INFORMAÇÃO ---
+    function startPlayerLogic() {
+        const atualizarHora = () => {
+            const horaEl = document.getElementById('hora');
+            if (!horaEl) return;
+            const agora = new Date();
+            const h = agora.getHours().toString().padStart(2, '0');
+            const m = agora.getMinutes().toString().padStart(2, '0');
+            horaEl.textContent = `${h}:${m}`;
+        };
+        
+        const atualizarClima = async () => {
+            const climaBox = document.getElementById('climaBox');
+            try {
+                const res = await fetch('https://api.openweathermap.org/data/2.5/weather?q=S%C3%A3o%20Paulo,BR&units=metric&lang=pt_br&appid=6f0256ac327cd1da61b194a422630247');
+                const data = await res.json();
+                const descricao = data.weather[0].description;
+                const temp = data.main.temp;
+                const icon = `https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png`;
+                climaBox.innerHTML = `<h2>Clima</h2><p><img class="icon" src="${icon}"> ${descricao.charAt(0).toUpperCase() + descricao.slice(1)}</p><p><img class="icon" src="https://cdn-icons-png.flaticon.com/512/1684/1684375.png"> ${temp.toFixed(1)}°C</p><span class="fonte-api">Fonte: OpenWeatherMap</span>`;
+            } catch (e) {
+                climaBox.innerHTML = `<h2>Clima</h2><p>Não foi possível carregar.</p>`;
+            }
+        };
+
+        const atualizarTransito = () => {
+            const transitoBox = document.getElementById('transitoBox');
+            const totalKm = 38; // Valor "fake" para a demonstração
+            transitoBox.innerHTML = `
+                <div class="info-box-header">Trânsito agora</div>
+                <div class="content">
+                    <span style="color: white; font-size: 16px; font-weight: 600;">São Paulo</span>
+                    <div class="icon-wrapper" style="background-color: #fecb00; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
+                        <img src="https://cdn-icons-png.flaticon.com/512/854/854878.png" alt="carro" class="icon" style="width: 30px; height: 30px; filter: invert(1);">
+                    </div>
+                    <span class="label" style="color: #aaa; font-size: 13px;">Lentidão</span>
+                    <span class="value" style="font-size: 28px; font-weight: bold;">${totalKm} Km</span>
+                </div>
+                <div class="info-box-footer">Fonte: CET</div>`;
+        };
+
+        const atualizarCambio = async () => {
+            const cambioBox = document.getElementById('cambioBox');
+            try {
+                const res = await fetch('https://economia.awesomeapi.com.br/last/USD-BRL,EUR-BRL');
+                const data = await res.json();
+                const usd = parseFloat(data.USDBRL.bid).toFixed(2);
+                const usdChange = parseFloat(data.USDBRL.pctChange).toFixed(2);
+                const eur = parseFloat(data.EURBRL.bid).toFixed(2);
+                const eurChange = parseFloat(data.EURBRL.pctChange).toFixed(2);
+                const corUsd = usdChange >= 0 ? '#2ecc71' : '#e74c3c';
+                const corEur = eurChange >= 0 ? '#2ecc71' : '#e74c3c';
+                const sinalUsd = usdChange >= 0 ? '+' : '';
+                const sinalEur = eurChange >= 0 ? '+' : '';
+                cambioBox.innerHTML = `<h2>Câmbio</h2><p>Dólar: <span style="font-weight: bold;">R$ ${usd}</span> <span style="background-color:${corUsd}; color:white; padding:2px 5px; border-radius:4px; font-size:12px;">${sinalUsd}${usdChange}%</span></p><p>Euro: <span style="font-weight: bold;">R$ ${eur}</span> <span style="background-color:${corEur}; color:white; padding:2px 5px; border-radius:4px; font-size:12px;">${sinalEur}${eurChange}%</span></p><span class="fonte-api">Fonte: Awesome API</span>`;
+            } catch (e) {
+                cambioBox.innerHTML = `<h2>Câmbio</h2><p>Não foi possível carregar.</p>`;
+            }
+        };
+
+        const iniciarCarrosselLateral = () => {
+            const boxes = document.querySelectorAll('.info-box');
+            let index = 0;
+            setInterval(() => {
+                if (document.hidden) return;
+                boxes.forEach(box => box.classList.remove('active'));
+                index = (index + 1) % boxes.length;
+                boxes[index].classList.add('active');
+            }, 7000);
+        };
+
+        const iniciarCarrosselBarraInferior = () => {
+            const informacoes = [
+                '<div style="font-size: 15px; display: flex; align-items: center; gap: 8px;"><img src="https://cdn-icons-png.flaticon.com/512/1675/1675836.png" class="icon-decorado"> <span style="color: #aeb0b5; font-weight: 600;">ÍNDICES</span> <span>IBOVESPA</span> <span style="color: #2ecc71;">+0,40%</span> <span style="background-color: #2ecc71; color: white; font-size: 11px; padding: 2px 6px; border-radius: 4px;">137.824</span></div>',
+                '<div style="font-size: 15px; display: flex; align-items: center; gap: 8px;"><img src="https://cdn-icons-png.flaticon.com/512/825/825519.png" class="icon-decorado"> <span style="color: #aeb0b5; font-weight: 600;">CRIPTOMOEDAS</span> <span>BITCOIN</span> <span style="font-size: 18px; font-weight: bold;">R$ 345.243</span> <span style="background-color: #e74c3c; color: white; font-size: 11px; padding: 2px 6px; border-radius: 4px;">-1.88%</span></div>',
+            ];
+            let infoIndex = 0;
+            const atualizar = () => {
+                if (!infoAlternadaEl) return;
+                infoAlternadaEl.style.opacity = 0;
+                setTimeout(() => {
+                    infoAlternadaEl.innerHTML = informacoes[infoIndex];
+                    infoAlternadaEl.style.opacity = 1;
+                    infoIndex = (infoIndex + 1) % informacoes.length;
+                }, 500);
+            };
+            atualizar();
+            setInterval(atualizar, 4000);
+        };
+        
+        // Inicia todas as funcionalidades do player
+        atualizarHora(); setInterval(atualizarHora, 60000);
+        atualizarClima(); setInterval(atualizarClima, 300000);
+        atualizarTransito();
+        atualizarCambio(); setInterval(atualizarCambio, 180000);
+        iniciarCarrosselLateral();
+        iniciarCarrosselBarraInferior();
+    }
+    
+    // Bloco Universal para Conteúdo Dinâmico
+    document.addEventListener('DOMContentLoaded', () => {
+        const dynamicContent = localStorage.getItem('dynamicContent');
+        if (dynamicContent) {
+            const mediaContainer = document.getElementById('mainMediaWrapper');
+            if (mediaContainer) {
+                const videoTag = mediaContainer.querySelector('video');
+                const fallbackImg = mediaContainer.querySelector('#fallback');
+                if (videoTag) videoTag.style.display = 'none';
+                if (fallbackImg) fallbackImg.style.display = 'none';
+                
+                const contentWrapper = document.createElement('div');
+                contentWrapper.style.cssText = 'position:absolute; top:0; left:0; width:100%; height:100%; z-index:1;';
+                contentWrapper.innerHTML = dynamicContent;
+                const overlay = document.createElement('div');
+                overlay.style.cssText = 'position:absolute; top:0; left:0; width:100%; height:100%; z-index:2;';
+                mediaContainer.appendChild(contentWrapper);
+                mediaContainer.appendChild(overlay);
+            }
+            localStorage.removeItem('dynamicContent');
+            localStorage.removeItem('dynamicFormat');
+        }
+        
+        startPlayerLogic();
+    });
+
+    window.onload = function() {
+        const content = localStorage.getItem('dynamicContent');
+        const scriptSrc = localStorage.getItem('dynamicScript');
+        const container = document.getElementById('media-container');
+
+        if (content && container) {
+            container.innerHTML = content;
+            localStorage.removeItem('dynamicContent');
+
+            if (scriptSrc) {
+                const scriptTag = document.createElement('script');
+                scriptTag.async = true;
+                scriptTag.src = scriptSrc;
+                document.body.appendChild(scriptTag);
+                localStorage.removeItem('dynamicScript');
+            }
+        }
+    };
+</script>
+
+</body>
+</html>
