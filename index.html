@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Lançador de Players</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
   
   <style>
@@ -16,14 +16,11 @@
         --dark-border: #555; 
         --text-light: #e0e0e0; 
         --text-muted: #aaa; 
+        --ia-color: #8e44ad;
     }
     
-    html {
-        box-sizing: border-box;
-    }
-    *, *:before, *:after {
-        box-sizing: inherit;
-    }
+    html { box-sizing: border-box; }
+    *, *:before, *:after { box-sizing: inherit; }
 
     body { 
         margin: 0; 
@@ -35,15 +32,20 @@
         height: 100vh; 
         overflow: hidden; 
     }
+
     #main-container { 
         display: flex; 
-        width: 200vw; 
+        width: 300vw; 
         position: relative; 
         transition: transform 0.6s cubic-bezier(0.77, 0, 0.175, 1); 
     }
-    #main-container.yt-panel-active { 
+    #main-container.source-choice-active { 
         transform: translateX(-100vw); 
     }
+    #main-container.url-input-active {
+        transform: translateX(-200vw);
+    }
+
     .panel { 
         width: 100vw; 
         height: 100vh; 
@@ -61,7 +63,7 @@
         box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
         text-align: center; 
         width: 100%;
-        max-width: 900px; /* Aumenta a largura máxima no desktop */
+        max-width: 900px; 
     }
     .logo { 
         max-width: 400px; 
@@ -87,6 +89,7 @@
         flex-direction: column; 
         align-items: center; 
         justify-content: center; 
+        cursor: pointer;
     }
     .player-link:hover, .player-link:focus { 
         transform: translateY(-0.25em); 
@@ -98,7 +101,16 @@
         font-size: 2em; 
         margin-bottom: 15px; 
     }
-    #yt-trigger-button { 
+
+    #ia-button {
+        grid-column: 1 / -1; 
+        border-color: var(--ia-color);
+    }
+    #ia-button:hover, #ia-button:focus {
+        box-shadow: 0 0.5em 0.5em -0.4em var(--ia-color);
+    }
+    
+    #media-trigger-button { 
         position: absolute; 
         top: 20px; 
         left: 20px; 
@@ -113,7 +125,7 @@
         transition: background-color 0.3s; 
         z-index: 10; 
     }
-    #yt-trigger-button:hover { 
+    #media-trigger-button:hover { 
         background-color: var(--primary-color); 
     }
     .back-button { 
@@ -125,170 +137,271 @@
         color: var(--text-muted); 
     }
     
-    /* Regras para o painel do YouTube */
-    #yt-panel .container-content {
-        max-width: 500px; /* Define a largura máxima no desktop, mas permite diminuir */
+    .form-panel .container-content, .choice-panel .container-content {
+        max-width: 500px;
     }
-    #yt-panel .form-group { 
-        text-align: left; 
-        margin-bottom: 15px; 
+    .form-panel .form-group { text-align: left; margin-bottom: 15px; }
+    .form-panel label { display: block; margin-bottom: 5px; font-size: 14px; color: var(--text-muted); }
+    .form-panel input, .form-panel select, .form-panel button { 
+        width: 100%; padding: 12px; border-radius: 5px; border: 1px solid var(--dark-border); 
+        background-color: #333; color: white; font-size: 16px; 
     }
-    #yt-panel label { 
-        display: block; 
-        margin-bottom: 5px; 
-        font-size: 14px; 
-        color: var(--text-muted); 
+    .form-panel button { 
+        background-color: #fd5d0d; cursor: pointer; font-weight: bold; margin-top: 10px;
     }
-    #yt-panel input, #yt-panel select, #yt-panel button { 
-        width: 100%; 
-        padding: 12px; 
-        border-radius: 5px; 
-        border: 1px solid var(--dark-border); 
-        background-color: #333; 
-        color: white; 
-        font-size: 16px; 
-    }
-    #yt-panel button { 
-        background-color: #fd5d0d;
-        cursor: pointer;
-        font-weight: bold;
-        margin-top: 10px;
-    }
-    #yt-panel button:hover { 
-        background-color: #fd5d0d; 
+    .form-panel button:hover { background-color: #e8540a; }
+
+    .source-choices {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
     }
 
-    /* --- Início das Regras de Responsividade --- */
-
-    /* Tablets e telas menores */
     @media (max-width: 992px) {
-        .player-links {
-            grid-template-columns: repeat(2, 1fr); /* 2 colunas */
-        }
-        .container-content {
-            padding: 40px 30px;
-        }
+        .player-links { grid-template-columns: repeat(2, 1fr); }
+        .container-content { padding: 40px 30px; }
     }
-
-    /* Celulares */
     @media (max-width: 768px) {
-        body {
-            overflow-y: auto; /* Permite rolar a tela se o conteúdo for grande */
-            align-items: flex-start;
-            padding-top: 5vh;
-        }
-        .panel {
-            height: auto;
-            min-height: 95vh;
-            align-items: flex-start;
-        }
-        .container-content {
-            width: 90%; /* Ocupa 90% da largura da tela */
-            padding: 30px 20px;
-        }
-        .logo {
-            max-width: 280px;
-        }
-        .player-links {
-            grid-template-columns: 1fr; /* 1 coluna */
-            gap: 15px;
-        }
+        body { overflow-y: auto; align-items: flex-start; padding-top: 5vh; }
+        .panel { height: auto; min-height: 95vh; align-items: flex-start; }
+        .container-content { width: 90%; padding: 30px 20px; }
+        .logo { max-width: 280px; }
+        .player-links, .source-choices { grid-template-columns: 1fr; gap: 15px; }
     }
   </style>
 </head>
 <body>
 
   <div id="main-container">
+
     <div id="selection-panel" class="panel">
-      <div class="container-content">
-        <div id="yt-trigger-button" title="Carregar Mídia do YouTube"><i class="fas fa-link"></i></div>
-        <img src="img/01.png" alt="Logo da Empresa" class="logo">
-        <div class="player-links">
-            <a href="Players/Residencial.html" class="player-link"><i class="far fa-building"></i>Residencial</a>
-            <a href="Players/Comercial.html" class="player-link"><i class="far fa-handshake"></i>Comercial</a>
-            <a href="Players/Comercial Premium.html" class="player-link"><i class="far fa-gem"></i>Premium</a>
-            <a href="Players/Comercial.html" class="player-link"><i class="fas fa-plane"></i>Aeroporto</a>
-            <a href="Players/Tvminuto.html" class="player-link"><i class="fas fa-tv"></i>TV Minuto</a>
-            <a href="Players/vertical.html" class="player-link"><i class="fas fa-mobile-alt"></i>Totem</a>
-            <a href="Players/vertical.html" class="player-link"><i class="fas fa-train"></i>Mub CPTM</a>
-            <a href="Players/vertical.html" class="player-link"><i class="fas fa-bus-alt"></i>Abrigo</a>
-            <a href="Players/led.html" class="player-link"><i class="far fa-square"></i>LEDs</a>
-            <a href="Players/teste de midia.html" class="player-link"><i class="fas fa-vial"></i>Teste de Mídia</a>
-            <a href="Players/iTo.html" class="player-link"><i class="fas fa-cogs"></i>iTo</a>
+        <div class="container-content">
+            <div id="media-trigger-button" title="Carregar Mídia Online"><i class="fas fa-link"></i></div>
+            <img src="img/01.png" alt="Logo da Empresa" class="logo">
+            <div class="player-links">
+                <a href="Players/Residencial.html" class="player-link"><i class="far fa-building"></i>Residencial</a>
+                <a href="Players/Comercial.html" class="player-link"><i class="far fa-handshake"></i>Comercial</a>
+                <a href="Players/Comercial Premium.html" class="player-link"><i class="far fa-gem"></i>Premium</a>
+                <a href="Players/Comercial.html" class="player-link"><i class="fas fa-plane"></i>Aeroporto</a>
+                <a href="Players/Tvminuto.html" class="player-link"><i class="fas fa-tv"></i>TV Minuto</a>
+                <a href="Players/vertical.html" class="player-link"><i class="fas fa-mobile-alt"></i>Totem</a>
+                <a href="Players/vertical.html" class="player-link"><i class="fas fa-train"></i>Mub CPTM</a>
+                <a href="Players/vertical.html" class="player-link"><i class="fas fa-bus-alt"></i>Abrigo</a>
+                <a href="Players/led.html" class="player-link"><i class="far fa-square"></i>LEDs</a>
+                <a id="ia-button" class="player-link"><i class="fas fa-robot"></i>Player Inteligente (IA)</a>
+            </div>
         </div>
-      </div>
     </div>
 
-    <div id="yt-panel" class="panel">
-      <div class="container-content">
-        <div class="back-button" title="Voltar"><i class="fas fa-arrow-left"></i></div>
-        <h2>Carregar Mídia Externa</h2>
-        <div class="form-group">
-            <label for="youtube-url">URL do Vídeo ou Short do YouTube</label>
-            <input type="text" id="youtube-url" placeholder="Cole o link aqui">
+    <div id="source-choice-panel" class="panel choice-panel">
+        <div class="container-content">
+            <div class="back-button" title="Voltar"><i class="fas fa-arrow-left"></i></div>
+            <h2>Escolha a Fonte da Mídia</h2>
+            <div class="source-choices">
+                <a class="player-link" data-source="YouTube"><i class="fa-brands fa-youtube"></i>YouTube</a>
+                <a class="player-link" data-source="Drive"><i class="fa-brands fa-google-drive"></i>Google Drive</a>
+                <a class="player-link" data-source="Instagram"><i class="fa-brands fa-instagram"></i>Instagram Reels</a>
+                <a class="player-link" data-source="MP4"><i class="fa-solid fa-file-video"></i>Vídeo Direto (.MP4)</a>
+                <a href="Players/teste de midia.html" class="player-link"><i class="fa-solid fa-file-pdf"></i>Documento PDF</a>
+                <a class="player-link" data-source="Vimeo"><i class="fa-brands fa-vimeo-v"></i>Vimeo</a>
+            </div>
         </div>
-        <div class="form-group">
-            <label for="player-select">Reproduzir em qual player?</label>
-            <select id="player-select">
-                <option value="Players/residencial.html" data-format="vertical">Residencial</option>
-                <option value="Players/comercial.html" data-format="horizontal">Comercial</option>
-                <option value="Players/Comercial Premium.html" data-format="horizontal">Comercial Premium</option>
-                <option value="Players/comercial.html" data-format="horizontal">Aeroporto</option>
-                <option value="Players/comercial.html" data-format="horizontal">TV Minuto</option>
-                <option value="Players/vertical.html" data-format="vertical">Totem Shopping</option>
-                <option value="Players/vertical.html" data-format="vertical">Mub CPTM</option>
-                <option value="Players/vertical.html" data-format="vertical">Abrigo</option>
-                <option value="Players/led.html" data-format="horizontal">LEDs</option>
-            </select>
-        </div>
-        <button id="play-button">Reproduzir no Player</button>
-      </div>
     </div>
+
+    <div id="url-input-panel" class="panel form-panel">
+        <div class="container-content">
+            <div class="back-button" title="Voltar"><i class="fas fa-arrow-left"></i></div>
+            <h2 id="url-panel-title">Carregar Mídia</h2>
+            <div class="form-group">
+                <label for="media-url" id="url-panel-label">URL da Mídia</label>
+                <input type="text" id="media-url" placeholder="Cole o link aqui">
+            </div>
+            <div class="form-group" id="instagram-converter-group" style="display: none;">
+                <button id="convert-button">Converter URL</button>
+                <label for="converted-url">URL Convertida (.MP4)</label>
+                <input type="text" id="converted-url" readonly placeholder="Aguardando conversão...">
+            </div>
+            <div class="form-group">
+                <label for="player-select">Reproduzir em qual ambiente?</label>
+                <select id="player-select">
+                    <option value="Players/residencial.html" data-format="vertical">Residencial</option>
+                    <option value="Players/comercial.html" data-format="horizontal">Comercial</option>
+                    <option value="Players/Comercial Premium.html" data-format="horizontal">Comercial Premium</option>
+                    <option value="Players/comercial.html" data-format="horizontal">Aeroporto</option>
+                    <option value="Players/comercial.html" data-format="horizontal">TV Minuto</option>
+                    <option value="Players/vertical.html" data-format="vertical">Totem Shopping</option>
+                    <option value="Players/vertical.html" data-format="vertical">Mub CPTM</option>
+                    <option value="Players/vertical.html" data-format="vertical">Abrigo</option>
+                    <option value="Players/led.html" data-format="horizontal">LEDs</option>
+                </select>
+            </div>
+            <button id="play-button">Reproduzir no Player</button>
+        </div>
+    </div>
+
   </div>
 
 <script>
     const mainContainer = document.getElementById('main-container');
-    const ytTriggerButton = document.getElementById('yt-trigger-button');
-    const backButton = document.querySelector('.back-button');
-    const playButton = document.getElementById('play-button');
-    const playerSelect = document.getElementById('player-select');
-    const youtubeUrlInput = document.getElementById('youtube-url');
+    let selectedSource = '';
 
-    ytTriggerButton.addEventListener('click', () => mainContainer.classList.add('yt-panel-active'));
-    backButton.addEventListener('click', () => mainContainer.classList.remove('yt-panel-active'));
+    const sourceChoicePanel = document.getElementById('source-choice-panel');
+    const urlInputPanel = document.getElementById('url-input-panel');
+
+    const mediaTriggerButton = document.getElementById('media-trigger-button');
+    const backButtons = document.querySelectorAll('.back-button');
+    const sourceChoiceButtons = document.querySelectorAll('#source-choice-panel .player-link');
+    const playButton = document.getElementById('play-button');
+
+    const mediaUrlInput = document.getElementById('media-url');
+    const playerSelect = document.getElementById('player-select');
+    const urlPanelTitle = document.getElementById('url-panel-title');
+    const urlPanelLabel = document.getElementById('url-panel-label');
+
+    const instagramConverterGroup = document.getElementById('instagram-converter-group');
+    const convertButton = document.getElementById('convert-button');
+    const convertedUrlInput = document.getElementById('converted-url');
+
+    mediaTriggerButton.addEventListener('click', () => mainContainer.classList.add('source-choice-active'));
+
+    backButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            if (mainContainer.classList.contains('url-input-active')) {
+                mainContainer.classList.remove('url-input-active');
+                mainContainer.classList.add('source-choice-active');
+            } else if (mainContainer.classList.contains('source-choice-active')) {
+                mainContainer.classList.remove('source-choice-active');
+            }
+        });
+    });
+
+    sourceChoiceButtons.forEach(button => {
+        if (button.dataset.source) {
+            button.addEventListener('click', () => {
+                selectedSource = button.dataset.source;
+                let sourceName = button.textContent;
+                
+                urlPanelTitle.textContent = `Carregar Mídia: ${sourceName}`;
+                urlPanelLabel.textContent = `URL do ${sourceName}`;
+                mediaUrlInput.value = '';
+                mediaUrlInput.focus();
+
+                if (selectedSource === 'Instagram') {
+                    instagramConverterGroup.style.display = 'block';
+                    playButton.style.display = 'none';
+                } else {
+                    instagramConverterGroup.style.display = 'none';
+                    playButton.style.display = 'block';
+                }
+
+                mainContainer.classList.remove('source-choice-active');
+                mainContainer.classList.add('url-input-active');
+            });
+        }
+    });
+
+    convertButton.addEventListener('click', async () => {
+        const reelUrl = mediaUrlInput.value.trim();
+        if (!reelUrl) {
+            alert('Por favor, insira a URL do Reel.');
+            return;
+        }
+
+        convertButton.textContent = 'Convertendo...';
+        convertButton.disabled = true;
+
+        try {
+            // *** LINHA ALTERADA PARA CONECTAR COM O SERVIDOR ONLINE ***
+            const serverAddress = 'https://player-conversor.onrender.com/get-video-url';
+            
+            const response = await fetch(serverAddress, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url: reelUrl }),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Falha na conversão.');
+            }
+
+            const data = await response.json();
+            convertedUrlInput.value = data.video_url;
+            playWithConvertedUrl(data.video_url);
+
+        } catch (error) {
+            alert(`Erro: ${error.message}`);
+        } finally {
+            convertButton.textContent = 'Converter URL';
+            convertButton.disabled = false;
+        }
+    });
+
+    function playWithConvertedUrl(mp4Url) {
+         if (!mp4Url) return;
+        const contentCode = `<video src="${mp4Url}" width="100%" height="100%" autoplay loop muted playsinline style="object-fit: cover;"></video>`;
+        const selectedOption = playerSelect.options[playerSelect.selectedIndex];
+        const selectedPlayerUrl = selectedOption.value;
+        localStorage.setItem('dynamicContent', contentCode);
+        window.location.href = selectedPlayerUrl;
+    }
+
+    playButton.addEventListener('click', () => {
+        const url = mediaUrlInput.value.trim();
+        if (!url) {
+            alert('Por favor, insira uma URL.');
+            return;
+        }
+
+        let contentCode = '';
+        
+        switch (selectedSource) {
+            case 'YouTube':
+                const youtubeId = getYouTubeId(url);
+                if (!youtubeId) { alert('URL do YouTube inválida.'); return; }
+                contentCode = `<iframe width="100%" height="100%" src="https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${youtubeId}&playsinline=1" title="YouTube" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+                break;
+            case 'Drive':
+                const driveId = getDriveId(url);
+                if (!driveId) { alert('URL do Google Drive inválida.'); return; }
+                contentCode = `<iframe src="https://drive.google.com/file/d/${driveId}/preview?usp=drivesdk&autoplay=1" width="100%" height="100%" allow="autoplay" frameborder="0" allowfullscreen></iframe>`;
+                break;
+            case 'MP4':
+                 contentCode = `<video src="${url}" width="100%" height="100%" autoplay loop muted playsinline style="object-fit: cover;"></video>`;
+                break;
+            case 'Vimeo':
+                const vimeoId = getVimeoId(url);
+                if (!vimeoId) { alert('URL do Vimeo inválida.'); return; }
+                contentCode = `<iframe src="https://player.vimeo.com/video/${vimeoId}?autoplay=1&loop=1&autopause=0&muted=1&controls=0" width="100%" height="100%" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>`;
+                break;
+            default:
+                alert('Fonte de mídia inválida.');
+                return;
+        }
+
+        if (contentCode) {
+            const selectedOption = playerSelect.options[playerSelect.selectedIndex];
+            const selectedPlayerUrl = selectedOption.value;
+            localStorage.setItem('dynamicContent', contentCode);
+            window.location.href = selectedPlayerUrl;
+        }
+    });
 
     function getYouTubeId(url) {
         const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=|shorts\/)([^#&?]*).*/;
         const match = url.match(regExp);
-        return (match && match[2].length === 11) ? match[2] : null;
+        return (match && match[2] && match[2].length === 11) ? match[2] : null;
     }
-
-    playButton.addEventListener('click', () => {
-        const url = youtubeUrlInput.value;
-        if (!url) {
-            alert('Por favor, insira uma URL do YouTube.');
-            return;
-        }
-
-        const videoId = getYouTubeId(url);
-        if (!videoId) {
-            alert('URL do YouTube inválida ou não foi possível extrair o ID.');
-            return;
-        }
-
-        const selectedOption = playerSelect.options[playerSelect.selectedIndex];
-        const selectedPlayerUrl = selectedOption.value;
-        const playerFormat = selectedOption.dataset.format;
-        
-        const embedUrl = `https://www.youtube.com/embed/${videoId}`;
-        const iframeCode = `<iframe width="100%" height="100%" src="${embedUrl}?autoplay=1&mute=1&controls=0&loop=1&playlist=${videoId}&playsinline=1" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
-        
-        localStorage.setItem('dynamicContent', iframeCode);
-        localStorage.setItem('dynamicFormat', playerFormat);
-
-        window.location.href = selectedPlayerUrl;
-    });
+    function getDriveId(url) {
+        const regExp = /\/file\/d\/([a-zA-Z0-9_-]+)/;
+        const match = url.match(regExp);
+        return match ? match[1] : null;
+    }
+    function getVimeoId(url) {
+        const regExp = /vimeo\.com\/(?:video\/)?(\d+)/;
+        const match = url.match(regExp);
+        return match ? match[1] : null;
+    }
 </script>
-
 </body>
 </html>
