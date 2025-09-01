@@ -35,34 +35,48 @@
       width: 100%; height: 100%; object-fit: cover;
     }
     
-    /* Barra de Informações */
+    /* --- ALTERAÇÃO 1: Estilos da #barra atualizados para o padrão do player Comercial --- */
     #barra {
       position: absolute; bottom: 97px; left: 50%;
-      width: 92%;
-      background: #252525;
-      opacity: 0.93;
+      width: 97%; /* Mais larga */
+      background: rgba(0, 0, 0, 0.75); /* Padrão Comercial */
       display: flex;
       justify-content: space-between; align-items: center;
-      padding: 20px 30px;
+      padding: 20px; /* Padrão Comercial */
       font-size: 20px; font-weight: 600; color: #ffffff;
       z-index: 200;
       -webkit-transform: translateX(-50%);
       transform: translateX(-50%);
-      -webkit-border-radius: 12px;
-      border-radius: 12px;
+      -webkit-border-radius: 26px; /* Padrão Comercial */
+      border-radius: 26px; /* Padrão Comercial */
       -webkit-transition: all 0.3s ease;
       transition: all 0.3s ease;
-      height: 60px; /* Altura fixa para manter o layout */
-      box-sizing: border-box; /* Garante que padding não aumente a altura total */
+      box-sizing: border-box; 
     }
-    #barra > div:first-child { /* Estilo para o nome do shopping */
-        white-space: nowrap; /* Evita que o texto quebre linha */
-        overflow: hidden; /* Oculta qualquer texto que exceda */
-        text-overflow: ellipsis; /* Adiciona "..." se o texto for muito longo */
-        flex-shrink: 0; /* Impede que ele encolha */
-        margin-right: 20px; /* Espaçamento entre o nome e o próximo elemento */
+    
+    /* Container para agrupar nome do shopping e info alternada */
+    #shopping-info-container {
+        display: flex;
+        align-items: center;
+        flex-grow: 1; /* Ocupa o espaço disponível */
+        overflow: hidden; /* Evita que o conteúdo vaze */
     }
-    #barra img { height: 40px; }
+
+    #shopping-nome { 
+        white-space: nowrap; 
+        overflow: hidden; 
+        text-overflow: ellipsis; 
+        flex-shrink: 0; 
+        margin-right: 25px; /* Espaçamento entre o nome e a informação */
+        font-size: 24px;
+    }
+    
+    /* --- ALTERAÇÃO 2: Classe para a logo, inspirada no player Comercial --- */
+    .logo-eletromidia {
+        height: 48px;
+        max-width: 200px;
+        object-fit: contain;
+    }
 
     /* Ícone no estilo dos players comerciais */
     .icon-decorado {
@@ -72,9 +86,9 @@
         padding: 5px;
         border-radius: 50%;
         filter: brightness(0.50) invert(1);
-        margin: 0 10px; /* Ajuste para encaixar melhor */
+        margin-right: 15px; /* Espaço entre ícone e texto */
         vertical-align: middle;
-        flex-shrink: 0; /* Impede que o ícone encolha */
+        flex-shrink: 0;
     }
 
     /* Marcadores de status (verde/vermelho) */
@@ -85,23 +99,21 @@
         color: white;
         border-radius: 5px;
         margin-left: 10px;
-        flex-shrink: 0; /* Impede que o marcador encolha */
+        flex-shrink: 0;
     }
     .info-marker.positivo { background-color: #2ecc71; }
     .info-marker.negativo { background-color: #e74c3c; }
     .info-marker.alerta { background-color: #f1c40f; }
     
     #shopping-info-alternada {
-        display: flex; /* Garante que os itens dentro dela fiquem na mesma linha */
-        align-items: center; /* Alinha verticalmente */
-        flex-grow: 1; /* Permite que ocupe o espaço disponível */
+        display: flex; 
+        align-items: center; 
         font-size: 20px;
         font-weight: 500;
         transition: opacity 0.5s ease;
-        white-space: nowrap; /* Impede que o conteúdo dentro dela quebre linha */
+        white-space: nowrap; 
         overflow: hidden;
         text-overflow: ellipsis;
-        justify-content: flex-start; /* Alinha o conteúdo à esquerda */
     }
 
     /* Estilos do Menu de Controles */
@@ -130,9 +142,7 @@
       <video id="media" autoplay muted loop playsinline></video>
       <img id="fallback" style="display: none;" />
       <div id="barra">
-        <div contenteditable="true" spellcheck="false" style="font-size: 24px;">Shopping Iguatemi</div>
-        <div id="shopping-info-alternada"></div> <img src="https://eletromidia.com.br/wp-content/themes/eletromidia/assets/images/logo-eletromidia-horizontal.png" alt="Logo">
-      </div>
+        </div>
     </div>
   </div>
 
@@ -205,20 +215,21 @@
     
     function atualizarHora() { const horaEl = document.getElementById('hora'); if(horaEl) { horaEl.textContent = new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}); } }
 
-    // --- FUNÇÃO DA BARRA DE SHOPPING (ATUALIZADA) ---
+    // --- ALTERAÇÃO 3: Função 'ativarBarraShopping' reescrita ---
     function ativarBarraShopping() {
         if (commercialBarInterval) clearInterval(commercialBarInterval);
-        
-        barra.style.background = '#252525';
-        barra.style.padding = '20px 30px';
-        barra.style.height = '60px'; // Garante a altura fixa
-        
-        // Mover o div do nome do shopping para ser o primeiro filho direto da barra
-        // E o div com as informações alternadas para ser o segundo
+
+        // A estrutura da barra agora combina o nome do shopping e as informações alternadas à esquerda, e a logo à direita.
         barra.innerHTML = `
-            <div contenteditable="true" spellcheck="false" style="font-size: 24px;">Shopping Iguatemi</div>
-            <div id="shopping-info-alternada" style="font-size: 20px; font-weight: 500; transition: opacity 0.5s ease;"></div>
-            <img src="https://eletromidia.com.br/wp-content/themes/eletromidia/assets/images/logo-eletromidia-horizontal.png" alt="Logo">`;
+            <div id="shopping-info-container">
+                <div id="shopping-nome" contenteditable="true" spellcheck="false">Shopping Iguatemi</div>
+                <div id="shopping-info-alternada"></div>
+            </div>
+            <img src="img/logo-branca.png" alt="Logo" class="logo-eletromidia" onerror="this.onerror=null; this.src='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTSngqZzv7e6QBJRAN9L8zXvB9deAVNWW6tXQ&s';">
+        `;
+        // A logo acima tem um sistema de fallback. 
+        // 1. Tenta carregar de 'img/logo-branca.png'.
+        // 2. Se falhar, o 'onerror' troca o 'src' para o link direto que você forneceu.
 
         const shoppingInformacoes = [
             `<span><img src="https://cdn-icons-png.flaticon.com/512/1163/1163661.png" class="icon-decorado" alt="ícone clima"> Clima <span class="info-marker alerta">23°C</span></span>`,
