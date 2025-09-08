@@ -33,6 +33,8 @@
       background: black;
       position: relative;
       overflow: hidden;
+       /* Adicionado para transição suave */
+      transition: aspect-ratio 0.4s ease-in-out;
     }
     #media, #fallback {
       width: 100%; height: 100%; object-fit: cover;
@@ -189,7 +191,7 @@
       <li><a href="#" onclick="moveWrapper('right')"><i class="fa fa-arrow-right fa-2x"></i>Mover Dir.</a></li>
       <li><a href="#" onclick="stretchWrapper('horizontal+')"><i class="fa fa-arrows-alt-h fa-2x"></i>Largura +</a></li>
       <li><a href="#" onclick="stretchWrapper('vertical+')"><i class="fa fa-arrows-alt-v fa-2x"></i>Altura +</a></li>
-      <li><a href="#" onclick="return false;"><i class="fa fa-cog fa-2x"></i>Extra 1</a></li>
+      <li><a href="#" onclick="adjustMediaFit()"><i class="fa fa-compress-arrows-alt fa-2x"></i>Ajustar Mídia</a></li>
       <li><a href="#" onclick="return false;"><i class="fa fa-cog fa-2x"></i>Extra 2</a></li>
     </ul>
   </div>
@@ -202,7 +204,7 @@
     const controlsContainer = document.getElementById('controls-container');
     
     let mainPlaylist = [], mainIndex = 0;
-    let zoom = 1, rotation = 0, offsetX = 0, offsetY = 0, scaleX = 1, scaleY = 1;
+    let zoom = 1, rotation = 270, offsetX = 0, offsetY = 0, scaleX = 1, scaleY = 1;
 
     // --- FUNÇÕES DE CONTROLE GERAIS ---
     function toggleControls() { controlsContainer.style.display = (controlsContainer.style.display === 'block') ? 'none' : 'block'; }
@@ -222,6 +224,28 @@
     function zoomWrapperOut() { zoom = Math.max(0.1, zoom - 0.1); updateWrapperTransform(); }
     function moveWrapper(direction) { if (direction === 'up') offsetY -= 10; if (direction === 'down') offsetY += 10; if (direction === 'left') offsetX -= 10; if (direction === 'right') offsetX += 10; updateWrapperTransform(); }
     function stretchWrapper(direction) { if (direction === 'horizontal+') scaleX += 0.05; if (direction === 'horizontal-') scaleX = Math.max(0.1, scaleX - 0.05); if (direction === 'vertical+') scaleY += 0.05; if (direction === 'vertical-') scaleY = Math.max(0.1, scaleY - 0.05); updateWrapperTransform(); }
+
+    // ALTERAÇÃO 2: Nova função para ajustar o container da mídia
+    function adjustMediaFit() {
+      const mediaWrapper = document.getElementById('mediaWrapper');
+      const videoEl = document.getElementById('media');
+
+      // Se não houver vídeo carregado ou as dimensões não estiverem disponíveis, não faz nada
+      if (!videoEl.src || videoEl.videoWidth === 0) {
+        console.log("Mídia não carregada ou dimensões indisponíveis.");
+        return;
+      }
+      
+      // Verifica se um ajuste customizado já está ativo
+      if (mediaWrapper.style.aspectRatio) {
+        // Se estiver, remove o ajuste para voltar ao padrão (16/9 definido no CSS)
+        mediaWrapper.style.aspectRatio = ''; 
+      } else {
+        // Se não estiver, calcula a proporção da mídia e aplica ao container
+        const mediaAspectRatio = videoEl.videoWidth / videoEl.videoHeight;
+        mediaWrapper.style.aspectRatio = mediaAspectRatio;
+      }
+    }
 
     // --- LÓGICA ESPECÍFICA DO PLAYER RESIDENCIAL ---
     function atualizarHora() { const horaEl = document.getElementById('hora'); if (!horaEl) return; const agora = new Date(); const h = agora.getHours().toString().padStart(2, '0'); const m = agora.getMinutes().toString().padStart(2, '0'); horaEl.textContent = `${h}:${m}`; }
@@ -285,10 +309,11 @@
 
     // --- INICIALIZAÇÃO PADRÃO ---
     function startPlayerLogic() {
+        updateWrapperTransform(); 
         atualizarHora();
         setInterval(atualizarHora, 60000);
         carouselModule.start();
-        infoBarManager.start(); // Inicia a nova lógica da barra
+        infoBarManager.start();
     }
 
     // ========================================================================
@@ -316,12 +341,12 @@
                 if (dynamicFormat === 'vertical' && !dynamicContent.includes('/shorts/')) {
                     const iframe = contentWrapper.querySelector('iframe');
                     if (iframe) {
-                        iframe.style.width = '177.78vh'; /* 100 * 16 / 9 */
+                        iframe.style.width = '177.78vh';
                         iframe.style.height = '100vw';
                         iframe.style.position = 'absolute';
                         iframe.style.top = '50%';
                         iframe.style.left = '50%';
-                        iframe.style.transform = 'translate(-50%, -50%) rotate(90deg)'; // Corrigido para +90deg
+                        iframe.style.transform = 'translate(-50%, -50%) rotate(90deg)';
                     }
                 }
 
@@ -356,6 +381,4 @@
 </script>
 
 </body>
-
 </html>
-
