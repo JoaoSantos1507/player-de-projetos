@@ -132,41 +132,67 @@
     // --- VARIÁVEIS GLOBAIS ---
     const wrapper = document.getElementById('player-wrapper');
     const media = document.getElementById('media');
+    const fallback = document.getElementById('fallback'); // ADICIONADO: Referência para a tag de imagem
     const mediaInput = document.getElementById('mediaInput');
     const controlsContainer = document.getElementById('controls-container');
     const infoAlternadaEl = document.getElementById('infoAlternada');
     
     let mainPlaylist = [], mainIndex = 0;
     let zoom = 1, rotation = 0;
+    let imageTimeout; // ADICIONADO: Variável para controlar o tempo de exibição da imagem
 
-    // --- FUNÇÕES DE CONTROLE ---
+    // --- FUNÇÕES DE CONTROLE E MÍDIA ---
     function toggleControls() { controlsContainer.style.display = (controlsContainer.style.display === 'block') ? 'none' : 'block'; }
     function toggleBar() { document.getElementById('barra').style.display = (document.getElementById('barra').style.display === 'none') ? 'flex' : 'none'; }
     function toggleFullscreen() { if (!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); }
     function addMedia() { mediaInput.click(); }
     mediaInput.onchange = (event) => { const files = Array.from(event.target.files); mainPlaylist = mainPlaylist.concat(files); if (mainPlaylist.length === files.length) loadMainMedia(); };
-    
+
+    function nextMedia() {
+        if (mainPlaylist.length > 0) {
+            mainIndex = (mainIndex + 1) % mainPlaylist.length;
+            loadMainMedia();
+        }
+    }
+
     function loadMainMedia() { 
+        if(imageTimeout) clearTimeout(imageTimeout);
         if (mainPlaylist.length === 0) return; 
+
         const file = mainPlaylist[mainIndex]; 
         const url = URL.createObjectURL(file); 
-        media.src = url; 
-        media.play(); 
         
-        // --- ALTERAÇÃO PRINCIPAL ---
-        // Adiciona um listener para quando os dados do vídeo forem carregados
-        media.onloadeddata = ajustarBarraInfo;
+        // MODIFICADO: Lógica para diferenciar vídeo de imagem
+        if (file.type.startsWith('video/')) {
+            fallback.style.display = 'none';
+            media.style.display = 'block';
+            media.src = url; 
+            media.play(); 
+            media.onloadeddata = () => ajustarBarra(media); // Ajusta a barra para o vídeo
+        } else if (file.type.startsWith('image/')) {
+            media.pause();
+            media.style.display = 'none';
+            fallback.style.display = 'block';
+            fallback.src = url;
+            fallback.onload = () => ajustarBarra(fallback); // Ajusta a barra para a imagem
+            const IMAGE_DURATION = 7000; // 7 segundos
+            imageTimeout = setTimeout(nextMedia, IMAGE_DURATION);
+        }
     }
     
-    // NOVA FUNÇÃO para ajustar a barra de informações dinamicamente
-    function ajustarBarraInfo() {
+    /**
+     * @description MODIFICADO: Função agora é genérica para ajustar a barra para qualquer mídia (vídeo ou imagem).
+     * @param {HTMLElement} targetElement - O elemento de mídia (<video> ou <img>).
+     */
+    function ajustarBarra(targetElement) {
         const barra = document.getElementById('barra');
-        const containerWidth = media.offsetWidth;
-        const containerHeight = media.offsetHeight;
-        const mediaWidth = media.videoWidth;
-        const mediaHeight = media.videoHeight;
+        const containerWidth = targetElement.parentElement.offsetWidth;
+        const containerHeight = targetElement.parentElement.offsetHeight;
 
-        // Se não tiver as dimensões do vídeo, não faz nada
+        // Pega as dimensões corretas dependendo se é vídeo ou imagem
+        const mediaWidth = targetElement.tagName === 'VIDEO' ? targetElement.videoWidth : targetElement.naturalWidth;
+        const mediaHeight = targetElement.tagName === 'VIDEO' ? targetElement.videoHeight : targetElement.naturalHeight;
+
         if (!mediaWidth || !mediaHeight) return;
 
         const containerRatio = containerWidth / containerHeight;
@@ -175,28 +201,39 @@
         let renderedWidth, renderedHeight;
 
         if (mediaRatio > containerRatio) {
-            // A mídia é mais larga que o contêiner (letterbox)
             renderedWidth = containerWidth;
             renderedHeight = containerWidth / mediaRatio;
         } else {
-            // A mídia é mais alta ou tem a mesma proporção que o contêiner (pillarbox)
             renderedHeight = containerHeight;
             renderedWidth = containerHeight * mediaRatio;
         }
 
-        // Calcula o espaço da barra preta na parte inferior
         const bottomOffset = (containerHeight - renderedHeight) / 2;
         
-        // Aplica os novos estilos à barra
-        // Usa 97% da largura da mídia visível
         barra.style.width = (renderedWidth * 0.97) + 'px'; 
-        // Posiciona a barra 12px acima da borda inferior da mídia visível
         barra.style.bottom = (bottomOffset + 12) + 'px';
     }
 
-    media.addEventListener('ended', () => { if (mainPlaylist.length > 0) { mainIndex = (mainIndex + 1) % mainPlaylist.length; loadMainMedia(); } });
+    media.addEventListener('ended', nextMedia);
     function reloadMidia() { if (mainPlaylist.length > 0) { mainIndex = 0; loadMainMedia(); } }
-    function resetMidias() { mainPlaylist = []; mainIndex = 0; media.pause(); media.removeAttribute('src'); media.load(); }
+    
+    // MODIFICADO: Função de resetar agora limpa a imagem e o timer
+    function resetMidias() {
+        mainPlaylist = [];
+        mainIndex = 0;
+        media.pause();
+        media.removeAttribute('src');
+        media.load();
+        fallback.style.display = 'none';
+        fallback.removeAttribute('src');
+        if (imageTimeout) clearTimeout(imageTimeout);
+
+        // Reseta a barra para a posição original
+        const barra = document.getElementById('barra');
+        barra.style.width = '97%';
+        barra.style.bottom = '12px';
+    }
+
     function rotatePlayer() { rotation = (rotation + 90) % 360; wrapper.style.transform = `scale(${zoom}) rotate(${rotation}deg)`; }
     function zoomIn() { zoom += 0.02; wrapper.style.transform = `scale(${zoom}) rotate(${rotation}deg)`; }
     function zoomOut() { zoom = Math.max(0.1, zoom - 0.02); wrapper.style.transform = `scale(${zoom}) rotate(${rotation}deg)`; }
