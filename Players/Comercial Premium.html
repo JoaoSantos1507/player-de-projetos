@@ -146,6 +146,7 @@
     
     let mainPlaylist = [], mainIndex = 0;
     let zoom = 1, rotation = 0, offsetX = 0, offsetY = 0;
+    let imageTimeout; // ADICIONADO: Variável para controlar o tempo de exibição da imagem
 
     // --- LÓGICA DE MÍDIA E CONTROLES ---
     function addMedia(event) {
@@ -158,10 +159,15 @@
             loadMainMedia();
         }
     }
+    
+    // MODIFICADO: Função de carregamento de mídia
     function loadMainMedia() {
+        if (imageTimeout) clearTimeout(imageTimeout); // ADICIONADO: Limpa qualquer timer de imagem anterior
         if (mainPlaylist.length === 0) return;
+        
         const file = mainPlaylist[mainIndex];
         const url = URL.createObjectURL(file);
+
         if (file.type.startsWith('video')) {
             fallback.style.display = 'none';
             media.src = url;
@@ -173,12 +179,17 @@
             media.style.display = 'none';
             fallback.src = url;
             fallback.style.display = 'block';
+            
+            // ADICIONADO: Define um tempo para a imagem e avança para a próxima mídia
+            const IMAGE_DURATION = 7000; // 7000 ms = 7 segundos
+            imageTimeout = setTimeout(nextMedia, IMAGE_DURATION);
         }
     }
+
     media.addEventListener('ended', () => { nextMedia(); });
     function nextMedia() { if (mainPlaylist.length > 0) { mainIndex = (mainIndex + 1) % mainPlaylist.length; loadMainMedia(); } }
     function reloadMidia() { if (mainPlaylist.length > 0) { mainIndex = 0; loadMainMedia(); } }
-    function resetMidias() { mainPlaylist = []; mainIndex = 0; media.pause(); media.removeAttribute('src'); fallback.style.display = 'none'; fallback.removeAttribute('src'); media.load(); }
+    function resetMidias() { mainPlaylist = []; mainIndex = 0; media.pause(); media.removeAttribute('src'); fallback.style.display = 'none'; fallback.removeAttribute('src'); media.load(); if (imageTimeout) clearTimeout(imageTimeout); /* ADICIONADO: Limpa timer ao resetar */ }
 
     // --- FUNÇÕES DE MANIPULAÇÃO DO PLAYER ---
     function updateWrapperTransform() { wrapper.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${zoom}) rotate(${rotation}deg)`; }
@@ -203,23 +214,17 @@
     function toggleControls() { controlsContainer.style.display = (controlsContainer.style.display === 'block') ? 'none' : 'block'; }
     function toggleBar() { document.getElementById('barra').style.display = document.getElementById('barra').style.display === 'none' ? 'flex' : 'none'; }
     
-    // FUNÇÃO ATUALIZADA: Ajusta a propriedade 'left' para redimensionar a barra
     function ajustarLarguraBarra(action) {
         const barra = document.getElementById('barra');
-        // O valor padrão de 'left' vem do CSS (2.5%)
         let currentLeft = parseFloat(barra.style.left);
         if (isNaN(currentLeft)) {
             currentLeft = 2.5;
         }
-
-        if (action === 'increase') { // Aumentar largura = diminuir a margem esquerda
-            // Diminui o valor de 'left', com um limite mínimo de 0
+        if (action === 'increase') {
             currentLeft = Math.max(0, currentLeft - 1);
-        } else if (action === 'decrease') { // Diminuir largura = aumentar a margem esquerda
-            // Aumenta o valor de 'left', com um limite máximo de 25 
+        } else if (action === 'decrease') {
             currentLeft = Math.min(25, currentLeft + 1);
         }
-        
         barra.style.left = `${currentLeft}%`;
     }
 
@@ -252,7 +257,7 @@
 
         const atualizarTransito = () => {
             const transitoBox = document.getElementById('transitoBox');
-            const totalKm = 38; // Valor "fake" para a demonstração
+            const totalKm = 38;
             transitoBox.innerHTML = `
                 <div class="info-box-header">Trânsito agora</div>
                 <div class="content">
@@ -369,6 +374,5 @@
         }
     };
 </script>
-
 </body>
 </html>
