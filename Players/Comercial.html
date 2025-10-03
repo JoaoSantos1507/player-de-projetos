@@ -131,12 +131,14 @@
     // --- VARIÁVEIS GLOBAIS ---
     const wrapper = document.getElementById('player-wrapper');
     const media = document.getElementById('media');
+    const fallback = document.getElementById('fallback'); // ADICIONADO: Referência para a tag de imagem
     const mediaInput = document.getElementById('mediaInput');
     const controlsContainer = document.getElementById('controls-container');
     const infoAlternadaEl = document.getElementById('infoAlternada');
     
     let mainPlaylist = [], mainIndex = 0;
     let zoom = 1, rotation = 0;
+    let imageTimeout; // ADICIONADO: Variável para controlar o tempo de exibição da imagem
 
     // --- FUNÇÕES DE CONTROLE ---
     function toggleControls() { controlsContainer.style.display = (controlsContainer.style.display === 'block') ? 'none' : 'block'; }
@@ -144,10 +146,58 @@
     function toggleFullscreen() { if (!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); }
     function addMedia() { mediaInput.click(); }
     mediaInput.onchange = (event) => { const files = Array.from(event.target.files); mainPlaylist = mainPlaylist.concat(files); if (mainPlaylist.length === files.length) loadMainMedia(); };
-    function loadMainMedia() { if (mainPlaylist.length === 0) return; const file = mainPlaylist[mainIndex]; const url = URL.createObjectURL(file); media.src = url; media.play(); }
-    media.addEventListener('ended', () => { if (mainPlaylist.length > 0) { mainIndex = (mainIndex + 1) % mainPlaylist.length; loadMainMedia(); } });
+
+    // --- LÓGICA DE MÍDIA MODIFICADA ---
+
+    /**
+     * @description Avança para o próximo item na playlist e o carrega.
+     * Esta função agora é separada para ser chamada tanto pelo fim de um vídeo quanto pelo temporizador de uma imagem.
+     */
+    function advancePlaylist() {
+        if (mainPlaylist.length > 0) {
+            mainIndex = (mainIndex + 1) % mainPlaylist.length;
+            loadMainMedia();
+        }
+    }
+
+    /**
+     * @description Carrega a mídia atual (vídeo ou imagem) da playlist.
+     * Foi modificada para verificar o tipo do ficheiro e exibir no elemento correto.
+     */
+    function loadMainMedia() {
+        // Limpa qualquer temporizador de imagem anterior para evitar transições inesperadas
+        if (imageTimeout) clearTimeout(imageTimeout);
+        if (mainPlaylist.length === 0) return;
+
+        const file = mainPlaylist[mainIndex];
+        const url = URL.createObjectURL(file);
+
+        // Verifica se o ficheiro é um vídeo
+        if (file.type.startsWith('video/')) {
+            media.style.display = 'block'; // Mostra o player de vídeo
+            fallback.style.display = 'none'; // Esconde a imagem
+            media.src = url;
+            media.play();
+        } 
+        // Verifica se o ficheiro é uma imagem
+        else if (file.type.startsWith('image/')) {
+            fallback.style.display = 'block'; // Mostra a imagem
+            media.style.display = 'none'; // Esconde o player de vídeo
+            media.pause(); // Pausa o vídeo por segurança
+            media.src = ''; // Limpa a fonte do vídeo
+            fallback.src = url;
+
+            // Define um tempo de 5 segundos para exibir a imagem antes de avançar
+            const IMAGE_DURATION = 5000; // 5000 ms = 5 segundos
+            imageTimeout = setTimeout(advancePlaylist, IMAGE_DURATION);
+        }
+    }
+
+    // O evento 'ended' do vídeo agora chama a função de avanço
+    media.addEventListener('ended', advancePlaylist);
+
     function reloadMidia() { if (mainPlaylist.length > 0) { mainIndex = 0; loadMainMedia(); } }
-    function resetMidias() { mainPlaylist = []; mainIndex = 0; media.pause(); media.removeAttribute('src'); media.load(); }
+    function resetMidias() { mainPlaylist = []; mainIndex = 0; media.pause(); media.removeAttribute('src'); media.load(); fallback.style.display = 'none'; fallback.removeAttribute('src'); }
     function rotatePlayer() { rotation = (rotation + 90) % 360; wrapper.style.transform = `scale(${zoom}) rotate(${rotation}deg)`; }
     function zoomIn() { zoom += 0.02; wrapper.style.transform = `scale(${zoom}) rotate(${rotation}deg)`; }
     function zoomOut() { zoom = Math.max(0.1, zoom - 0.02); wrapper.style.transform = `scale(${zoom}) rotate(${rotation}deg)`; }
@@ -204,7 +254,7 @@
         }
     });
 
-        window.onload = function() {
+    window.onload = function() {
         const content = localStorage.getItem('dynamicContent');
         const scriptSrc = localStorage.getItem('dynamicScript');
         const container = document.getElementById('media-container'); // Assumindo que seu container tem o id 'media-container'
@@ -224,6 +274,5 @@
         }
     };
 </script>
-
 </body>
 </html>
