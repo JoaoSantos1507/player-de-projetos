@@ -193,6 +193,9 @@
     let mainPlaylist = [], mainIndex = 0;
     let zoom = 1, rotation = 0, offsetX = 0, offsetY = 0, scaleX = 1, scaleY = 1;
     let commercialBarInterval = null;
+    
+    // --- (NOVO) VARIÁVEL PARA O TIMER DO CURSOR ---
+    let cursorIdleTimer = null;
 
     // --- FUNÇÕES DE CONTROLE GERAIS ---
     function toggleControls() { controlsContainer.style.display = (controlsContainer.style.display === 'block') ? 'none' : 'block'; }
@@ -280,6 +283,39 @@
     function zoomWrapperOut() { zoom = Math.max(0.1, zoom - 0.05); updateWrapperTransform(); }
     function moveWrapper(direction) { if (direction === 'up') offsetY -= 10; if (direction === 'down') offsetY += 10; if (direction === 'left') offsetX -= 10; if (direction === 'right') offsetX += 10; updateWrapperTransform(); }
     function stretchWrapper(direction) { if (direction === 'horizontal+') scaleX += 0.05; if (direction === 'horizontal-') scaleX = Math.max(0.1, scaleX - 0.05); if (direction === 'vertical+') scaleY += 0.05; if (direction === 'vertical-') scaleY = Math.max(0.1, scaleY - 0.05); updateWrapperTransform(); }
+
+    // --- (NOVO) CONTROLE DE INATIVIDADE DO CURSOR ---
+
+    /**
+     * Esconde o cursor do mouse.
+     * Esta função é chamada pelo temporizador quando o mouse fica inativo.
+     */
+    function hideCursor() {
+        document.body.style.cursor = 'none';
+    }
+
+    /**
+     * Mostra o cursor e reinicia o temporizador de inatividade.
+     * Esta função é chamada sempre que o mouse se move.
+     */
+    function showCursorAndResetTimer() {
+        // 1. Garante que o cursor esteja visível
+        document.body.style.cursor = 'auto';
+
+        // 2. Limpa o temporizador anterior (se houver)
+        // Isso impede que o cursor se esconda se o mouse
+        // se mover antes do tempo limite anterior.
+        if (cursorIdleTimer) {
+            clearTimeout(cursorIdleTimer);
+        }
+
+        // 3. Define um novo temporizador (3000ms = 3 segundos)
+        // Após 3 segundos de inatividade, a função hideCursor será chamada.
+        cursorIdleTimer = setTimeout(hideCursor, 3000); 
+    }
+    
+    // "Ouve" o evento de movimento do mouse em todo o documento
+    document.addEventListener('mousemove', showCursorAndResetTimer);
 
     // --- FUNÇÕES ESPECÍFICAS DO PLAYER VERTICAL (Inalteradas) ---
     function ajustarAlturaBarra(direcao) { const bottomAtual = parseInt(getComputedStyle(barra).bottom) || 0; const novoBottom = direcao === 'up' ? bottomAtual + 10 : bottomAtual - 10; barra.style.bottom = `${novoBottom}px`; }
@@ -371,6 +407,9 @@
         }
         
         startPlayerLogic();
+
+        // --- (NOVO) INICIA O CONTROLE DO CURSOR QUANDO A PÁGINA CARREGA ---
+        showCursorAndResetTimer();
     });
 
     window.onload = function() {
@@ -395,4 +434,3 @@
 
 </body>
 </html>
-
