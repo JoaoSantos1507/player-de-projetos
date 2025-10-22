@@ -35,17 +35,17 @@
 
     /* Estilos da Barra de Informações */
     #barra {
-  position: absolute; bottom: 12px; left: 50%;
-  width: 97%; background: rgba(0, 0, 0, 0.75);
-  padding: 20px; display: flex;
-  justify-content: space-between; align-items: center;
-  font-size: 15px; color: #ffffff;
-  z-index: 10; /* Z-INDEX ADICIONADO AQUI */
-  -webkit-transform: translateX(-50%);
-  transform: translateX(-50%);
-  -webkit-border-radius: 26px;
-  border-radius: 26px;
-}
+      position: absolute; bottom: 12px; left: 50%;
+      width: 97%; background: rgba(0, 0, 0, 0.75);
+      padding: 20px; display: flex;
+      justify-content: space-between; align-items: center;
+      font-size: 15px; color: #ffffff;
+      z-index: 10; /* Z-INDEX ADICIONADO AQUI */
+      -webkit-transform: translateX(-50%);
+      transform: translateX(-50%);
+      -webkit-border-radius: 26px;
+      border-radius: 26px;
+    }
     #infoAlternada { display: flex; align-items: center; gap: 20px; transition: opacity 0.6s ease; }
     .relogio { font-size: 30px; font-weight: bold; display: flex; align-items: center; gap: 10px; }
     .logo-eletromidia { height: 48px; max-width: 200px; object-fit: contain; margin-right: 24px; }
@@ -87,7 +87,7 @@
 
   <div id="player-wrapper">
     <div id="mainMediaWrapper">
-      <video id="media" autoplay muted loop playsinline></video>
+      <video id="media" autoplay muted playsinline></video>
       <img id="fallback" style="display: none;">
       <div id="barra">
         <div id="infoAlternada">
@@ -131,21 +131,37 @@
     // --- VARIÁVEIS GLOBAIS ---
     const wrapper = document.getElementById('player-wrapper');
     const media = document.getElementById('media');
-    const fallback = document.getElementById('fallback'); // ADICIONADO: Referência para a tag de imagem
+    const fallback = document.getElementById('fallback'); // Referência para a tag de imagem
     const mediaInput = document.getElementById('mediaInput');
     const controlsContainer = document.getElementById('controls-container');
     const infoAlternadaEl = document.getElementById('infoAlternada');
     
     let mainPlaylist = [], mainIndex = 0;
     let zoom = 1, rotation = 0;
-    let imageTimeout; // ADICIONADO: Variável para controlar o tempo de exibição da imagem
+    let imageTimeout; // Variável para controlar o tempo de exibição da imagem
 
     // --- FUNÇÕES DE CONTROLE ---
     function toggleControls() { controlsContainer.style.display = (controlsContainer.style.display === 'block') ? 'none' : 'block'; }
     function toggleBar() { document.getElementById('barra').style.display = (document.getElementById('barra').style.display === 'none') ? 'flex' : 'none'; }
     function toggleFullscreen() { if (!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); }
     function addMedia() { mediaInput.click(); }
-    mediaInput.onchange = (event) => { const files = Array.from(event.target.files); mainPlaylist = mainPlaylist.concat(files); if (mainPlaylist.length === files.length) loadMainMedia(); };
+    
+    /**
+     * (MODIFICADO) Lógica de adicionar mídia.
+     * Verifica se a playlist ESTAVA vazia antes de adicionar os ficheiros
+     * para saber se deve iniciar a reprodução.
+     */
+    mediaInput.onchange = (event) => { 
+        const files = Array.from(event.target.files); 
+        const wasEmpty = mainPlaylist.length === 0; // Verifica o estado *antes* de adicionar
+        mainPlaylist = mainPlaylist.concat(files); 
+        
+        // Se estava vazia e agora tem ficheiros, inicia a reprodução.
+        if (wasEmpty && mainPlaylist.length > 0) {
+            loadMainMedia(); 
+        }
+        event.target.value = null; // Limpa o input
+    };
 
     // --- LÓGICA DE MÍDIA MODIFICADA ---
 
@@ -155,6 +171,7 @@
      */
     function advancePlaylist() {
         if (mainPlaylist.length > 0) {
+            // O operador % (módulo) garante o loop infinito
             mainIndex = (mainIndex + 1) % mainPlaylist.length;
             loadMainMedia();
         }
@@ -177,7 +194,7 @@
             media.style.display = 'block'; // Mostra o player de vídeo
             fallback.style.display = 'none'; // Esconde a imagem
             media.src = url;
-            media.play();
+            media.play().catch(e => console.error("Erro ao reproduzir vídeo:", e));
         } 
         // Verifica se o ficheiro é uma imagem
         else if (file.type.startsWith('image/')) {
@@ -197,7 +214,22 @@
     media.addEventListener('ended', advancePlaylist);
 
     function reloadMidia() { if (mainPlaylist.length > 0) { mainIndex = 0; loadMainMedia(); } }
-    function resetMidias() { mainPlaylist = []; mainIndex = 0; media.pause(); media.removeAttribute('src'); media.load(); fallback.style.display = 'none'; fallback.removeAttribute('src'); }
+    
+    /**
+     * (MODIFICADO) Reseta a playlist.
+     * Agora também limpa o temporizador de imagem pendente.
+     */
+    function resetMidias() { 
+        if (imageTimeout) clearTimeout(imageTimeout); // Garante que o timer da imagem pare
+        mainPlaylist = []; 
+        mainIndex = 0; 
+        media.pause(); 
+        media.removeAttribute('src'); 
+        media.load(); 
+        fallback.style.display = 'none'; 
+        fallback.removeAttribute('src'); 
+    }
+    
     function rotatePlayer() { rotation = (rotation + 90) % 360; wrapper.style.transform = `scale(${zoom}) rotate(${rotation}deg)`; }
     function zoomIn() { zoom += 0.02; wrapper.style.transform = `scale(${zoom}) rotate(${rotation}deg)`; }
     function zoomOut() { zoom = Math.max(0.1, zoom - 0.02); wrapper.style.transform = `scale(${zoom}) rotate(${rotation}deg)`; }
