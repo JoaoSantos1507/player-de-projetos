@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Player LED</title>
+  <title>Player LED - Mosaico</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   
@@ -13,29 +13,36 @@
       width: 100vw; height: 100vh; font-family: 'Montserrat', sans-serif;
     }
 
-    /* Contêiner principal do Player LED */
-    #player-container {
+    /* Estilo base para CADA instância de player. */
+    .player-instance {
       position: absolute;
-      top: 50%; left: 50%;
-      width: 768px; height: 600px;
+      width: 400px; /* Tamanho inicial menor para mosaico */
+      height: 300px;
       background: #000;
       border: 2px solid #444;
-      overflow: hidden; resize: both;
+      overflow: hidden; 
+      resize: both; /* ATIVADO POR PADRÃO. Será controlado pelo JS */
       display: flex; flex-direction: column;
-      -webkit-transform: translate(-50%, -50%);
-      transform: translate(-50%, -50%);
     }
-    #mediaWrapper {
+
+    /* Classe para destacar o Player Ativo */
+    .player-ativo {
+        border: 3px solid #007bff !important;
+        box-shadow: 0 0 15px rgba(0,123,255,0.7);
+        z-index: 100; /* Traz o player ativo para a frente */
+    }
+
+    .media-wrapper {
       flex-grow: 1; position: relative; background: #111;
       overflow: hidden;
     }
-    #media, #fallback {
+    .media-video, .media-fallback {
       width: 100%; height: 100%; object-fit: contain;
       position: absolute; top: 0; left: 0;
     }
     
-    /* Barra Comercial (para o preset Coluna) */
-    #barra-comercial {
+    /* Barra Comercial (agora é por-player) */
+    .barra-comercial {
         position: absolute;
         bottom: 2px;
         left: 2px;
@@ -43,18 +50,17 @@
         background: rgba(0,0,0,0.75);
         color: white;
         font-size: 14px;
-        display: none;
+        display: none; /* Começa escondida */
         padding: 10px;
         box-sizing: border-box;
         justify-content: space-between;
         align-items: center;
         z-index: 10;
-        border-radius: 26px; /* BORDAS ARREDONDADAS */
+        border-radius: 26px;
     }
-    #barra-comercial #info-alternada { transition: opacity 0.5s ease; flex-grow: 1; }
-    #barra-comercial #hora { font-size: 24px; font-weight: bold; }
+    .barra-comercial .info-alternada { transition: opacity 0.5s ease; flex-grow: 1; }
+    .barra-comercial .hora { font-size: 24px; font-weight: bold; }
 
-    /* NOVO: Estilo do ícone igual ao Comercial.html */
     .icon-decorado {
         width: 20px;
         height: 20px;
@@ -65,7 +71,7 @@
         margin-right: 10px;
     }
 
-    /* Relógio (para o preset Relógio) */
+    /* Relógio (Elemento global, não é por-player) */
     #relogio-box {
         position: absolute; width: 100%;
         background: black; color: white;
@@ -75,13 +81,18 @@
     .blink { animation: blink 1s step-start infinite; }
     @keyframes blink { 50% { opacity: 0; } }
 
-    /* Estilos do Menu de Controles */
-    #controls-container {
+    /* Estilos dos Menus (Principal e Controladora) */
+    #controls-container, #controladora-container {
       position: fixed; top: 50%; left: 50%;
       z-index: 300; display: none;
       -webkit-transform: translate(-50%, -50%);
       transform: translate(-50%, -50%);
     }
+    
+    #controladora-container {
+        z-index: 301; /* Fica por cima do menu principal */
+    }
+
     .menu-grid {
       list-style: none; margin: 0; padding: 0;
       display: grid;
@@ -94,6 +105,30 @@
     .menu-grid li i { margin-bottom: 15px; }
     .menu-grid li a.active { background-color: #007bff; }
     
+    /* Estilo para o Seletor de Player */
+    .menu-grid li.controladora-select {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        font-size: 14px;
+        grid-column: span 2; /* Faz o seletor ocupar 2 espaços */
+    }
+    .menu-grid li.controladora-select label {
+        margin-bottom: 10px;
+        font-weight: bold;
+    }
+    #player-selector {
+        background: #333;
+        color: white;
+        border: 1px solid #4a4e69;
+        padding: 8px;
+        border-radius: 5px;
+        width: 80%;
+    }
+
+    /* Modal Preset Livre */
     #preset-livre-modal {
         display: none;
         position: fixed; top: 50%; left: 50%;
@@ -116,7 +151,8 @@
     .modal-botoes button { background: #4a4e69; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; margin-left: 10px; }
     .modal-botoes button:hover { background: #5a5e79; }
 
-    #selection-overlay {
+    /* Overlay de Corte (agora por-player) */
+    .selection-overlay {
         position: absolute;
         top: 0; left: 0;
         width: 100%; height: 100%;
@@ -125,7 +161,7 @@
         z-index: 50;
         display: none;
     }
-    #selection-box {
+    .selection-box {
         position: absolute;
         border: 2px dashed #fff;
         box-sizing: border-box;
@@ -135,24 +171,9 @@
 </head>
 <body>
 
-  <div id="player-container">
-    <div id="mediaWrapper">
-      <video id="media" autoplay muted loop playsinline></video>
-      <img id="fallback" style="display: none;" />
-      <div id="selection-overlay">
-        <div id="selection-box"></div>
-      </div>
-    </div>
-    <div id="barra-comercial">
-        <div id="info-alternada"></div>
-        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTSngqZzv7e6QBJRAN9L8zXvB9deAVNWW6tXQ&s" alt="Logo" style="height:24px; margin-right:10px; vertical-align:middle;">
-        <span id="hora"></span>
-    </div>
-  </div>
-  
   <div id="relogio-box"></div>
 
-  <input type="file" id="mediaInput" accept="video/mp4,image/*" multiple style="display: none;">
+  <input type="file" id="mediaInput" accept="video/mp4,image/*" style="display: none;" multiple>
 
   <div id="preset-livre-modal">
     <h3>Preset Personalizado</h3>
@@ -189,6 +210,7 @@
       <li><a href="#" onclick="toggleFullscreen()"><i class="fa fa-expand fa-2x"></i>Tela Cheia</a></li>
       <li><a href="#" onclick="resetMidias()"><i class="fa fa-trash fa-2x"></i>Resetar</a></li>
       <li id="move-button-li"><a href="#" onclick="toggleMover(this)"><i class="fa fa-arrows-alt fa-2x"></i>Ajustar Posição</a></li>
+      <li><a href="#" onclick="mostrarMenuControladora(true)"><i class="fa fa-cogs fa-2x"></i>Controladora</a></li> 
       <li><a href="#" onclick="toggleControls()"><i class="fa fa-eye-slash fa-2x"></i>Ocultar Menu</a></li>
       <li><a href="#" onclick="ajustarModo('contain', this)"><i class="fa fa-compress fa-2x"></i>Ajustar</a></li>
       <li><a href="#" onclick="ajustarModo('fill', this)"><i class="fa fa-expand-arrows-alt fa-2x"></i>Esticar</a></li>
@@ -200,227 +222,787 @@
       <li><a href="#" onclick="toggleCortar(this)"><i class="fa fa-crop-alt fa-2x"></i>Cortar Mídia</a></li>
     </ul>
   </div>
+  
+  <div id="controladora-container">
+    <ul class="menu-grid">
+        <li><a href="#" onclick="voltarMenuPrincipal()"><i class="fa fa-arrow-left fa-2x"></i>Voltar</a></li>
+        <li><a href="#" onclick="adicionarPlayer()"><i class="fa fa-plus-square fa-2x"></i>Add Player</a></li>
+        <li><a href="#" onclick="sincronizarPlayers()"><i class="fa fa-sync fa-2x"></i>Sincronizar</a></li>
+        <li><a href="#" onclick="removerPlayer()"><i class="fa fa-trash fa-2x"></i>Remover</a></li>
+        
+        <li class="controladora-select">
+            <label for="player-selector">Player Ativo:</label>
+            <select id="player-selector" onchange="selecionarPlayer(this.value)">
+                </select>
+        </li>
+    </ul>
+  </div>
 
 <script>
-    // --- VARIÁVEIS GLOBAIS ---
-    const playerContainer = document.getElementById('player-container');
-    const media = document.getElementById('media');
-    const fallback = document.getElementById('fallback');
-    const mediaInput = document.getElementById('mediaInput');
+    // --- VARIÁVEIS GLOBAIS DE CONTROLE ---
     const controlsContainer = document.getElementById('controls-container');
-    const barraComercial = document.getElementById('barra-comercial');
-    const relogioBox = document.getElementById('relogio-box');
+    const controladoraContainer = document.getElementById('controladora-container');
+    const playerSelector = document.getElementById('player-selector');
+    const mediaInput = document.getElementById('mediaInput');
     const presetLivreModal = document.getElementById('preset-livre-modal');
+    const relogioBox = document.getElementById('relogio-box');
     
-    const selectionOverlay = document.getElementById('selection-overlay');
-    const selectionBox = document.getElementById('selection-box');
+    // --- (NOVA) DURAÇÃO PARA IMAGENS ---
+    const IMAGE_DURATION = 7000; // 7 segundos
+
+    // --- VARIÁVEIS DE ESTADO DA APLICAÇÃO ---
+    let players = []; // Array para guardar todos os nossos players
+    let playerAtivo = null; // Referência ao objeto do player selecionado
+    let playerCounter = 0; // Contador para dar IDs únicos
+    let commercialBarInterval = null; // Intervalo da barra comercial (global)
+
+    // --- VARIÁVEIS DE ESTADO DE INTERAÇÃO ---
+    let moverAtivo = false;
     let cortarAtivo = false;
+    let isDragging = false;
     let isSelecting = false;
-    let startX, startY, startWidth, startHeight, startLeft, startTop;
+    let offsetX = 0, offsetY = 0;
 
-    let mediaAtiva = media; let moverAtivo = false; let isDragging = false;
-    let offsetX = 0, offsetY = 0; let rotacaoAtual = 0; let commercialBarInterval = null;
 
-    // --- FUNÇÕES DE CONTROLE GERAIS ---
-    function toggleControls() { controlsContainer.style.display = (controlsContainer.style.display === 'block') ? 'none' : 'block'; }
-    function toggleFullscreen() { if (!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); }
-    function toggleBarraComercial() { barraComercial.style.display = (barraComercial.style.display === 'flex') ? 'none' : 'flex'; }
-    function addMedia() { mediaInput.click(); }
-    mediaInput.onchange = (event) => { const file = event.target.files[0]; if (!file) return; const url = URL.createObjectURL(file); if (file.type.startsWith('video')) { fallback.style.display = 'none'; media.style.display = 'block'; media.src = url; media.play(); mediaAtiva = media; } else { media.style.display = 'none'; fallback.style.display = 'block'; fallback.src = url; mediaAtiva = fallback; } };
-    function resetMidias() { media.pause(); media.removeAttribute('src'); fallback.removeAttribute('src'); media.load(); resetarCorte(); }
-    document.addEventListener('keydown', (e) => { if (e.key.toLowerCase() === 'm') { toggleControls(); } });
-    
-    // --- FUNÇÕES ESPECÍFICAS DO PLAYER LED ---
-    function toggleMover(element) { moverAtivo = !moverAtivo; playerContainer.style.cursor = moverAtivo ? 'move' : 'default'; element.classList.toggle('active', moverAtivo); }
-    playerContainer.addEventListener('mousedown', (e) => { if (!moverAtivo) return; isDragging = true; offsetX = e.clientX - playerContainer.offsetLeft; offsetY = e.clientY - playerContainer.offsetTop; });
-    document.addEventListener('mousemove', (e) => { if (isDragging && moverAtivo) { playerContainer.style.left = `${e.clientX - offsetX}px`; playerContainer.style.top = `${e.clientY - offsetY}px`; playerContainer.style.transform = `none`; } });
-    document.addEventListener('mouseup', () => { isDragging = false; });
-    
-    function ajustarModo(modo, element) { 
-        document.querySelectorAll('.menu-grid a[onclick*="ajustarModo"]').forEach(a => a.classList.remove('active')); 
-        element.classList.add('active'); 
-        resetarCorte();
-        media.style.objectFit = modo; 
-        fallback.style.objectFit = modo; 
+    // ========================================================================
+    // --- FUNÇÕES DA CONTROLADORA (NOVA ARQUITETURA) ---
+    // ========================================================================
+
+    /**
+     * Retorna o HTML de um novo player.
+     * @param {number} id - O ID numérico do player.
+     */
+    function getPlayerTemplate(id) {
+        // IDs são únicos para o container, classes são usadas para os elementos internos
+        // (MODIFICADO) Removido o atributo 'loop' do <video>
+        return `
+            <div class="media-wrapper">
+                <video class="media-video" autoplay muted playsinline></video>
+                <img class="media-fallback" style="display: none;" />
+                <div class="selection-overlay">
+                    <div class="selection-box"></div>
+                </div>
+            </div>
+            <div class="barra-comercial">
+                <div class="info-alternada"></div>
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTSngqZzv7e6QBJRAN9L8zXvB9deAVNWW6tXQ&s" alt="Logo" style="height:24px; margin-right:10px; vertical-align:middle;">
+                <span class="hora"></span>
+            </div>
+        `;
+    }
+
+    /**
+     * Cria e registra um novo player.
+     */
+    function adicionarPlayer() {
+        playerCounter++;
+        const newPlayerContainer = document.createElement('div');
+        newPlayerContainer.id = `player-container-${playerCounter}`;
+        newPlayerContainer.className = 'player-instance';
+        
+        // Define uma posição inicial escalonada
+        newPlayerContainer.style.top = `${50 + (playerCounter * 20)}px`;
+        newPlayerContainer.style.left = `${50 + (playerCounter * 20)}px`;
+
+        newPlayerContainer.innerHTML = getPlayerTemplate(playerCounter);
+        document.body.appendChild(newPlayerContainer);
+
+        // Cria o objeto de referência para este player
+        const newPlayer = {
+            id: playerCounter,
+            container: newPlayerContainer,
+            media: newPlayerContainer.querySelector('.media-video'),
+            fallback: newPlayerContainer.querySelector('.media-fallback'),
+            mediaAtiva: newPlayerContainer.querySelector('.media-video'),
+            barraComercial: newPlayerContainer.querySelector('.barra-comercial'),
+            infoAlternada: newPlayerContainer.querySelector('.info-alternada'),
+            hora: newPlayerContainer.querySelector('.hora'),
+            overlay: newPlayerContainer.querySelector('.selection-overlay'),
+            selectionBox: newPlayerContainer.querySelector('.selection-box'),
+            rotacao: 0,
+            // Estado do 'crop'
+            crop: { x: 0, y: 0, w: 0, h: 0 },
+            
+            // --- (NOVAS) PROPRIEDADES DA PLAYLIST ---
+            playlist: [],       // Array para os ficheiros (File objects)
+            playlistIndex: 0, // Índice da mídia atual
+            imageTimeout: null  // Timer para mídias de imagem
+        };
+
+        // --- Anexa os ouvintes de evento (listeners) A ESTE player ---
+        adicionarListenersAoPlayer(newPlayer);
+        
+        // Adiciona ao array e ao seletor
+        players.push(newPlayer);
+        
+        const option = document.createElement('option');
+        option.value = newPlayer.id;
+        option.textContent = `Player ${newPlayer.id}`;
+        playerSelector.appendChild(option);
+
+        // Seleciona o player recém-criado
+        selecionarPlayer(newPlayer.id);
+        voltarMenuPrincipal(); // Fecha o menu da controladora
     }
     
-    function rotacionarMidia() { rotacaoAtual = (rotacaoAtual + 90) % 360; const transformValue = `rotate(${rotacaoAtual}deg)`; mediaAtiva.style.webkitTransform = transformValue; mediaAtiva.style.transform = transformValue; }
+    /**
+     * Remove o player ativo.
+     */
+    function removerPlayer() {
+        if (!playerAtivo) {
+            alert("Nenhum player selecionado para remover.");
+            return;
+        }
+        
+        if (players.length <= 1) {
+            alert("Não é possível remover o último player.");
+            return;
+        }
+        
+        const idParaRemover = playerAtivo.id;
+        
+        // (NOVO) Limpa o timer se existir
+        if (playerAtivo.imageTimeout) clearTimeout(playerAtivo.imageTimeout);
+
+        // Remove do HTML
+        playerAtivo.container.remove();
+        
+        // Remove do seletor
+        playerSelector.querySelector(`option[value="${idParaRemover}"]`).remove();
+        
+        // Remove do array
+        players = players.filter(p => p.id !== idParaRemover);
+        
+        // Seleciona o primeiro player restante
+        selecionarPlayer(players[0].id);
+    }
+
+    /**
+     * Anexa todos os listeners de Drag (mover) e Crop (cortar)
+     * a uma instância específica do player.
+     * @param {object} player - O objeto do player (newPlayer)
+     */
+    function adicionarListenersAoPlayer(player) {
+        
+        // --- Listener de Mover (Drag) ---
+        player.container.addEventListener('mousedown', (e) => {
+            // Só ativa o drag se 'moverAtivo' estiver ligado
+            // E se o clique não foi no 'resize' (canto inferior direito)
+            if (moverAtivo && e.target === player.container) {
+                
+                // Se o player clicado não for o ativo, torna-o ativo
+                if (player.id !== playerAtivo.id) {
+                    selecionarPlayer(player.id);
+                }
+                
+                isDragging = true;
+                offsetX = e.clientX - player.container.offsetLeft;
+                offsetY = e.clientY - player.container.offsetTop;
+                player.container.style.cursor = 'move';
+            }
+        });
+
+        // --- Listeners de Cortar (Crop) ---
+        let startX, startY;
+
+        player.overlay.addEventListener('mousedown', (e) => {
+            if (!cortarAtivo) return;
+            e.preventDefault();
+            isSelecting = true;
+            startX = e.clientX - player.overlay.getBoundingClientRect().left;
+            startY = e.clientY - player.overlay.getBoundingClientRect().top;
+            player.selectionBox.style.left = `${startX}px`;
+            player.selectionBox.style.top = `${startY}px`;
+            player.selectionBox.style.width = '0px';
+            player.selectionBox.style.height = '0px';
+            player.selectionBox.style.display = 'block';
+        });
+
+        player.overlay.addEventListener('mousemove', (e) => {
+            if (!isSelecting) return;
+            const currentX = e.clientX - player.overlay.getBoundingClientRect().left;
+            const currentY = e.clientY - player.overlay.getBoundingClientRect().top;
+            const width = currentX - startX;
+            const height = currentY - startY;
+
+            player.selectionBox.style.width = `${Math.abs(width)}px`;
+            player.selectionBox.style.height = `${Math.abs(height)}px`;
+            player.selectionBox.style.left = `${width > 0 ? startX : currentX}px`;
+            player.selectionBox.style.top = `${height > 0 ? startY : currentY}px`;
+        });
+
+        player.overlay.addEventListener('mouseup', (e) => {
+            if (!isSelecting) return;
+            isSelecting = false;
+            player.selectionBox.style.display = 'none';
+            
+            const rect = {
+                x: parseFloat(player.selectionBox.style.left),
+                y: parseFloat(player.selectionBox.style.top),
+                width: parseFloat(player.selectionBox.style.width),
+                height: parseFloat(player.selectionBox.style.height)
+            };
+
+            if (rect.width > 0 && rect.height > 0) {
+                const containerWidth = player.overlay.offsetWidth;
+                const containerHeight = player.overlay.offsetHeight;
+
+                // Calcula a escala e posição para o 'object-fit: cover'
+                const scaleX = containerWidth / rect.width;
+                const scaleY = containerHeight / rect.height;
+                const newWidth = player.mediaAtiva.offsetWidth * scaleX;
+                const newHeight = player.mediaAtiva.offsetHeight * scaleY;
+                const newLeft = -rect.x * scaleX;
+                const newTop = -rect.y * scaleY;
+                
+                // Aplica o "corte"
+                player.mediaAtiva.style.objectFit = 'cover';
+                player.mediaAtiva.style.width = `${newWidth}px`;
+                player.mediaAtiva.style.height = `${newHeight}px`;
+                player.mediaAtiva.style.top = `${newTop}px`;
+                player.mediaAtiva.style.left = `${newLeft}px`;
+
+                // Salva o estado do corte
+                player.crop = { x: newLeft, y: newTop, w: newWidth, h: newHeight };
+
+                // Desativa a ferramenta de corte
+                toggleCortar(document.querySelector('.menu-grid a[onclick*="toggleCortar"]'));
+            }
+        });
+
+        // --- (NOVO) Listener de Fim de Mídia (para playlist) ---
+        // Quando o vídeo (media) deste player terminar, chama a função playNextMedia
+        player.media.addEventListener('ended', () => playNextMedia(player));
+    }
+
+    // Listeners GLOBAIS para mover (arrastar)
+    // Eles operam sobre o 'playerAtivo' que foi definido no 'mousedown'
+    document.addEventListener('mousemove', (e) => {
+        if (isDragging && moverAtivo && playerAtivo) {
+            playerAtivo.container.style.left = `${e.clientX - offsetX}px`;
+            playerAtivo.container.style.top = `${e.clientY - offsetY}px`;
+            playerAtivo.container.style.transform = `none`; // Remove o transform para o drag funcionar
+        }
+    });
+    document.addEventListener('mouseup', () => {
+        if (isDragging && playerAtivo) {
+            playerAtivo.container.style.cursor = 'default';
+        }
+        isDragging = false;
+    });
+
+
+    /**
+     * Define qual player está ativo para receber comandos.
+     * @param {string | number} playerId - O ID do player.
+     */
+    function selecionarPlayer(playerId) {
+        const id = parseInt(playerId);
+        
+        // Salva o player antigo
+        const playerAntigo = playerAtivo;
+
+        // Remove a classe e restaura o resize do player antigo
+        if (playerAntigo) {
+            playerAntigo.container.classList.remove('player-ativo');
+            // *** AJUSTE ***
+            // Restaura o resize no player antigo para o padrão
+            playerAntigo.container.style.resize = 'both'; 
+        }
+        
+        // Encontra e define o novo player ativo
+        playerAtivo = players.find(p => p.id === id);
+        
+        if (playerAtivo) {
+            playerAtivo.container.classList.add('player-ativo');
+            playerSelector.value = id; // Sincroniza o <select>
+            
+            // *** AJUSTE ***
+            // Aplica o estado de 'moverAtivo' ao novo player
+            if (moverAtivo) {
+                // Se o modo Mover está ativo, desativa o resize
+                playerAtivo.container.style.resize = 'none';
+            } else {
+                // Se o modo Mover está inativo, ativa o resize
+                playerAtivo.container.style.resize = 'both';
+            }
+        }
+    }
+
+    /**
+     * Sincroniza todos os vídeos, fazendo-os começar do segundo 0.
+     * (NOTA: Isto não sincroniza playlists, apenas reinicia a mídia ATUAL de todos)
+     */
+    function sincronizarPlayers() {
+        if (players.length === 0) return;
+        
+        players.forEach(player => {
+            // (MODIFICADO) Reinicia a playlist se houver uma, ou a mídia atual
+            if (player.playlist.length > 0) {
+                player.playlistIndex = 0;
+                loadPlayerMedia(player);
+            } 
+            else if (player.media && player.media.src) {
+                player.media.currentTime = 0;
+                player.media.play();
+            }
+        });
+        alert(`Sincronia enviada para ${players.length} players.`);
+    }
+
+    // ========================================================================
+    // --- FUNÇÕES DE CONTROLE (REFATORADAS PARA O 'playerAtivo') ---
+    // ========================================================================
+
+    function checkPlayerAtivo() {
+        if (!playerAtivo) {
+            alert("Nenhum player está selecionado. Adicione um player ou selecione um no menu 'Controladora'.");
+            return false;
+        }
+        return true;
+    }
+
+    // --- Funções dos Menus ---
+    function toggleControls() { controlsContainer.style.display = (controlsContainer.style.display === 'block') ? 'none' : 'block'; controladoraContainer.style.display = 'none'; }
+    function mostrarMenuControladora(ocultarPrincipal = true) { if (ocultarPrincipal) { controlsContainer.style.display = 'none'; } controladoraContainer.style.display = 'block'; }
+    function voltarMenuPrincipal() { controladoraContainer.style.display = 'none'; controlsContainer.style.display = 'block'; }
+    function toggleFullscreen() { if (!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); }
+    document.addEventListener('keydown', (e) => { if (e.key.toLowerCase() === 'm') { toggleControls(); } });
+    
+    // --- Funções de Mídia ---
+    function addMedia() {
+        if (!checkPlayerAtivo()) return;
+        mediaInput.click();
+    }
+    
+    /**
+     * (MODIFICADO) Manipulador de seleção de ficheiros.
+     * Agora adiciona todos os ficheiros selecionados à playlist do player ativo.
+     */
+    mediaInput.onchange = (event) => {
+        if (!checkPlayerAtivo()) return; 
+        const pa = playerAtivo;
+        const files = Array.from(event.target.files); // Pega TODOS os ficheiros
+        if (files.length === 0) return;
+
+        // Verifica se a playlist estava vazia antes de adicionar
+        const wasEmpty = pa.playlist.length === 0;
+        
+        // Adiciona os novos ficheiros à playlist existente
+        pa.playlist = pa.playlist.concat(files);
+
+        // Se a playlist estava vazia e agora tem ficheiros, inicia a reprodução
+        if (wasEmpty && pa.playlist.length > 0) {
+            loadPlayerMedia(pa);
+        }
+        
+        event.target.value = null; // Limpa o input para permitir selecionar os mesmos Ficheiros
+    };
+
+    /**
+     * (MODIFICADO) Reseta a mídia e a playlist do player ativo.
+     */
+    function resetMidias() {
+        if (!checkPlayerAtivo()) return;
+        const pa = playerAtivo;
+        
+        // (NOVO) Limpa o timer de imagem, se houver
+        if (pa.imageTimeout) clearTimeout(pa.imageTimeout);
+
+        // (NOVO) Limpa a playlist
+        pa.playlist = [];
+        pa.playlistIndex = 0;
+        pa.imageTimeout = null;
+
+        // Para a mídia atual
+        pa.media.pause();
+        pa.media.removeAttribute('src');
+        pa.fallback.removeAttribute('src');
+        pa.media.load();
+        
+        // Garante que o vídeo pare de ser exibido
+        pa.media.style.display = 'block'; 
+        pa.fallback.style.display = 'none';
+
+        resetarCorte();
+    }
+
+
+    // --- (NOVAS) FUNÇÕES DE CONTROLE DE PLAYLIST ---
+    
+    /**
+     * Carrega a mídia atual da playlist no player especificado.
+     * @param {object} player - O objeto do player.
+     */
+    function loadPlayerMedia(player) {
+        if (player.playlist.length === 0) return;
+
+        // Limpa qualquer temporizador de imagem anterior
+        if (player.imageTimeout) clearTimeout(player.imageTimeout);
+
+        const file = player.playlist[player.playlistIndex];
+        const url = URL.createObjectURL(file);
+
+        if (file.type.startsWith('video')) {
+            player.fallback.style.display = 'none';
+            player.media.style.display = 'block';
+            player.media.src = url;
+            player.media.play().catch(e => console.error(`Erro ao reproduzir vídeo no Player ${player.id}:`, e));
+            player.mediaAtiva = player.media;
+        } else { // Se for uma imagem
+            player.media.style.display = 'none';
+            player.fallback.style.display = 'block';
+            player.fallback.src = url;
+            player.mediaAtiva = player.fallback;
+            
+            // Inicia um temporizador para passar para a próxima mídia
+            player.imageTimeout = setTimeout(() => playNextMedia(player), IMAGE_DURATION);
+        }
+        
+        // (NOVO) Reaplica o corte/transformação, se houver
+        reaplicarEstilosMidia(player);
+    }
+
+    /**
+     * Avança para a próxima mídia na playlist do player especificado.
+     * @param {object} player - O objeto do player.
+     */
+    function playNextMedia(player) {
+        if (player.playlist.length > 0) {
+            // O operador % (módulo) garante o loop infinito
+            player.playlistIndex = (player.playlistIndex + 1) % player.playlist.length; 
+            loadPlayerMedia(player);
+        }
+    }
+    
+    /**
+     * (NOVA) Reaplica estilos (crop, rotação) à mídia ativa.
+     * Necessário ao trocar de item na playlist.
+     */
+    function reaplicarEstilosMidia(player) {
+        const pa = player; // usa o player passado como argumento
+        
+        // Reaplica Rotação
+        const transformValue = `rotate(${pa.rotacao}deg)`; 
+        pa.mediaAtiva.style.webkitTransform = transformValue; 
+        pa.mediaAtiva.style.transform = transformValue; 
+        
+        // Reaplica Corte (Crop)
+        if (pa.crop && pa.crop.w > 0) {
+            // Se tem corte salvo, aplica
+            pa.mediaAtiva.style.objectFit = 'cover';
+            pa.mediaAtiva.style.width = `${pa.crop.w}px`;
+            pa.mediaAtiva.style.height = `${pa.crop.h}px`;
+            pa.mediaAtiva.style.top = `${pa.crop.y}px`;
+            pa.mediaAtiva.style.left = `${pa.crop.x}px`;
+        } else {
+            // Se não tem corte, aplica o modo de ajuste padrão (ex: 'contain')
+            pa.mediaAtiva.style.objectFit = pa.media.style.objectFit || 'contain';
+            pa.mediaAtiva.style.width = '100%';
+            pa.mediaAtiva.style.height = '100%';
+            pa.mediaAtiva.style.top = '0';
+            pa.mediaAtiva.style.left = '0';
+        }
+    }
+
+    // --- Funções de Layout e Posição ---
+    
+    /**
+     * Alterna o modo de Mover (arrastar) e desativa/ativa
+     * a capacidade de redimensionar (resize).
+     */
+    function toggleMover(element) {
+        if (!checkPlayerAtivo()) {
+            element.classList.remove('active'); // Garante que não fique ativo se não houver player
+            return;
+        }
+        
+        moverAtivo = !moverAtivo;
+        element.classList.toggle('active', moverAtivo);
+        
+        if (moverAtivo) {
+            // MODO MOVER ATIVO: Desativa o resize
+            playerAtivo.container.style.resize = 'none';
+            
+            // Desativa o 'cortar' se 'mover' for ativado
+            if (cortarAtivo) {
+                toggleCortar(document.querySelector('.menu-grid a[onclick*="toggleCortar"]'));
+            }
+        } else {
+            // MODO MOVER INATIVO: Ativa o resize
+            playerAtivo.container.style.resize = 'both';
+        }
+    }
+    
+    /**
+     * Esta função (Esticar) apenas muda o object-fit da mídia.
+     */
+    function ajustarModo(modo, element) { 
+        if (!checkPlayerAtivo()) return;
+        document.querySelectorAll('.menu-grid a[onclick*="ajustarModo"]').forEach(a => a.classList.remove('active')); 
+        element.classList.add('active'); 
+        
+        // (MODIFICADO) Reseta o corte E APLICA o novo modo
+        resetarCorte(); 
+        playerAtivo.media.style.objectFit = modo; 
+        playerAtivo.fallback.style.objectFit = modo; 
+    }
+    
+    function rotacionarMidia() { 
+        if (!checkPlayerAtivo()) return;
+        const pa = playerAtivo;
+        pa.rotacao = (pa.rotacao + 90) % 360; 
+        
+        // (MODIFICADO) Chama a função de reaplicar para atualizar a mídia ativa
+        reaplicarEstilosMidia(pa);
+    }
     
     function resetarLayout() { 
-        barraComercial.style.display = 'none'; 
-        relogioBox.style.display = 'none'; 
-        if (commercialBarInterval) clearInterval(commercialBarInterval); 
-        playerContainer.style.top = '50%'; 
-        playerContainer.style.left = '50%'; 
-        playerContainer.style.width = '768px'; 
-        playerContainer.style.height = '600px'; 
-        playerContainer.style.transform = 'translate(-50%, -50%)'; 
+        if (!checkPlayerAtivo()) return;
+        const pa = playerAtivo;
+        
+        pa.barraComercial.style.display = 'none'; 
+        if (commercialBarInterval && pa.id === 1) { 
+            relogioBox.style.display = 'none';
+            clearInterval(commercialBarInterval);
+            commercialBarInterval = null;
+        }
+        
+        pa.container.style.top = '50%'; 
+        pa.container.style.left = '50%'; 
+        pa.container.style.width = '400px'; 
+        pa.container.style.height = '300px'; 
+        pa.container.style.transform = 'translate(-50%, -50%)'; 
+        pa.container.style.resize = 'both'; // Garante que o resize volte ao padrão
         resetarCorte();
     }
 
     function aplicarLayout(preset) {
-        resetarLayout(); playerContainer.style.transform = 'none';
-        if (preset === 'mub') { playerContainer.style.top = '0px'; playerContainer.style.left = '0px'; playerContainer.style.width = '960px'; playerContainer.style.height = '480px'; }
-        else if (preset === 'relogio') { playerContainer.style.top = '0px'; playerContainer.style.left = '0px'; playerContainer.style.width = '280px'; playerContainer.style.height = '480px'; relogioBox.style.display = 'flex'; relogioBox.style.top = '480px'; relogioBox.style.left = '0px'; relogioBox.style.width = '280px'; relogioBox.style.height = '80px'; const updateClock = () => { relogioBox.innerHTML = new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}).replace(':', '<span class="blink">:</span>'); }; updateClock(); commercialBarInterval = setInterval(updateClock, 1000); }
+        if (!checkPlayerAtivo()) return;
+        const pa = playerAtivo;
+        
+        resetarLayout(); 
+        pa.container.style.transform = 'none';
+        
+        if (commercialBarInterval) clearInterval(commercialBarInterval);
+
+        if (preset === 'mub') { 
+            pa.container.style.top = '0px'; 
+            pa.container.style.left = '0px'; 
+            pa.container.style.width = '960px'; 
+            pa.container.style.height = '480px'; 
+        }
+        else if (preset === 'relogio') { 
+            pa.container.style.top = '0px'; 
+            pa.container.style.left = '0px'; 
+            pa.container.style.width = '280px'; 
+            pa.container.style.height = '480px'; 
+            
+            relogioBox.style.display = 'flex'; 
+            relogioBox.style.top = '480px'; 
+            relogioBox.style.left = '0px'; 
+            relogioBox.style.width = '280px'; 
+            relogioBox.style.height = '80px'; 
+            
+            const updateClock = () => { relogioBox.innerHTML = new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}).replace(':', '<span class="blink">:</span>'); }; 
+            updateClock(); 
+            commercialBarInterval = setInterval(updateClock, 1000); 
+        }
         else if (preset === 'coluna') {
-            playerContainer.style.top = '0px'; playerContainer.style.left = '0px'; playerContainer.style.width = '768px'; playerContainer.style.height = '960px';
-            barraComercial.style.display = 'flex';
+            pa.container.style.top = '0px'; 
+            pa.container.style.left = '0px'; 
+            pa.container.style.width = '768px'; 
+            pa.container.style.height = '960px';
+            pa.barraComercial.style.display = 'flex';
+            
             const informacoes = [ 
-                // ÍCONE ATUALIZADO
                 `<div style="display: flex; align-items: center; gap: 8px;"><img src='https://cdn-icons-png.flaticon.com/512/3358/3358623.png' class='icon-decorado' alt='Ícone Mercado'><span style="font-size: 10px; color: #ccc;">ÍNDICES</span><span>IBOV</span><span style="color: #2ecc71;">+0,4%</span><span style="background: #2ecc71; color: white; font-size: 9px; padding: 2px 4px; border-radius: 4px;">137.824</span></div>`, 
-                // ÍCONE ATUALIZADO
                 `<div style="display: flex; align-items: center; gap: 8px;"><img src='https://cdn-icons-png.flaticon.com/512/3358/3358623.png' class='icon-decorado' alt='Ícone Mercado'><span style="font-size: 10px; color: #ccc;">DÓLAR</span><span style="font-weight: bold;">R$ 5,45</span><span style="background-color: #e74c3c; color: white; font-size: 9px; padding: 2px 4px; border-radius: 4px;">-0.27%</span></div>` 
             ];
             let infoIndex = 0;
-            const updateInfo = () => { const infoEl = document.getElementById('info-alternada'); infoEl.style.opacity = 0; setTimeout(() => { infoEl.innerHTML = informacoes[infoIndex]; infoEl.style.opacity = 1; infoIndex = (infoIndex + 1) % informacoes.length; }, 500); };
-            const horaEl = document.getElementById('hora');
-            const atualizarHora = () => { horaEl.textContent = new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}); };
+            
+            const updateInfo = () => { 
+                const infoEl = pa.infoAlternada;
+                if (!infoEl) return;
+                infoEl.style.opacity = 0; 
+                setTimeout(() => { infoEl.innerHTML = informacoes[infoIndex]; infoEl.style.opacity = 1; infoIndex = (infoIndex + 1) % informacoes.length; }, 500); 
+            };
+            
+            const atualizarHora = () => { 
+                const horaEl = pa.hora;
+                if(horaEl) horaEl.textContent = new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}); 
+            };
+            
             atualizarHora(); updateInfo();
             commercialBarInterval = setInterval(() => { updateInfo(); atualizarHora(); }, 4000);
         }
     }
-    function abrirModalPresetLivre() { controlsContainer.style.display = 'none'; presetLivreModal.style.display = 'block'; }
-    function fecharModalPresetLivre() { presetLivreModal.style.display = 'none'; }
-    function aplicarPresetLivre() { const x = document.getElementById('input-x').value; const y = document.getElementById('input-y').value; const largura = document.getElementById('input-largura').value; const altura = document.getElementById('input-altura').value; resetarLayout(); playerContainer.style.transform = 'none'; playerContainer.style.left = `${x}px`; playerContainer.style.top = `${y}px`; playerContainer.style.width = `${largura}px`; playerContainer.style.height = `${altura}px`; fecharModalPresetLivre(); }
-    function salvarConfiguracao() { const config = { posicao: { top: playerContainer.style.top, left: playerContainer.style.left }, tamanho: { width: playerContainer.style.width, height: playerContainer.style.height }, transform: playerContainer.style.transform, modoAjuste: media.style.objectFit || 'contain', clipPath: mediaAtiva.style.clipPath || 'none' }; localStorage.setItem('configPlayerLED', JSON.stringify(config)); alert('Configuração salva!'); }
-    function carregarConfiguracao() { const configStr = localStorage.getItem('configPlayerLED'); if (!configStr) { alert('Nenhuma configuração salva.'); return; } const config = JSON.parse(configStr); resetarLayout(); playerContainer.style.top = config.posicao.top; playerContainer.style.left = config.posicao.left; playerContainer.style.width = config.tamanho.width; playerContainer.style.height = config.tamanho.height; playerContainer.style.transform = config.transform; const modoBtn = document.querySelector(`.menu-grid a[onclick*="'${config.modoAjuste}'"]`); if (modoBtn) ajustarModo(config.modoAjuste, modoBtn); if (config.clipPath && config.clipPath !== 'none') { mediaAtiva.style.clipPath = config.clipPath; } alert('Configuração carregada!'); }
     
+    function toggleBarraComercial() {
+        if (!checkPlayerAtivo()) return;
+        const pa = playerAtivo;
+        pa.barraComercial.style.display = (pa.barraComercial.style.display === 'flex') ? 'none' : 'flex';
+    }
+    
+    function abrirModalPresetLivre() { 
+        if (!checkPlayerAtivo()) return;
+        const pa = playerAtivo;
+        document.getElementById('input-x').value = pa.container.offsetLeft;
+        document.getElementById('input-y').value = pa.container.offsetTop;
+        document.getElementById('input-largura').value = pa.container.offsetWidth;
+        document.getElementById('input-altura').value = pa.container.offsetHeight;
+        
+        controlsContainer.style.display = 'none'; 
+        presetLivreModal.style.display = 'block'; 
+    }
+    
+    function fecharModalPresetLivre() { presetLivreModal.style.display = 'none'; }
+    
+    function aplicarPresetLivre() { 
+        if (!checkPlayerAtivo()) return;
+        const pa = playerAtivo;
+        const x = document.getElementById('input-x').value; 
+        const y = document.getElementById('input-y').value; 
+        const largura = document.getElementById('input-largura').value; 
+        const altura = document.getElementById('input-altura').value; 
+        
+        resetarLayout(); 
+        
+        pa.container.style.transform = 'none'; 
+        pa.container.style.left = `${x}px`; 
+        pa.container.style.top = `${y}px`; 
+        pa.container.style.width = `${largura}px`; 
+        pa.container.style.height = `${altura}px`; 
+        
+        fecharModalPresetLivre(); 
+    }
+
+    // --- Funções de Corte (Crop) ---
     function toggleCortar(element) {
+        if (!checkPlayerAtivo()) return;
+        const pa = playerAtivo;
+        
         cortarAtivo = !cortarAtivo;
         element.classList.toggle('active', cortarAtivo);
-        selectionOverlay.style.display = cortarAtivo ? 'block' : 'none';
-        playerContainer.style.cursor = cortarAtivo ? 'crosshair' : 'default';
-        if (moverAtivo) {
+        pa.overlay.style.display = cortarAtivo ? 'block' : 'none';
+        
+        if (cortarAtivo && moverAtivo) {
             toggleMover(document.querySelector('#move-button-li a'));
         }
     }
     
+    /**
+     * (MODIFICADO) Reseta o corte e o modo de ajuste.
+     */
     function resetarCorte() {
-        mediaAtiva.style.clipPath = '';
-        mediaAtiva.style.transform = `rotate(${rotacaoAtual}deg)`;
-        mediaAtiva.style.width = '100%';
-        mediaAtiva.style.height = '100%';
-        mediaAtiva.style.top = '0';
-        mediaAtiva.style.left = '0';
-        document.querySelector('.menu-grid a[onclick*="ajustarModo(\'contain\'"]').classList.add('active');
+        if (!playerAtivo) return;
+        const pa = playerAtivo;
+        
+        // Reseta o estado do corte salvo
+        pa.crop = { x: 0, y: 0, w: 0, h: 0 }; 
+        
+        // Define o modo de ajuste padrão ('contain')
+        pa.media.style.objectFit = 'contain';
+        pa.fallback.style.objectFit = 'contain';
+        
+        // (MODIFICADO) Chama a função de reaplicar para atualizar a mídia ativa
+        reaplicarEstilosMidia(pa);
+
+        // Atualiza os botões do menu
+        document.querySelectorAll('.menu-grid a[onclick*="ajustarModo"]').forEach(a => a.classList.remove('active')); 
+        const containBtn = document.querySelector('.menu-grid a[onclick*="ajustarModo(\'contain\'"]');
+        if (containBtn) containBtn.classList.add('active');
     }
 
-    selectionOverlay.addEventListener('mousedown', (e) => {
-        if (!cortarAtivo) return;
-        e.preventDefault();
-        isSelecting = true;
-        startX = e.clientX - selectionOverlay.getBoundingClientRect().left;
-        startY = e.clientY - selectionOverlay.getBoundingClientRect().top;
-        selectionBox.style.left = `${startX}px`;
-        selectionBox.style.top = `${startY}px`;
-        selectionBox.style.width = '0px';
-        selectionBox.style.height = '0px';
-        selectionBox.style.display = 'block';
-    });
+    // --- Funções de Salvar/Carregar Mosaico ---
+    // (NOTA: A playlist em si não é salva, pois os 'File objects' não podem ser
+    // serializados no localStorage. Apenas o layout é salvo.)
+    function salvarConfiguracao() {
+        const configMosaico = players.map(p => {
+            return {
+                id: p.id,
+                pos: { top: p.container.style.top, left: p.container.style.left },
+                tam: { width: p.container.style.width, height: p.container.style.height },
+                transform: p.container.style.transform,
+                modoAjuste: p.media.style.objectFit || 'contain',
+                crop: p.crop,
+                rotacao: p.rotacao,
+                resize: p.container.style.resize // Salva o estado do resize
+            };
+        });
+        localStorage.setItem('configPlayerMosaico', JSON.stringify(configMosaico));
+        alert(`Configuração do mosaico com ${players.length} players foi salva! (Mídias não são salvas)`);
+    }
 
-    selectionOverlay.addEventListener('mousemove', (e) => {
-        if (!isSelecting) return;
-        const currentX = e.clientX - selectionOverlay.getBoundingClientRect().left;
-        const currentY = e.clientY - selectionOverlay.getBoundingClientRect().top;
-        const width = currentX - startX;
-        const height = currentY - startY;
-
-        selectionBox.style.width = `${Math.abs(width)}px`;
-        selectionBox.style.height = `${Math.abs(height)}px`;
-        selectionBox.style.left = `${width > 0 ? startX : currentX}px`;
-        selectionBox.style.top = `${height > 0 ? startY : currentY}px`;
-    });
-
-    selectionOverlay.addEventListener('mouseup', (e) => {
-        if (!isSelecting) return;
-        isSelecting = false;
-        selectionBox.style.display = 'none';
+    function carregarConfiguracao() {
+        const configStr = localStorage.getItem('configPlayerMosaico');
+        if (!configStr) {
+            alert('Nenhuma configuração de mosaico salva.');
+            return;
+        }
         
-        const rect = {
-            x: parseFloat(selectionBox.style.left),
-            y: parseFloat(selectionBox.style.top),
-            width: parseFloat(selectionBox.style.width),
-            height: parseFloat(selectionBox.style.height)
-        };
-
-        if (rect.width > 0 && rect.height > 0) {
-            const containerWidth = selectionOverlay.offsetWidth;
-            const containerHeight = selectionOverlay.offsetHeight;
-
-            const scaleX = containerWidth / rect.width;
-            const scaleY = containerHeight / rect.height;
-
-            const newWidth = mediaAtiva.offsetWidth * scaleX;
-            const newHeight = mediaAtiva.offsetHeight * scaleY;
-
-            const newLeft = -rect.x * scaleX;
-            const newTop = -rect.y * scaleY;
+        const configMosaico = JSON.parse(configStr);
+        
+        // (MODIFICADO) Limpa timers antes de remover os players
+        players.forEach(p => {
+            if (p.imageTimeout) clearTimeout(p.imageTimeout);
+            p.container.remove();
+        });
+        players = [];
+        playerSelector.innerHTML = '';
+        playerCounter = 0;
+        playerAtivo = null;
+        
+        if (commercialBarInterval) clearInterval(commercialBarInterval);
+        relogioBox.style.display = 'none';
+        
+        configMosaico.forEach(config => {
+            adicionarPlayer(); 
+            const pa = playerAtivo; // adicionarPlayer define o playerAtivo
             
-            mediaAtiva.style.objectFit = 'cover';
-            mediaAtiva.style.width = `${newWidth}px`;
-            mediaAtiva.style.height = `${newHeight}px`;
-            mediaAtiva.style.top = `${newTop}px`;
-            mediaAtiva.style.left = `${newLeft}px`;
-
-            toggleCortar(document.querySelector('.menu-grid a[onclick*="toggleCortar"]'));
+            pa.container.style.top = config.pos.top;
+            pa.container.style.left = config.pos.left;
+            pa.container.style.width = config.tam.width;
+            pa.container.style.height = config.tam.height;
+            pa.container.style.transform = config.transform;
+            pa.container.style.resize = config.resize || 'both'; // Restaura o resize
+            
+            // Aplica o modo de ajuste
+            pa.media.style.objectFit = config.modoAjuste;
+            pa.fallback.style.objectFit = config.modoAjuste;
+            const modoBtn = document.querySelector(`.menu-grid a[onclick*="'${config.modoAjuste}'"]`);
+            if (modoBtn) {
+                 document.querySelectorAll('.menu-grid a[onclick*="ajustarModo"]').forEach(a => a.classList.remove('active')); 
+                 modoBtn.classList.add('active');
+            }
+            
+            // Aplica rotação e corte
+            pa.rotacao = config.rotacao || 0;
+            pa.crop = config.crop || { x: 0, y: 0, w: 0, h: 0 };
+            reaplicarEstilosMidia(pa); // Aplica ambos
+        });
+        
+        if (players.length > 0) {
+            selecionarPlayer(players[0].id);
         }
-    });
+        
+        // Garante que o estado do botão 'mover' corresponda ao estado carregado
+        moverAtivo = (playerAtivo && playerAtivo.container.style.resize === 'none');
+        const moverBtn = document.querySelector('#move-button-li a');
+        if (moverBtn) moverBtn.classList.toggle('active', moverAtivo);
 
-    // --- INICIALIZAÇÃO PADRÃO ---
-    function startPlayerLogic() {
-        // O player LED não tem lógica que inicia sozinha.
+        alert(`Configuração do mosaico com ${players.length} players foi carregada! (É preciso recarregar as mídias)`);
     }
 
     // ========================================================================
-    // --- BLOCO UNIVERSAL PARA CONTEÚDO DINÂMICO ---
+    // --- INICIALIZAÇÃO DA APLICAÇÃO ---
     // ========================================================================
+    
     document.addEventListener('DOMContentLoaded', () => {
-        const dynamicContent = localStorage.getItem('dynamicContent');
-        const dynamicFormat = localStorage.getItem('dynamicFormat');
-
-        if (dynamicContent) {
-            const mediaContainer = document.getElementById('mediaWrapper');
-            if (mediaContainer) {
-                const videoTag = mediaContainer.querySelector('video');
-                const fallbackImg = mediaContainer.querySelector('#fallback');
-                if (videoTag) videoTag.style.display = 'none';
-                if (fallbackImg) fallbackImg.style.display = 'none';
-
-                const contentWrapper = document.createElement('div');
-                contentWrapper.style.cssText = 'position:absolute; top:0; left:0; width:100%; height:100%; z-index:1; overflow:hidden;';
-                contentWrapper.innerHTML = dynamicContent;
-
-                const overlay = document.createElement('div');
-                overlay.style.cssText = 'position:absolute; top:0; left:0; width:100%; height:100%; z-index:2;';
-
-                mediaContainer.appendChild(contentWrapper);
-                mediaContainer.appendChild(overlay);
-            }
-            localStorage.removeItem('dynamicContent');
-            localStorage.removeItem('dynamicFormat');
-        }
-        
-        startPlayerLogic();
+        // Cria o Player 1 automaticamente ao carregar a página
+        adicionarPlayer();
     });
 
-        window.onload = function() {
-        const content = localStorage.getItem('dynamicContent');
-        const scriptSrc = localStorage.getItem('dynamicScript');
-        const container = document.getElementById('media-container');
-
-        if (content && container) {
-            container.innerHTML = content;
-            localStorage.removeItem('dynamicContent');
-
-            if (scriptSrc) {
-                const scriptTag = document.createElement('script');
-                scriptTag.async = true;
-                scriptTag.src = scriptSrc;
-                document.body.appendChild(scriptTag);
-                localStorage.removeItem('dynamicScript');
-            }
-        }
-    };
 </script>
 
 </body>
