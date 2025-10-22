@@ -88,7 +88,7 @@
 
   <div id="player-wrapper">
     <div id="mainMediaWrapper">
-      <video id="media" autoplay muted loop playsinline></video>
+      <video id="media" autoplay muted playsinline></video>
       <img id="fallback" style="display: none;">
       <div id="barra">
         <div id="infoAlternada">
@@ -132,42 +132,67 @@
     // --- VARIÁVEIS GLOBAIS ---
     const wrapper = document.getElementById('player-wrapper');
     const media = document.getElementById('media');
-    const fallback = document.getElementById('fallback'); // ADICIONADO: Referência para a tag de imagem
+    const fallback = document.getElementById('fallback'); // Referência para a tag de imagem
     const mediaInput = document.getElementById('mediaInput');
     const controlsContainer = document.getElementById('controls-container');
     const infoAlternadaEl = document.getElementById('infoAlternada');
     
     let mainPlaylist = [], mainIndex = 0;
     let zoom = 1, rotation = 0;
-    let imageTimeout; // ADICIONADO: Variável para controlar o tempo de exibição da imagem
+    let imageTimeout; // Variável para controlar o tempo de exibição da imagem
 
     // --- FUNÇÕES DE CONTROLE E MÍDIA ---
     function toggleControls() { controlsContainer.style.display = (controlsContainer.style.display === 'block') ? 'none' : 'block'; }
     function toggleBar() { document.getElementById('barra').style.display = (document.getElementById('barra').style.display === 'none') ? 'flex' : 'none'; }
     function toggleFullscreen() { if (!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); }
     function addMedia() { mediaInput.click(); }
-    mediaInput.onchange = (event) => { const files = Array.from(event.target.files); mainPlaylist = mainPlaylist.concat(files); if (mainPlaylist.length === files.length) loadMainMedia(); };
 
+    /**
+     * (CORRIGIDO) Lógica de 'onchange' para iniciar a playlist corretamente.
+     */
+    mediaInput.onchange = (event) => { 
+        const files = Array.from(event.target.files); 
+        // 1. Verifica se a playlist ESTAVA vazia ANTES de adicionar
+        const wasEmpty = mainPlaylist.length === 0;
+        
+        // 2. Adiciona os novos ficheiros à playlist
+        mainPlaylist = mainPlaylist.concat(files); 
+        
+        // 3. Se estava vazia e agora tem ficheiros, inicia a reprodução
+        if (wasEmpty && mainPlaylist.length > 0) {
+            loadMainMedia(); 
+        }
+        
+        // 4. Limpa o input para permitir adicionar os mesmos ficheiros novamente
+        event.target.value = null;
+    };
+
+    /**
+     * @description Avança para a próxima mídia na playlist (lógica do loop).
+     */
     function nextMedia() {
         if (mainPlaylist.length > 0) {
-            mainIndex = (mainIndex + 1) % mainPlaylist.length;
+            mainIndex = (mainIndex + 1) % mainPlaylist.length; // O '%' garante o loop
             loadMainMedia();
         }
     }
 
+    /**
+     * @description Carrega e reproduz o item atual da playlist (vídeo ou imagem).
+     */
     function loadMainMedia() { 
-        if(imageTimeout) clearTimeout(imageTimeout);
+        if(imageTimeout) clearTimeout(imageTimeout); // Limpa timer de imagem anterior
         if (mainPlaylist.length === 0) return; 
 
         const file = mainPlaylist[mainIndex]; 
         const url = URL.createObjectURL(file); 
         
-        // MODIFICADO: Lógica para diferenciar vídeo de imagem
+        // Lógica para diferenciar vídeo de imagem
         if (file.type.startsWith('video/')) {
             fallback.style.display = 'none';
             media.style.display = 'block';
             media.src = url; 
-            media.play(); 
+            media.play().catch(e => console.error("Erro ao reproduzir vídeo:", e));
             media.onloadeddata = () => ajustarBarra(media); // Ajusta a barra para o vídeo
         } else if (file.type.startsWith('image/')) {
             media.pause();
@@ -176,12 +201,12 @@
             fallback.src = url;
             fallback.onload = () => ajustarBarra(fallback); // Ajusta a barra para a imagem
             const IMAGE_DURATION = 7000; // 7 segundos
-            imageTimeout = setTimeout(nextMedia, IMAGE_DURATION);
+            imageTimeout = setTimeout(nextMedia, IMAGE_DURATION); // Avança após 7s
         }
     }
     
     /**
-     * @description MODIFICADO: Função agora é genérica para ajustar a barra para qualquer mídia (vídeo ou imagem).
+     * @description Ajusta a barra para ficar alinhada ao 'object-fit: contain'.
      * @param {HTMLElement} targetElement - O elemento de mídia (<video> ou <img>).
      */
     function ajustarBarra(targetElement) {
@@ -200,24 +225,29 @@
         
         let renderedWidth, renderedHeight;
 
+        // Lógica do 'object-fit: contain'
         if (mediaRatio > containerRatio) {
+            // Mídia mais larga que o container (letterbox em cima/baixo)
             renderedWidth = containerWidth;
             renderedHeight = containerWidth / mediaRatio;
         } else {
+            // Mídia mais alta que o container (pillarbox nas laterais)
             renderedHeight = containerHeight;
             renderedWidth = containerHeight * mediaRatio;
         }
 
+        // Calcula o espaço vazio (letterbox)
         const bottomOffset = (containerHeight - renderedHeight) / 2;
         
         barra.style.width = (renderedWidth * 0.97) + 'px'; 
         barra.style.bottom = (bottomOffset + 12) + 'px';
     }
 
+    // Gatilho para avançar a playlist quando um vídeo termina
     media.addEventListener('ended', nextMedia);
+
     function reloadMidia() { if (mainPlaylist.length > 0) { mainIndex = 0; loadMainMedia(); } }
     
-    // MODIFICADO: Função de resetar agora limpa a imagem e o timer
     function resetMidias() {
         mainPlaylist = [];
         mainIndex = 0;
@@ -226,7 +256,7 @@
         media.load();
         fallback.style.display = 'none';
         fallback.removeAttribute('src');
-        if (imageTimeout) clearTimeout(imageTimeout);
+        if (imageTimeout) clearTimeout(imageTimeout); // Limpa o timer da imagem
 
         // Reseta a barra para a posição original
         const barra = document.getElementById('barra');
