@@ -357,7 +357,7 @@
         const informacoes = [ `<div style="display: flex; align-items: center; gap: 8px;"><span style="font-size: 12px; color: #ccc; font-weight: 600;">ÍNDICES</span><span style="font-weight: 600;">IBOVESPA</span><span style="color: #2ecc71;">+0,40%</span><span style="background: #2ecc71; color: white; font-size: 11px; font-weight: 600; padding: 2px 6px; border-radius: 4px;">137.824</span></div>`, `<div style="display: flex; align-items: center; gap: 8px;"><span style="font-size: 12px; color: #ccc; font-weight: 600;">CRIPTO</span><span style="font-weight: 600;">BITCOIN</span><span style="font-size: 18px; font-weight: bold;">R$ 345.243</span><span style="background-color: #e74c3c; color: white; font-size: 11px; padding: 2px 6px; border-radius: 4px;">-1.88%</span></div>`, `<div style="display: flex; align-items: center; gap: 8px;"><span style="font-weight: 600;">LENTIDÃO</span><span>SÃO PAULO</span><span style="background: #2ecc71; color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px;">22 km</span></div>`, `<span style="font-size: 12px; font-weight: 600;">EURO</span><span style="font-size: 20px; font-weight: bold;">R$ 6,41</span> | <span style="font-size: 12px; font-weight: 600;">DÓLAR</span><span style="font-size: 20px; font-weight: bold;">R$ 5,45</span>` ];
         let infoIndex = 0;
         const updateInfo = () => { const infoEl = barra.querySelector('#info-alternada'); if (infoEl) { infoEl.style.opacity = 0; setTimeout(() => { infoEl.innerHTML = informacoes[infoIndex]; infoEl.style.opacity = 1; infoIndex = (infoIndex + 1) % informacoes.length; }, 500); } };
-        barra.innerHTML = `<div id="info-alternada" style="transition: opacity 0.5s ease; flex-grow: 1; font-size: 15px;"></div><div class="relogio" style="display: flex; align-items: center; gap: 30px; font-size: 36px;"><img src="https://eletromidia.com.br/wp-content/themes/eletromidia/assets/images/logo-eletromidia-horizontal.png" alt="Logo" style="height:40px;"><span id="hora"></span></div>`;
+        barra.innerHTML = `<div id="info-alternada" style="transition: opacity 0.5s ease; flex-grow: 1; font-size: 15px;"></div><div class="relogio" style="display: flex; align-items: center; gap: 30px; font-size: 36px;"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTSngqZzv7e6QBJRAN9L8zXvB9deAVNWW6tXQ&s" style="height:40px;"><span id="hora"></span></div>`;
         atualizarHora(); setInterval(atualizarHora, 60000);
         updateInfo(); commercialBarInterval = setInterval(updateInfo, 4000);
     }
@@ -434,3 +434,4 @@
 
 </body>
 </html>
+
