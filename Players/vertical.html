@@ -174,6 +174,8 @@
       <li><a href="#" onclick="stretchWrapper('horizontal+')"><i class="fa fa-arrows-alt-h fa-2x"></i>Largura +</a></li>
       <li><a href="#" onclick="stretchWrapper('horizontal-')"><i class="fa fa-compress-arrows-alt fa-2x"></i>Largura -</a></li>
       <li><a href="#" onclick="stretchWrapper('vertical-')"><i class="fa fa-compress-arrows-alt fa-2x"></i>Altura -</a></li>
+
+      <li><a href="#" onclick="lerGradePasta()"><i class="fa fa-folder-open fa-2x"></i>Ler Grade</a></li>
     </ul>
   </div>
 
@@ -186,7 +188,7 @@
     const controlsContainer = document.getElementById('controls-container');
     const barra = document.getElementById('barra');
     
-    // --- NOVAS VARIÁVEIS PARA CONTROLE DA PLAYLIST ---
+    // --- VARIÁVEIS DE CONTROLE DA PLAYLIST ---
     const IMAGE_DURATION = 7000; // Duração de 7 segundos para cada imagem
     let imageTimeout = null;     // Para controlar o temporizador da imagem
 
@@ -194,8 +196,13 @@
     let zoom = 1, rotation = 0, offsetX = 0, offsetY = 0, scaleX = 1, scaleY = 1;
     let commercialBarInterval = null;
     
-    // --- (NOVO) VARIÁVEL PARA O TIMER DO CURSOR ---
+    // --- VARIÁVEL PARA O TIMER DO CURSOR ---
     let cursorIdleTimer = null;
+
+    // --- (NOVO) VARIÁVEIS DE CONTROLE DA GRADE ---
+    let gradeDirectoryHandle = null; // Armazena o "handle" (referência) da pasta
+    let gradeCheckInterval = null;   // Armazena o timer do monitoramento
+    const GRADE_CHECK_INTERVAL_MS = 10000; // Verificar a pasta a cada 10 segundos
 
     // --- FUNÇÕES DE CONTROLE GERAIS ---
     function toggleControls() { controlsContainer.style.display = (controlsContainer.style.display === 'block') ? 'none' : 'block'; }
@@ -207,6 +214,14 @@
     }
     
     mediaInput.onchange = (event) => {
+        // --- (MODIFICADO) Interrompe o monitoramento de grade se mídias manuais forem adicionadas
+        if (gradeCheckInterval) {
+            clearInterval(gradeCheckInterval);
+            gradeCheckInterval = null;
+            gradeDirectoryHandle = null;
+            console.log("Monitoramento de grade interrompido. Carregando mídias manuais.");
+        }
+        
         const files = Array.from(event.target.files);
         const wasEmpty = mainPlaylist.length === 0; // Verifica se a playlist estava vazia
         mainPlaylist = mainPlaylist.concat(files);
@@ -216,7 +231,7 @@
         }
     }
 
-    // --- LÓGICA DE REPRODUÇÃO (CORRIGIDA) ---
+    // --- LÓGICA DE REPRODUÇÃO (Inalterada) ---
     function loadMainMedia() {
         if (mainPlaylist.length === 0) return;
 
@@ -224,6 +239,15 @@
         if (imageTimeout) clearTimeout(imageTimeout);
 
         const file = mainPlaylist[mainIndex];
+        
+        // --- (NOVO) Adicionado tratamento de erro caso o 'file' seja inválido ---
+        if (!file) {
+            console.error("Tentativa de carregar mídia inválida no índice:", mainIndex);
+            // Tenta avançar para a próxima mídia para não parar o player
+            playNextMedia();
+            return;
+        }
+        
         const url = URL.createObjectURL(file);
 
         if (file.type.startsWith('video')) {
@@ -240,8 +264,7 @@
         }
     }
 
-    // --- NOVA FUNÇÃO PARA AVANÇAR A PLAYLIST ---
-    // Centraliza a lógica de avançar para a próxima mídia, garantindo o loop
+    // --- FUNÇÃO PARA AVANÇAR A PLAYLIST (Inalterada) ---
     function playNextMedia() {
         if (mainPlaylist.length > 0) {
             mainIndex = (mainIndex + 1) % mainPlaylist.length; // O operador % garante o loop infinito
@@ -249,7 +272,6 @@
         }
     }
     
-    // O evento 'ended' do vídeo agora chama a função para avançar a playlist
     media.addEventListener('ended', playNextMedia);
 
     function reloadMidia() {
@@ -260,6 +282,14 @@
     }
 
     function resetMidias() {
+        // --- (MODIFICADO) Interrompe o monitoramento de grade ao resetar
+        if (gradeCheckInterval) {
+            clearInterval(gradeCheckInterval);
+            gradeCheckInterval = null;
+            gradeDirectoryHandle = null;
+            console.log("Monitoramento de grade interrompido.");
+        }
+        
         // Limpa também o temporizador ao resetar
         if (imageTimeout) clearTimeout(imageTimeout);
         mainPlaylist = [];
@@ -284,38 +314,106 @@
     function moveWrapper(direction) { if (direction === 'up') offsetY -= 10; if (direction === 'down') offsetY += 10; if (direction === 'left') offsetX -= 10; if (direction === 'right') offsetX += 10; updateWrapperTransform(); }
     function stretchWrapper(direction) { if (direction === 'horizontal+') scaleX += 0.05; if (direction === 'horizontal-') scaleX = Math.max(0.1, scaleX - 0.05); if (direction === 'vertical+') scaleY += 0.05; if (direction === 'vertical-') scaleY = Math.max(0.1, scaleY - 0.05); updateWrapperTransform(); }
 
-    // --- (NOVO) CONTROLE DE INATIVIDADE DO CURSOR ---
+    // --- CONTROLE DE INATIVIDADE DO CURSOR (Inalterado) ---
+    function hideCursor() { document.body.style.cursor = 'none'; }
+    function showCursorAndResetTimer() { document.body.style.cursor = 'auto'; if (cursorIdleTimer) { clearTimeout(cursorIdleTimer); } cursorIdleTimer = setTimeout(hideCursor, 3000); }
+    document.addEventListener('mousemove', showCursorAndResetTimer);
+
+    // --- (NOVAS) FUNÇÕES DE LEITURA DE GRADE ---
 
     /**
-     * Esconde o cursor do mouse.
-     * Esta função é chamada pelo temporizador quando o mouse fica inativo.
+     * Inicia o processo de seleção de pasta para monitoramento.
+     * Esta função é assíncrona (async) pois espera o utilizador escolher a pasta.
      */
-    function hideCursor() {
-        document.body.style.cursor = 'none';
-    }
-
-    /**
-     * Mostra o cursor e reinicia o temporizador de inatividade.
-     * Esta função é chamada sempre que o mouse se move.
-     */
-    function showCursorAndResetTimer() {
-        // 1. Garante que o cursor esteja visível
-        document.body.style.cursor = 'auto';
-
-        // 2. Limpa o temporizador anterior (se houver)
-        // Isso impede que o cursor se esconda se o mouse
-        // se mover antes do tempo limite anterior.
-        if (cursorIdleTimer) {
-            clearTimeout(cursorIdleTimer);
+    async function lerGradePasta() {
+        // 1. Verifica se o navegador suporta a API (requer HTTPS)
+        if (!window.showDirectoryPicker) {
+            alert('Erro: O seu navegador não suporta a seleção de pastas ou a página não está em HTTPS.');
+            return;
         }
 
-        // 3. Define um novo temporizador (3000ms = 3 segundos)
-        // Após 3 segundos de inatividade, a função hideCursor será chamada.
-        cursorIdleTimer = setTimeout(hideCursor, 3000); 
+        try {
+            // 2. Pede ao utilizador para selecionar uma pasta
+            const handle = await window.showDirectoryPicker();
+            
+            // 3. Limpa qualquer playlist ou monitoramento anterior
+            resetMidias(); 
+            
+            // 4. Armazena a referência da pasta
+            gradeDirectoryHandle = handle;
+            console.log(`Iniciando monitoramento da pasta: ${handle.name}`);
+
+            // 5. Faz a primeira verificação imediatamente
+            await scanGradeDirectory();
+            
+            // 6. Inicia o "timer" para verificar a pasta periodicamente
+            gradeCheckInterval = setInterval(scanGradeDirectory, GRADE_CHECK_INTERVAL_MS);
+
+        } catch (err) {
+            // O utilizador pode ter cancelado a seleção
+            console.error("Erro ao selecionar a pasta ou permissão negada:", err);
+        }
     }
-    
-    // "Ouve" o evento de movimento do mouse em todo o documento
-    document.addEventListener('mousemove', showCursorAndResetTimer);
+
+    /**
+     * Verifica a pasta selecionada por arquivos de vídeo da grade.
+     * Esta função é assíncrona (async) pois a leitura de arquivos é assíncrona.
+     */
+    async function scanGradeDirectory() {
+        if (!gradeDirectoryHandle) return; // Sai se nenhuma pasta estiver selecionada
+
+        let foundFiles = []; // Array para armazenar os "handles" dos arquivos encontrados
+        
+        try {
+            // 1. Itera sobre todos os arquivos/pastas dentro da pasta selecionada
+            for await (const entry of gradeDirectoryHandle.values()) {
+                // 2. Verifica se é um arquivo (kind === 'file') e se o nome bate o padrão "video" + "numero" + ".mp4"
+                // A expressão regular /i torna a verificação "case-insensitive" (ignora maiúsculas/minúsculas)
+                if (entry.kind === 'file' && entry.name.match(/^video\d+\.mp4$/i)) {
+                    foundFiles.push(entry);
+                }
+            }
+
+            // 3. Ordena os arquivos numericamente
+            foundFiles.sort((a, b) => {
+                // Extrai o número do nome de cada arquivo
+                const numA = parseInt(a.name.match(/(\d+)/)[1]);
+                const numB = parseInt(b.name.match(/(\d+)/)[1]);
+                return numA - numB; // Ordena do menor para o maior
+            });
+
+            // 4. Compara a lista encontrada com a playlist atual
+            // Criamos "listas de nomes" para comparar facilmente
+            const newPlaylistNames = foundFiles.map(f => f.name);
+            const oldPlaylistNames = mainPlaylist.map(f => f.name);
+
+            // 5. Verifica se as listas são diferentes
+            // JSON.stringify é uma forma simples de comparar se os arrays são idênticos
+            if (JSON.stringify(newPlaylistNames) !== JSON.stringify(oldPlaylistNames)) {
+                console.log("Mudança na grade detetada. Atualizando playlist...");
+                console.log("Arquivos encontrados:", newPlaylistNames.join(', '));
+                
+                // 6. Converte os "handles" de arquivo (FileSystemFileHandle) em objetos "File"
+                // que a nossa função loadMainMedia() entende
+                const fileObjects = await Promise.all(
+                    foundFiles.map(fileHandle => fileHandle.getFile())
+                );
+
+                // 7. Atualiza a playlist principal
+                mainPlaylist = fileObjects;
+                
+                // 8. Reinicia a playlist do início
+                mainIndex = 0;
+                loadMainMedia();
+            }
+            
+        } catch (err) {
+            console.error("Erro ao ler a pasta da grade. A permissão pode ter sido revogada.", err);
+            // Para o monitoramento se houver um erro grave (ex: pasta apagada)
+            resetMidias(); 
+        }
+    }
+
 
     // --- FUNÇÕES ESPECÍFICAS DO PLAYER VERTICAL (Inalteradas) ---
     function ajustarAlturaBarra(direcao) { const bottomAtual = parseInt(getComputedStyle(barra).bottom) || 0; const novoBottom = direcao === 'up' ? bottomAtual + 10 : bottomAtual - 10; barra.style.bottom = `${novoBottom}px`; }
@@ -407,31 +505,13 @@
         }
         
         startPlayerLogic();
-
-        // --- (NOVO) INICIA O CONTROLE DO CURSOR QUANDO A PÁGINA CARREGA ---
-        showCursorAndResetTimer();
+        showCursorAndResetTimer(); // Inicia o controle do cursor
     });
 
-    window.onload = function() {
-        const content = localStorage.getItem('dynamicContent');
-        const scriptSrc = localStorage.getItem('dynamicScript');
-        const container = document.getElementById('media-container');
+    // --- (Removido) Bloco window.onload redundante ---
+    // A lógica de 'DOMContentLoaded' já trata o carregamento inicial.
 
-        if (content && container) {
-            container.innerHTML = content;
-            localStorage.removeItem('dynamicContent');
-
-            if (scriptSrc) {
-                const scriptTag = document.createElement('script');
-                scriptTag.async = true;
-                scriptTag.src = scriptSrc;
-                document.body.appendChild(scriptTag);
-                localStorage.removeItem('dynamicScript');
-            }
-        }
-    };
 </script>
 
 </body>
 </html>
-
