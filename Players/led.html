@@ -27,9 +27,9 @@
 
         /* Classe para destacar o Player Ativo */
         .player-ativo {
+            /* ALTERAÇÃO: box-shadow removido para remover o destaque azul */
             
-            box-shadow: 0 0 15px rgba(0,123,255,0.7);
-            z-index: 100; /* Traz o player ativo para a frente */
+            z-index: 100; /* Mantido: Traz o player ativo para a frente */
         }
 
         .media-wrapper {
@@ -969,7 +969,6 @@
             pa.container.style.width = '960px'; 
             pa.container.style.height = '480px'; 
         }
-        // INÍCIO DA ALTERAÇÃO: Lógica para o preset 'relogio' para usar a altura da mídia
         else if (preset === 'relogio') { 
             // Pega o valor do novo input de Altura da Mídia (padrão é 480)
             const alturaMidia = document.getElementById('input-altura-midia').value;
@@ -993,7 +992,6 @@
             updateClock(); 
             commercialBarInterval = setInterval(updateClock, 1000); 
         }
-        // FIM DA ALTERAÇÃO
         else if (preset === 'coluna') {
             pa.container.style.top = '0px'; 
             pa.container.style.left = '0px'; 
@@ -1037,11 +1035,9 @@
         document.getElementById('input-y').value = pa.container.offsetTop;
         document.getElementById('input-largura').value = pa.container.offsetWidth;
         document.getElementById('input-altura').value = pa.container.offsetHeight;
-        // INÍCIO DA ALTERAÇÃO: Preenche o valor de altura da mídia no modal
-        // Se estiver no modo Relógio, usa a altura da mídia, senão usa o padrão
+        // Preenche o valor de altura da mídia no modal
         const isRelogio = (relogioBox.style.display === 'flex' && pa.container.style.width === '280px');
         document.getElementById('input-altura-midia').value = isRelogio ? pa.container.offsetHeight : 480; 
-        // FIM DA ALTERAÇÃO
         
         controlsContainer.style.display = 'none'; 
         presetLivreModal.style.display = 'block'; 
