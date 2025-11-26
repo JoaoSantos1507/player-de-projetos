@@ -1,247 +1,251 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>Player LED - Mosaico</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  
-  <style>
-    /* Estilos Globais e Reset */
-    html, body {
-      margin: 0; padding: 0; background: black; overflow: hidden;
-      width: 100vw; height: 100vh; font-family: 'Montserrat', sans-serif;
-    }
-
-    /* Estilo base para CADA instância de player. */
-    .player-instance {
-      position: absolute;
-      width: 400px; /* Tamanho inicial menor para mosaico */
-      height: 300px;
-      background: #000;
-      border: 2px solid #444;
-      overflow: hidden; 
-      resize: both; /* ATIVADO POR PADRÃO. Será controlado pelo JS */
-      display: flex; flex-direction: column;
-    }
-
-    /* Classe para destacar o Player Ativo */
-    .player-ativo {
-       
-        box-shadow: 0 0 15px rgba(0,123,255,0.7);
-        z-index: 100; /* Traz o player ativo para a frente */
-    }
-
-    .media-wrapper {
-      flex-grow: 1; position: relative; background: #111;
-      overflow: hidden;
-    }
-    .media-video, .media-fallback {
-      width: 100%; height: 100%; object-fit: contain;
-      position: absolute; top: 0; left: 0;
-    }
+    <meta charset="UTF-8">
+    <title>Player LED - Mosaico</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
-    /* Barra Comercial (agora é por-player) */
-    .barra-comercial {
-        position: absolute;
-        bottom: 6px;
-        left: 2px;
-        width: calc(100% - 4px);
-        background: rgb(0 0 0 / 60%);
-        color: white;
-        font-size: 14px;
-        display: none; /* Começa escondida */
-        padding: 10px;
-        box-sizing: border-box;
-        justify-content: space-between;
-        align-items: center;
-        z-index: 10;
-        border-radius: 14px;
-    }
-    .barra-comercial .info-alternada { transition: opacity 0.5s ease; flex-grow: 1; }
-    .barra-comercial .hora { font-size: 24px; font-weight: bold; }
+    <style>
+        /* Estilos Globais e Reset */
+        html, body {
+            margin: 0; padding: 0; background: black; overflow: hidden;
+            width: 100vw; height: 100vh; font-family: 'Montserrat', sans-serif;
+        }
 
-    .icon-decorado {
-        width: 20px;
-        height: 20px;
-        background: #ffffff;
-        padding: 4px;
-        border-radius: 6px;
-        filter: brightness(0.50) invert(1);
-        margin-right: 10px;
-    }
+        /* Estilo base para CADA instância de player. */
+        .player-instance {
+            position: absolute;
+            width: 400px; /* Tamanho inicial menor para mosaico */
+            height: 300px;
+            background: #000;
+            border: 2px solid #444;
+            overflow: hidden; 
+            resize: both; /* ATIVADO POR PADRÃO. Será controlado pelo JS */
+            display: flex; flex-direction: column;
+        }
 
-    /* Relógio (Elemento global, não é por-player) */
-    #relogio-box {
-        position: absolute; width: 100%;
-        background: black; color: white;
-        display: none; justify-content: center; align-items: center;
-        font-size: 60px; font-weight: bold; z-index: 20;
-    }
-    .blink { animation: blink 1s step-start infinite; }
-    @keyframes blink { 50% { opacity: 0; } }
+        /* Classe para destacar o Player Ativo */
+        .player-ativo {
+            
+            box-shadow: 0 0 15px rgba(0,123,255,0.7);
+            z-index: 100; /* Traz o player ativo para a frente */
+        }
 
-    /* Estilos dos Menus (Principal e Controladora) */
-    #controls-container, #controladora-container {
-      position: fixed; top: 50%; left: 50%;
-      z-index: 300; display: none;
-      -webkit-transform: translate(-50%, -50%);
-      transform: translate(-50%, -50%);
-    }
-    
-    #controladora-container {
-        z-index: 301; /* Fica por cima do menu principal */
-    }
+        .media-wrapper {
+            flex-grow: 1; position: relative; background: #111;
+            overflow: hidden;
+        }
+        .media-video, .media-fallback {
+            width: 100%; height: 100%; object-fit: contain;
+            position: absolute; top: 0; left: 0;
+        }
+        
+        /* Barra Comercial (agora é por-player) */
+        .barra-comercial {
+            position: absolute;
+            bottom: 6px;
+            left: 2px;
+            width: calc(100% - 4px);
+            background: rgb(0 0 0 / 60%);
+            color: white;
+            font-size: 14px;
+            display: none; /* Começa escondida */
+            padding: 10px;
+            box-sizing: border-box;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+            border-radius: 14px;
+        }
+        .barra-comercial .info-alternada { transition: opacity 0.5s ease; flex-grow: 1; }
+        .barra-comercial .hora { font-size: 24px; font-weight: bold; }
 
-    .menu-grid {
-      list-style: none; margin: 0; padding: 0;
-      display: grid;
-      grid-template-columns: repeat(6, 1fr);
-      border: 1px solid #4a4e69;
-    }
-    .menu-grid li { width: 150px; height: 120px; display: flex; justify-content: center; align-items: center; border: 1px solid #4a4e69; background-color: rgba(34, 34, 59, 0.95); cursor: pointer; -webkit-transition: background-color 0.4s ease-in-out; transition: background-color 0.4s ease-in-out; }
-    .menu-grid li:hover { background-color: #4a4e69; }
-    .menu-grid li a { text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #FFF; font-size: 14px; text-transform: capitalize; text-align: center; width: 100%; height: 100%; }
-    .menu-grid li i { margin-bottom: 15px; }
-    .menu-grid li a.active { background-color: #007bff; }
-    
-    /* Estilo para o Seletor de Player */
-    .menu-grid li.controladora-select {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        color: white;
-        font-size: 14px;
-        grid-column: span 2; /* Faz o seletor ocupar 2 espaços */
-    }
-    .menu-grid li.controladora-select label {
-        margin-bottom: 10px;
-        font-weight: bold;
-    }
-    #player-selector {
-        background: #333;
-        color: white;
-        border: 1px solid #4a4e69;
-        padding: 8px;
-        border-radius: 5px;
-        width: 80%;
-    }
+        .icon-decorado {
+            width: 20px;
+            height: 20px;
+            background: #ffffff;
+            padding: 4px;
+            border-radius: 6px;
+            filter: brightness(0.50) invert(1);
+            margin-right: 10px;
+        }
 
-    /* Modal Preset Livre */
-    #preset-livre-modal {
-        display: none;
-        position: fixed; top: 50%; left: 50%;
-        -webkit-transform: translate(-50%, -50%);
-        transform: translate(-50%, -50%);
-        background-color: #22223b;
-        color: white;
-        padding: 30px;
-        border: 1px solid #4a4e69;
-        border-radius: 10px;
-        box-shadow: 0 5px 25px rgba(0,0,0,0.5);
-        z-index: 400;
-        width: 300px;
-    }
-    #preset-livre-modal h3 { margin-top: 0; text-align: center; }
-    .input-group { margin-bottom: 15px; }
-    .input-group label { display: block; margin-bottom: 5px; }
-    .input-group input { width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #4a4e69; background: #333; color: white; box-sizing: border-box; }
-    .modal-botoes { text-align: right; }
-    .modal-botoes button { background: #4a4e69; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; margin-left: 10px; }
-    .modal-botoes button:hover { background: #5a5e79; }
+        /* Relógio (Elemento global, não é por-player) */
+        #relogio-box {
+            position: absolute; width: 100%;
+            background: black; color: white;
+            display: none; justify-content: center; align-items: center;
+            font-size: 60px; font-weight: bold; z-index: 20;
+        }
+        .blink { animation: blink 1s step-start infinite; }
+        @keyframes blink { 50% { opacity: 0; } }
 
-    /* Overlay de Corte (agora por-player) */
-    .selection-overlay {
-        position: absolute;
-        top: 0; left: 0;
-        width: 100%; height: 100%;
-        background: rgba(0,0,0,0.5);
-        cursor: crosshair;
-        z-index: 50;
-        display: none;
-    }
-    .selection-box {
-        position: absolute;
-        border: 2px dashed #fff;
-        box-sizing: border-box;
-    }
+        /* Estilos dos Menus (Principal e Controladora) */
+        #controls-container, #controladora-container {
+            position: fixed; top: 50%; left: 50%;
+            z-index: 300; display: none;
+            -webkit-transform: translate(-50%, -50%);
+            transform: translate(-50%, -50%);
+        }
+        
+        #controladora-container {
+            z-index: 301; /* Fica por cima do menu principal */
+        }
 
-  </style>
+        .menu-grid {
+            list-style: none; margin: 0; padding: 0;
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            border: 1px solid #4a4e69;
+        }
+        .menu-grid li { width: 150px; height: 120px; display: flex; justify-content: center; align-items: center; border: 1px solid #4a4e69; background-color: rgba(34, 34, 59, 0.95); cursor: pointer; -webkit-transition: background-color 0.4s ease-in-out; transition: background-color 0.4s ease-in-out; }
+        .menu-grid li:hover { background-color: #4a4e69; }
+        .menu-grid li a { text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #FFF; font-size: 14px; text-transform: capitalize; text-align: center; width: 100%; height: 100%; }
+        .menu-grid li i { margin-bottom: 15px; }
+        .menu-grid li a.active { background-color: #007bff; }
+        
+        /* Estilo para o Seletor de Player */
+        .menu-grid li.controladora-select {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 14px;
+            grid-column: span 2; /* Faz o seletor ocupar 2 espaços */
+        }
+        .menu-grid li.controladora-select label {
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        #player-selector {
+            background: #333;
+            color: white;
+            border: 1px solid #4a4e69;
+            padding: 8px;
+            border-radius: 5px;
+            width: 80%;
+        }
+
+        /* Modal Preset Livre */
+        #preset-livre-modal {
+            display: none;
+            position: fixed; top: 50%; left: 50%;
+            -webkit-transform: translate(-50%, -50%);
+            transform: translate(-50%, -50%);
+            background-color: #22223b;
+            color: white;
+            padding: 30px;
+            border: 1px solid #4a4e69;
+            border-radius: 10px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.5);
+            z-index: 400;
+            width: 300px;
+        }
+        #preset-livre-modal h3 { margin-top: 0; text-align: center; }
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; margin-bottom: 5px; }
+        .input-group input { width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #4a4e69; background: #333; color: white; box-sizing: border-box; }
+        .modal-botoes { text-align: right; }
+        .modal-botoes button { background: #4a4e69; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; margin-left: 10px; }
+        .modal-botoes button:hover { background: #5a5e79; }
+
+        /* Overlay de Corte (agora por-player) */
+        .selection-overlay {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            cursor: crosshair;
+            z-index: 50;
+            display: none;
+        }
+        .selection-box {
+            position: absolute;
+            border: 2px dashed #fff;
+            box-sizing: border-box;
+        }
+
+    </style>
 </head>
 <body>
 
-  <div id="relogio-box"></div>
+    <div id="relogio-box"></div>
 
-  <input type="file" id="mediaInput" accept="video/mp4,image/*" style="display: none;" multiple>
+    <input type="file" id="mediaInput" accept="video/mp4,image/*" style="display: none;" multiple>
 
-  <div id="preset-livre-modal">
-    <h3>Preset Personalizado</h3>
-    <div class="input-group">
-        <label for="input-x">Posição X (px)</label>
-        <input type="number" id="input-x" value="100">
+    <div id="preset-livre-modal">
+        <h3>Preset Personalizado</h3>
+        <div class="input-group">
+            <label for="input-x">Posição X (px)</label>
+            <input type="number" id="input-x" value="100">
+        </div>
+        <div class="input-group">
+            <label for="input-y">Posição Y (px)</label>
+            <input type="number" id="input-y" value="100">
+        </div>
+        <div class="input-group">
+            <label for="input-largura">Largura (px)</label>
+            <input type="number" id="input-largura" value="800">
+        </div>
+        <div class="input-group">
+            <label for="input-altura-midia">Altura Mídia (Relógio) (px)</label>
+            <input type="number" id="input-altura-midia" value="480">
+        </div>
+        <div class="input-group">
+            <label for="input-altura">Altura (px)</label>
+            <input type="number" id="input-altura" value="600">
+        </div>
+        <div class="modal-botoes">
+            <button onclick="fecharModalPresetLivre()">Cancelar</button>
+            <button onclick="aplicarPresetLivre()">Aplicar</button>
+        </div>
     </div>
-    <div class="input-group">
-        <label for="input-y">Posição Y (px)</label>
-        <input type="number" id="input-y" value="100">
-    </div>
-    <div class="input-group">
-        <label for="input-largura">Largura (px)</label>
-        <input type="number" id="input-largura" value="800">
-    </div>
-    <div class="input-group">
-        <label for="input-altura">Altura (px)</label>
-        <input type="number" id="input-altura" value="600">
-    </div>
-    <div class="modal-botoes">
-        <button onclick="fecharModalPresetLivre()">Cancelar</button>
-        <button onclick="aplicarPresetLivre()">Aplicar</button>
-    </div>
-  </div>
 
-  <div id="controls-container">
-    <ul class="menu-grid">
-      <li><a href="#" onclick="addMedia()"><i class="fa fa-plus fa-2x"></i>Add Mídia</a></li>
-      <li><a href="#" onclick="lerGradePasta()"><i class="fa fa-folder-open fa-2x"></i>Ler Grade</a></li>
-      
-      <li><a href="#" onclick="aplicarLayout('mub')"><i class="fa fa-desktop fa-2x"></i>Mub Premium</a></li>
-      <li><a href="#" onclick="aplicarLayout('relogio')"><i class="fa fa-clock fa-2x"></i>Relógio</a></li>
-      <li><a href="#" onclick="aplicarLayout('coluna')"><i class="fa fa-columns fa-2x"></i>Coluna</a></li>
-      <li><a href="#" onclick="abrirModalPresetLivre()"><i class="fa fa-ruler-combined fa-2x"></i>Preset Livre</a></li>
-      
-      <li><a href="#" onclick="toggleBarraComercial()"><i class="fa fa-bars fa-2x"></i>Alternar Barra</a></li>
-      <li><a href="#" onclick="toggleFullscreen()"><i class="fa fa-expand fa-2x"></i>Tela Cheia</a></li>
-      <li><a href="#" onclick="resetMidias()"><i class="fa fa-trash fa-2x"></i>Resetar</a></li>
-      <li id="move-button-li"><a href="#" onclick="toggleMover(this)"><i class="fa fa-arrows-alt fa-2x"></i>Ajustar Posição</a></li>
-      <li><a href="#" onclick="mostrarMenuControladora(true)"><i class="fa fa-cogs fa-2x"></i>Controladora</a></li> 
-      <li><a href="#" onclick="toggleControls()"><i class="fa fa-eye-slash fa-2x"></i>Ocultar Menu</a></li>
-      
-      <li><a href="#" onclick="ajustarModo('contain', this)"><i class="fa fa-compress fa-2x"></i>Ajustar</a></li>
-      <li><a href="#" onclick="ajustarModo('fill', this)"><i class="fa fa-expand-arrows-alt fa-2x"></i>Esticar</a></li>
-      <li><a href="#" onclick="ajustarModo('cover', this)"><i class="fa fa-clone fa-2x"></i>Preencher</a></li>
-      <li><a href="#" onclick="rotacionarMidia()"><i class="fa fa-redo fa-2x"></i>Rotacionar</a></li>
-      <li><a href="#" onclick="resetarLayout()"><i class="fa fa-undo fa-2x"></i>Resetar Layout</a></li>
-      <li><a href="#" onclick="salvarConfiguracao()"><i class="fa fa-save fa-2x"></i>Salvar</a></li>
-      
-      <li><a href="#" onclick="carregarConfiguracao()"><i class="fa fa-folder-open fa-2x"></i>Carregar</a></li>
-      <li><a href="#" onclick="toggleCortar(this)"><i class="fa fa-crop-alt fa-2x"></i>Cortar Mídia</a></li>
-    </ul>
-  </div>
-  
-  <div id="controladora-container">
-    <ul class="menu-grid">
-        <li><a href="#" onclick="voltarMenuPrincipal()"><i class="fa fa-arrow-left fa-2x"></i>Voltar</a></li>
-        <li><a href="#" onclick="adicionarPlayer()"><i class="fa fa-plus-square fa-2x"></i>Add Player</a></li>
-        <li><a href="#" onclick="sincronizarPlayers()"><i class="fa fa-sync fa-2x"></i>Sincronizar</a></li>
-        <li><a href="#" onclick="removerPlayer()"><i class="fa fa-trash fa-2x"></i>Remover</a></li>
-        
-        <li class="controladora-select">
-            <label for="player-selector">Player Ativo:</label>
-            <select id="player-selector" onchange="selecionarPlayer(this.value)">
+    <div id="controls-container">
+        <ul class="menu-grid">
+            <li><a href="#" onclick="addMedia()"><i class="fa fa-plus fa-2x"></i>Add Mídia</a></li>
+            <li><a href="#" onclick="lerGradePasta()"><i class="fa fa-folder-open fa-2x"></i>Ler Grade</a></li>
+            
+            <li><a href="#" onclick="aplicarLayout('mub')"><i class="fa fa-desktop fa-2x"></i>Mub Premium</a></li>
+            <li><a href="#" onclick="aplicarLayout('relogio')"><i class="fa fa-clock fa-2x"></i>Relógio</a></li>
+            <li><a href="#" onclick="aplicarLayout('coluna')"><i class="fa fa-columns fa-2x"></i>Coluna</a></li>
+            <li><a href="#" onclick="abrirModalPresetLivre()"><i class="fa fa-ruler-combined fa-2x"></i>Preset Livre</a></li>
+            
+            <li><a href="#" onclick="toggleBarraComercial()"><i class="fa fa-bars fa-2x"></i>Alternar Barra</a></li>
+            <li><a href="#" onclick="toggleFullscreen()"><i class="fa fa-expand fa-2x"></i>Tela Cheia</a></li>
+            <li><a href="#" onclick="resetMidias()"><i class="fa fa-trash fa-2x"></i>Resetar</a></li>
+            <li id="move-button-li"><a href="#" onclick="toggleMover(this)"><i class="fa fa-arrows-alt fa-2x"></i>Ajustar Posição</a></li>
+            <li><a href="#" onclick="mostrarMenuControladora(true)"><i class="fa fa-cogs fa-2x"></i>Controladora</a></li> 
+            <li><a href="#" onclick="toggleControls()"><i class="fa fa-eye-slash fa-2x"></i>Ocultar Menu</a></li>
+            
+            <li><a href="#" onclick="ajustarModo('contain', this)"><i class="fa fa-compress fa-2x"></i>Ajustar</a></li>
+            <li><a href="#" onclick="ajustarModo('fill', this)"><i class="fa fa-expand-arrows-alt fa-2x"></i>Esticar</a></li>
+            <li><a href="#" onclick="ajustarModo('cover', this)"><i class="fa fa-clone fa-2x"></i>Preencher</a></li>
+            <li><a href="#" onclick="rotacionarMidia()"><i class="fa fa-redo fa-2x"></i>Rotacionar</a></li>
+            <li><a href="#" onclick="resetarLayout()"><i class="fa fa-undo fa-2x"></i>Resetar Layout</a></li>
+            <li><a href="#" onclick="salvarConfiguracao()"><i class="fa fa-save fa-2x"></i>Salvar</a></li>
+            
+            <li><a href="#" onclick="carregarConfiguracao()"><i class="fa fa-folder-open fa-2x"></i>Carregar</a></li>
+            <li><a href="#" onclick="toggleCortar(this)"><i class="fa fa-crop-alt fa-2x"></i>Cortar Mídia</a></li>
+        </ul>
+    </div>
+    
+    <div id="controladora-container">
+        <ul class="menu-grid">
+            <li><a href="#" onclick="voltarMenuPrincipal()"><i class="fa fa-arrow-left fa-2x"></i>Voltar</a></li>
+            <li><a href="#" onclick="adicionarPlayer()"><i class="fa fa-plus-square fa-2x"></i>Add Player</a></li>
+            <li><a href="#" onclick="sincronizarPlayers()"><i class="fa fa-sync fa-2x"></i>Sincronizar</a></li>
+            <li><a href="#" onclick="removerPlayer()"><i class="fa fa-trash fa-2x"></i>Remover</a></li>
+            
+            <li class="controladora-select">
+                <label for="player-selector">Player Ativo:</label>
+                <select id="player-selector" onchange="selecionarPlayer(this.value)">
                 </select>
-        </li>
-    </ul>
-  </div>
+            </li>
+        </ul>
+    </div>
 
 <script>
     // --- VARIÁVEIS GLOBAIS DE CONTROLE ---
@@ -332,7 +336,7 @@
             crop: { x: 0, y: 0, w: 0, h: 0 },
             
             // --- PROPRIEDADES DA PLAYLIST ---
-            playlist: [],       // Array para os ficheiros (File objects)
+            playlist: [],      // Array para os ficheiros (File objects)
             playlistIndex: 0, // Índice da mídia atual
             imageTimeout: null,  // Timer para mídias de imagem
             
@@ -871,7 +875,7 @@
             player.playlistIndex = 0;
             player.media.pause();
             player.media.removeAttribute('src');
-            player.fallback.removeAttribute('src');
+            player.media.removeAttribute('src');
             player.media.load();
         }
     }
@@ -934,11 +938,11 @@
         const pa = playerAtivo;
         
         pa.barraComercial.style.display = 'none'; 
-        if (commercialBarInterval && pa.id === 1) { 
-            relogioBox.style.display = 'none';
-            clearInterval(commercialBarInterval);
-            commercialBarInterval = null;
+        if (commercialBarInterval) { // Resetar para todos os players
+             clearInterval(commercialBarInterval);
+             commercialBarInterval = null;
         }
+        relogioBox.style.display = 'none';
         
         pa.container.style.top = '50%'; 
         pa.container.style.left = '50%'; 
@@ -957,6 +961,7 @@
         pa.container.style.transform = 'none';
         
         if (commercialBarInterval) clearInterval(commercialBarInterval);
+        relogioBox.style.display = 'none';
 
         if (preset === 'mub') { 
             pa.container.style.top = '0px'; 
@@ -964,22 +969,31 @@
             pa.container.style.width = '960px'; 
             pa.container.style.height = '480px'; 
         }
+        // INÍCIO DA ALTERAÇÃO: Lógica para o preset 'relogio' para usar a altura da mídia
         else if (preset === 'relogio') { 
+            // Pega o valor do novo input de Altura da Mídia (padrão é 480)
+            const alturaMidia = document.getElementById('input-altura-midia').value;
+            const larguraPlayer = '280px'; // Largura fixa do layout Relógio
+            const alturaRelogio = '80px'; // Altura fixa do relógio
+            
             pa.container.style.top = '0px'; 
             pa.container.style.left = '0px'; 
-            pa.container.style.width = '280px'; 
-            pa.container.style.height = '480px'; 
+            pa.container.style.width = larguraPlayer; 
+            // Usa o valor da altura da mídia do input
+            pa.container.style.height = `${alturaMidia}px`; 
             
             relogioBox.style.display = 'flex'; 
-            relogioBox.style.top = '480px'; 
+            // A posição Y do relógio é o final da mídia
+            relogioBox.style.top = `${alturaMidia}px`; 
             relogioBox.style.left = '0px'; 
-            relogioBox.style.width = '280px'; 
-            relogioBox.style.height = '80px'; 
+            relogioBox.style.width = larguraPlayer; 
+            relogioBox.style.height = alturaRelogio; 
             
             const updateClock = () => { relogioBox.innerHTML = new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}).replace(':', '<span class="blink">:</span>'); }; 
             updateClock(); 
             commercialBarInterval = setInterval(updateClock, 1000); 
         }
+        // FIM DA ALTERAÇÃO
         else if (preset === 'coluna') {
             pa.container.style.top = '0px'; 
             pa.container.style.left = '0px'; 
@@ -1023,6 +1037,11 @@
         document.getElementById('input-y').value = pa.container.offsetTop;
         document.getElementById('input-largura').value = pa.container.offsetWidth;
         document.getElementById('input-altura').value = pa.container.offsetHeight;
+        // INÍCIO DA ALTERAÇÃO: Preenche o valor de altura da mídia no modal
+        // Se estiver no modo Relógio, usa a altura da mídia, senão usa o padrão
+        const isRelogio = (relogioBox.style.display === 'flex' && pa.container.style.width === '280px');
+        document.getElementById('input-altura-midia').value = isRelogio ? pa.container.offsetHeight : 480; 
+        // FIM DA ALTERAÇÃO
         
         controlsContainer.style.display = 'none'; 
         presetLivreModal.style.display = 'block'; 
