@@ -2,137 +2,140 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Player Vertical</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <title>Player Vertical Pro | Creative Hub</title>
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Oswald:wght@300;400;500;700&display=swap" rel="stylesheet">
   
   <style>
-    /* Estilos Globais e Reset */
+    /* [DIRETRIZ DE DESIGN: PALETA] 
+       Não alterar as variáveis de cor para manter identidade visual do projeto.
+    */
+    :root { 
+        --primary-gradient: linear-gradient(135deg, #0d6efd 0%, #00d4ff 100%);
+        --glass-border: rgba(255, 255, 255, 0.1);
+        --dark-bg: #0a0a0c;
+        --text-main: #ffffff;
+        --text-muted: #a0a0a8;
+        --green-trend: #00c853; /* Verde Neon para altas */
+        --red-trend: #ff3d00;   /* Vermelho Neon para baixas */
+    }
+
     html, body {
-      margin: 0; padding: 0; background: black; overflow: hidden;
-      width: 100vw; height: 100vh; font-family: 'Montserrat', sans-serif;
+      margin: 0; padding: 0; background: var(--dark-bg); overflow: hidden;
+      width: 100vw; height: 100vh; font-family: 'Plus Jakarta Sans', sans-serif;
       display: flex; justify-content: center; align-items: center;
     }
 
-    /* Estrutura Principal */
+    /* Container Principal */
     #player-wrapper {
       width: 1080px; height: 1920px;
       background: black;
       position: relative;
-      box-shadow: 0 0 20px rgba(0,0,0,0.8);
+      box-shadow: 0 0 50px rgba(0,0,0,0.9);
       display: flex; flex-direction: column;
       justify-content: flex-end; align-items: center;
-      -webkit-transform-origin: center center;
       transform-origin: center center;
     }
+
     #mediaWrapper {
       width: 100%; height: 100%;
-      background: black;
-      position: absolute; top:0; left:0;
-      overflow: hidden;
+      background: black; position: absolute; top:0; left:0; overflow: hidden;
     }
-    #media, #fallback {
-      width: 100%; height: 100%; object-fit: cover;
-    }
+
+    #media, #fallback { width: 100%; height: 100%; object-fit: cover; }
     
-    /* --- Estilos da #barra atualizados para o padrão do player Comercial --- */
+    /* [DIRETRIZ DE DESIGN: BARRA DE INFORMAÇÕES]
+       - Altura fixa: 68px (Compacta e Elegante)
+       - Largura: 97% (Margem leve nas bordas)
+       - Cor: Cinza Chumbo quase sólido (Opacity 0.92) com Blur (Glassmorphism sutil)
+       - Borda: Fina e translúcida (1px rgba white 0.08)
+    */
     #barra {
-      position: absolute; bottom: 97px; left: 50%;
-      width: 97%; /* Mais larga */
-      background: rgba(0, 0, 0, 0.75); /* Padrão Comercial */
-      display: flex;
-      justify-content: space-between; align-items: center;
-      padding: 20px; /* Padrão Comercial */
-      font-size: 20px; font-weight: 600; color: #ffffff;
-      z-index: 200;
-      -webkit-transform: translateX(-50%);
-      transform: translateX(-50%);
-      -webkit-border-radius: 26px; /* Padrão Comercial */
-      border-radius: 26px; /* Padrão Comercial */
-      -webkit-transition: all 0.3s ease;
-      transition: all 0.3s ease;
-      box-sizing: border-box; 
+      position: absolute; bottom: 97px; left: 50%; 
+      width: 97%; height: 68px;
+      background: rgba(30, 30, 30, 0.92); 
+      backdrop-filter: blur(8px);
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0 15px;
+      color: #ffffff; z-index: 200;
+      transform: translateX(-50%); 
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 5px 20px rgba(0,0,0,0.4);
+      box-sizing: border-box; overflow: hidden;
     }
+
+    /* [LAYOUT DA BARRA] Direita: Logo da Empresa */
+    .brand-section {
+        order: 3; display: flex; align-items: center; 
+        border-left: 1px solid rgba(255,255,255,0.1);
+        padding-left: 15px; height: 60%;
+    }
+    .brand-logo { height: 26px; width: auto; object-fit: contain; opacity: 0.9; }
+
+    /* [LAYOUT DA BARRA] Centro: Dados Dinâmicos */
+    .content-section {
+        order: 2; flex-grow: 1; display: flex; align-items: center; justify-content: flex-start;
+        padding: 0 20px; font-family: 'Oswald', sans-serif;
+        opacity: 0; transition: opacity 0.5s ease; height: 100%;
+    }
+    .content-section.visible { opacity: 1; }
+
+    /* [LAYOUT DA BARRA] Esquerda: Ícone da Categoria */
+    .category-box {
+        order: 1; background: rgba(255,255,255,0.06);
+        width: 42px; height: 42px; border-radius: 10px;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        gap: 0px; flex-shrink: 0;
+    }
+    .category-icon { font-size: 16px; color: white; opacity: 0.9; }
+    .category-name { font-size: 6px; text-transform: uppercase; font-weight: 700; color: #888; letter-spacing: 0.5px; margin-top: 2px; }
+
+    /* Utilitários de Layout Interno */
+    .bar-split-container { display: flex; align-items: center; height: 100%; width: 100%; }
+    .bar-separator { width: 1px; height: 35px; background: rgba(255,255,255,0.15); margin: 0 15px; }
+    .data-group { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; }
     
-    /* Container para agrupar nome do shopping e info alternada */
-    #shopping-info-container {
-        display: flex;
-        align-items: center;
-        flex-grow: 1; /* Ocupa o espaço disponível */
-        overflow: hidden; /* Evita que o conteúdo vaze */
-    }
-
-    #shopping-nome { 
-        white-space: nowrap; 
-        overflow: hidden; 
-        text-overflow: ellipsis; 
-        flex-shrink: 0; 
-        margin-right: 25px; /* Espaçamento entre o nome e a informação */
-        font-size: 24px;
-    }
+    /* Tipografia de Dados - Manter Oswald para números */
+    .data-label { font-size: 8px; text-transform: uppercase; color: #888; letter-spacing: 1px; margin-bottom: 2px; font-weight: 400; }
+    .data-value { font-size: 22px; font-weight: 500; line-height: 1; color: white; }
     
-    /* --- Classe para a , inspirada no player Comercial --- */
-    .logo-eletromidia {
-        height: 48px;
-        max-width: 200px;
-        object-fit: contain;
-    }
+    .trend-up { color: var(--green-trend); font-size: 11px; font-weight: 600; display: flex; align-items: center; gap:3px; }
+    .trend-down { color: var(--red-trend); font-size: 11px; font-weight: 600; display: flex; align-items: center; gap:3px; }
 
-    /* Ícone no estilo dos players comerciais */
-    .icon-decorado {
-        height: 30px !important;
-        width: 30px !important;
-        background: #ffffff;
-        padding: 5px;
-        border-radius: 50%;
-        filter: brightness(0.50) invert(1);
-        margin-right: 15px; /* Espaço entre ícone e texto */
-        vertical-align: middle;
-        flex-shrink: 0;
-    }
+    /* Grid de Clima Específico */
+    .weather-details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 15px; }
+    .weather-detail-item { display: flex; align-items: center; gap: 5px; font-size: 9px; color: #ccc; font-weight: 300; }
 
-    /* Marcadores de status (verde/vermelho) */
-    .info-marker {
-        font-size: 16px;
-        font-weight: 700;
-        padding: 4px 10px;
-        color: white;
-        border-radius: 5px;
-        margin-left: 10px;
-        flex-shrink: 0;
-    }
-    .info-marker.positivo { background-color: #2ecc71; }
-    .info-marker.negativo { background-color: #e74c3c; }
-    .info-marker.alerta { background-color: #f1c40f; }
-    
-    #shopping-info-alternada {
-        display: flex; 
-        align-items: center; 
-        font-size: 20px;
-        font-weight: 500;
-        transition: opacity 0.5s ease;
-        white-space: nowrap; 
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    /* Estilos do Menu de Controles */
+    /* [DIRETRIZ DE DESIGN: MENU DE CONTROLES]
+       - Estilo Glassmorphism pesado (Blur 20px)
+       - Botões em Grid de 4 colunas
+       - Ícones centralizados com texto abaixo
+       - Botão clicável em 100% da área (<a> ocupa tudo)
+    */
     #controls-container {
       position: fixed; top: 50%; left: 50%;
-      z-index: 300; display: none;
-      -webkit-transform: translate(-50%, -50%);
+      z-index: 1000; display: none;
       transform: translate(-50%, -50%);
+      background: rgba(10, 10, 12, 0.95);
+      backdrop-filter: blur(20px);
+      padding: 25px; border-radius: 25px;
+      border: 1px solid var(--glass-border);
+      box-shadow: 0 30px 60px rgba(0,0,0,0.8);
+      width: 85%; max-width: 600px; max-height: 80vh; overflow-y: auto;
     }
-    .menu-grid {
-      list-style: none; margin: 0; padding: 0;
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      border: 1px solid #4a4e69;
-    }
-    .menu-grid li { width: 160px; height: 130px; display: flex; justify-content: center; align-items: center; border: 1px solid #4a4e69; background-color: rgba(34, 34, 59, 0.95); cursor: pointer; -webkit-transition: background-color 0.4s ease-in-out; transition: background-color 0.4s ease-in-out; }
-    .menu-grid li:hover { background-color: #4a4e69; }
-    .menu-grid li a { text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #FFF; font-size: 16px; text-transform: capitalize; text-align: center; width: 100%; height: 100%; }
-    .menu-grid li i { margin-bottom: 15px; }
+    .menu-header { text-align: center; margin-bottom: 20px; }
+    .menu-header h2 { font-size: 18px; color: var(--text-main); margin: 0; }
+    .menu-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    .menu-grid li { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--glass-border); border-radius: 12px; transition: all 0.2s ease; overflow: hidden; }
+    .menu-grid li:hover { background: rgba(13, 110, 253, 0.15); border-color: #0d6efd; transform: translateY(-3px); }
+    .menu-grid li a { text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-main); font-size: 11px; font-weight: 600; gap: 8px; padding: 15px 5px; width: 100%; height: 100%; box-sizing: border-box; }
+    .menu-grid li i { font-size: 20px; color: var(--text-muted); }
+    .menu-grid li:hover i { color: #0d6efd; }
+    .btn-hide-item { background: var(--accent-gradient) !important; border: none !important; }
+    #controls-container::-webkit-scrollbar { width: 5px; }
+    #controls-container::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 10px; }
   </style>
 </head>
 <body>
@@ -141,46 +144,40 @@
     <div id="mediaWrapper">
       <video id="media" autoplay muted playsinline></video>
       <img id="fallback" style="display: none;" />
-      <div id="barra">
-      </div>
+      <div id="barra"></div>
     </div>
   </div>
 
   <input type="file" id="mediaInput" accept="video/mp4,image/*" multiple style="display: none;">
 
   <div id="controls-container">
+    <div class="menu-header"><h2>PAINEL DE CONTROLE</h2></div>
     <ul class="menu-grid">
-      <li><a href="#" onclick="addMedia()"><i class="fa fa-plus fa-2x"></i>Add Mídia</a></li>
-      <li><a href="#" onclick="reloadMidia()"><i class="fa fa-sync-alt fa-2x"></i>Recarregar</a></li>
-      <li><a href="#" onclick="resetMidias()"><i class="fa fa-trash fa-2x"></i>Resetar</a></li>
-      <li><a href="#" onclick="toggleControls()"><i class="fa fa-eye-slash fa-2x"></i>Ocultar Menu</a></li>
+      <li><a href="../index.html"><i class="fas fa-home"></i>HOME</a></li>
       
-      <li><a href="#" onclick="ativarBarraShopping()"><i class="fa fa-store fa-2x"></i>Barra Shopping</a></li>
-      <li><a href="#" onclick="ativarBarraComercial()"><i class="fa fa-chart-line fa-2x"></i>Barra Comercial</a></li>
-      <li><a href="#" onclick="toggleBar()"><i class="fa fa-bars fa-2x"></i>Alternar Barra</a></li>
-      <li><a href="#" onclick="toggleFullscreen()"><i class="fa fa-expand fa-2x"></i>Tela Cheia</a></li>
-
-      <li><a href="#" onclick="ajustarAlturaBarra('up')"><i class="fa fa-chevron-up fa-2x"></i>Barra Cima</a></li>
-      <li><a href="#" onclick="ajustarAlturaBarra('down')"><i class="fa fa-chevron-down fa-2x"></i>Barra Baixo</a></li>
-      <li><a href="#" onclick="rotateWrapper()"><i class="fa fa-redo fa-2x"></i>Rotacionar</a></li>
-      <li><a href="#" onclick="zoomWrapperIn()"><i class="fa fa-search-plus fa-2x"></i>Zoom +</a></li>
-
-      <li><a href="#" onclick="zoomWrapperOut()"><i class="fa fa-search-minus fa-2x"></i>Zoom -</a></li>
-      <li><a href="#" onclick="moveWrapper('up')"><i class="fa fa-arrow-up fa-2x"></i>Mover Cima</a></li>
-      <li><a href="#" onclick="moveWrapper('down')"><i class="fa fa-arrow-down fa-2x"></i>Mover Baixo</a></li>
-      <li><a href="#" onclick="moveWrapper('left')"><i class="fa fa-arrow-left fa-2x"></i>Mover Esq.</a></li>
-
-      <li><a href="#" onclick="moveWrapper('right')"><i class="fa fa-arrow-right fa-2x"></i>Mover Dir.</a></li>
-      <li><a href="#" onclick="stretchWrapper('horizontal+')"><i class="fa fa-arrows-alt-h fa-2x"></i>Largura +</a></li>
-      <li><a href="#" onclick="stretchWrapper('horizontal-')"><i class="fa fa-compress-arrows-alt fa-2x"></i>Largura -</a></li>
-      <li><a href="#" onclick="stretchWrapper('vertical-')"><i class="fa fa-compress-arrows-alt fa-2x"></i>Altura -</a></li>
-
-      <li><a href="#" onclick="lerGradePasta()"><i class="fa fa-folder-open fa-2x"></i>Ler Grade</a></li>
+      <li><a href="javascript:void(0)" onclick="addMedia()"><i class="fa fa-plus-circle"></i>Add Mídia</a></li>
+      <li><a href="javascript:void(0)" onclick="reloadMidia()"><i class="fa fa-sync"></i>Recarregar</a></li>
+      <li><a href="javascript:void(0)" onclick="resetMidias()"><i class="fa fa-trash-alt"></i>Resetar</a></li>
+      <li class="btn-hide-item"><a href="javascript:void(0)" onclick="toggleControls()"><i class="fa fa-eye-slash" style="color:white"></i>Ocultar</a></li>
+      <li><a href="javascript:void(0)" onclick="iniciarBarraRotativa()"><i class="fa fa-play"></i>Iniciar Barra</a></li>
+      <li><a href="javascript:void(0)" onclick="toggleBar()"><i class="fa fa-minus-square"></i>Exibir Barra</a></li>
+      <li><a href="javascript:void(0)" onclick="toggleFullscreen()"><i class="fa fa-expand"></i>Tela Cheia</a></li>
+      <li><a href="javascript:void(0)" onclick="ajustarAlturaBarra('up')"><i class="fa fa-chevron-up"></i>Barra ↑</a></li>
+      <li><a href="javascript:void(0)" onclick="ajustarAlturaBarra('down')"><i class="fa fa-chevron-down"></i>Barra ↓</a></li>
+      <li><a href="javascript:void(0)" onclick="rotateWrapper()"><i class="fa fa-rotate-right"></i>Girar</a></li>
+      <li><a href="javascript:void(0)" onclick="zoomWrapperIn()"><i class="fa fa-magnifying-glass-plus"></i>Zoom +</a></li>
+      <li><a href="javascript:void(0)" onclick="zoomWrapperOut()"><i class="fa fa-magnifying-glass-minus"></i>Zoom -</a></li>
+      <li><a href="javascript:void(0)" onclick="moveWrapper('up')"><i class="fa fa-arrow-up"></i>Subir</a></li>
+      <li><a href="javascript:void(0)" onclick="moveWrapper('down')"><i class="fa fa-arrow-down"></i>Descer</a></li>
+      <li><a href="javascript:void(0)" onclick="moveWrapper('left')"><i class="fa fa-arrow-left"></i>Esquerda</a></li>
+      <li><a href="javascript:void(0)" onclick="moveWrapper('right')"><i class="fa fa-arrow-right"></i>Direita</a></li>
+      <li><a href="javascript:void(0)" onclick="stretchWrapper('horizontal+')"><i class="fa fa-arrows-left-right"></i>Largura +</a></li>
+      <li><a href="javascript:void(0)" onclick="stretchWrapper('horizontal-')"><i class="fa fa-compress"></i>Largura -</a></li>
+      <li><a href="javascript:void(0)" onclick="lerGradePasta()"><i class="fa fa-folder-tree"></i>Grade</a></li>
     </ul>
   </div>
 
 <script>
-    // --- VARIÁVEIS GLOBAIS ---
     const wrapper = document.getElementById('player-wrapper');
     const media = document.getElementById('media');
     const fallback = document.getElementById('fallback');
@@ -188,330 +185,151 @@
     const controlsContainer = document.getElementById('controls-container');
     const barra = document.getElementById('barra');
     
-    // --- VARIÁVEIS DE CONTROLE DA PLAYLIST ---
-    const IMAGE_DURATION = 7000; // Duração de 7 segundos para cada imagem
-    let imageTimeout = null;     // Para controlar o temporizador da imagem
-
-    let mainPlaylist = [], mainIndex = 0;
-    let zoom = 1, rotation = 0, offsetX = 0, offsetY = 0, scaleX = 1, scaleY = 1;
-    let commercialBarInterval = null;
+    let imageTimeout = null; mainPlaylist = []; mainIndex = 0;
     
-    // --- VARIÁVEL PARA O TIMER DO CURSOR ---
-    let cursorIdleTimer = null;
+    /* [CONFIGURAÇÃO DE TELA] Inicia em 270deg para Telas Verticais deitadas à esquerda */
+    let zoom = 1, rotation = 270, offsetX = 0, offsetY = 0, scaleX = 1, scaleY = 1;
+    let barInterval = null;
 
-    // --- (NOVO) VARIÁVEIS DE CONTROLE DA GRADE ---
-    let gradeDirectoryHandle = null; // Armazena o "handle" (referência) da pasta
-    let gradeCheckInterval = null;   // Armazena o timer do monitoramento
-    const GRADE_CHECK_INTERVAL_MS = 10000; // Verificar a pasta a cada 10 segundos
+    /* [LÓGICA DE DADOS DA BARRA]
+       - Utilize ícones BRANCOS (color:white) para legibilidade no fundo escuro.
+       - Divida o conteúdo em: Clima, Finanças e Cripto.
+       - Use 'bar-split-container' para dividir informações complexas com linhas verticais.
+    */
+    const barData = [
+        {
+            type: 'weather',
+            icon: 'fa-temperature-half',
+            catName: 'AGORA',
+            render: () => `
+                <div class="bar-split-container">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <i class="fas fa-cloud-sun" style="font-size:24px; color:white;"></i>
+                        <span class="data-value" style="font-size:26px;">27°C</span>
+                    </div>
+                    
+                    <div class="bar-separator"></div>
+                    
+                    <div class="weather-details-grid">
+                        <div class="weather-detail-item"><i class="fas fa-umbrella"></i> 0% Chuva</div>
+                        <div class="weather-detail-item"><i class="fas fa-wind"></i> 17km/h</div>
+                        <div class="weather-detail-item"><i class="fas fa-arrow-down" style="color:var(--green-trend)"></i> Min 17°</div>
+                        <div class="weather-detail-item"><i class="fas fa-arrow-up" style="color:var(--red-trend)"></i> Max 30°</div>
+                    </div>
+                </div>
+            `
+        },
+        {
+            type: 'finance',
+            icon: 'fa-chart-line',
+            catName: 'ÍNDICES',
+            render: () => `
+                <div class="bar-split-container" style="justify-content: flex-start; gap:20px;">
+                    <div class="data-group">
+                        <span class="data-label">IBOVESPA</span>
+                        <div style="display:flex; align-items:center; gap:6px;">
+                            <span class="data-value">126.9k</span>
+                            <span class="trend-up"><i class="fas fa-caret-up"></i> 0,45%</span>
+                        </div>
+                    </div>
+                    <div class="bar-separator"></div>
+                    <div class="data-group">
+                        <span class="data-label">DÓLAR</span>
+                        <div style="display:flex; align-items:center; gap:6px;">
+                            <span class="data-value">R$ 5,45</span>
+                            <span class="trend-down"><i class="fas fa-caret-down"></i> 0,10%</span>
+                        </div>
+                    </div>
+                    <div class="bar-separator"></div>
+                    <div class="data-group">
+                        <span class="data-label">EURO</span>
+                        <div style="display:flex; align-items:center; gap:6px;">
+                            <span class="data-value">R$ 6,12</span>
+                            <span class="trend-up"><i class="fas fa-caret-up"></i> 0,22%</span>
+                        </div>
+                    </div>
+                </div>
+            `
+        },
+        {
+            type: 'crypto',
+            icon: 'fa-coins',
+            catName: 'CRIPTO',
+            render: () => `
+                <div class="bar-split-container" style="justify-content: flex-start; gap:25px;">
+                    <div class="data-row" style="display:flex; align-items:center; gap:10px;">
+                        <i class="fab fa-bitcoin" style="font-size:22px; color:white;"></i>
+                        <div class="data-group">
+                            <span class="data-label">BITCOIN</span>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <span class="data-value">R$ 468k</span>
+                                <span class="trend-up"><i class="fas fa-caret-up"></i> 0,9%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bar-separator"></div>
+                    <div class="data-row" style="display:flex; align-items:center; gap:10px;">
+                        <i class="fab fa-ethereum" style="font-size:22px; color:white;"></i>
+                        <div class="data-group">
+                            <span class="data-label">ETHEREUM</span>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <span class="data-value">R$ 18k</span>
+                                <span class="trend-down"><i class="fas fa-caret-down"></i> 1,2%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `
+        }
+    ];
 
-    // --- FUNÇÕES DE CONTROLE GERAIS ---
+    function iniciarBarraRotativa() {
+        if (barInterval) clearInterval(barInterval);
+        let index = 0;
+        const renderFrame = () => {
+            const item = barData[index];
+            /* Renderiza: Box Categoria + Conteúdo Dinâmico + Logo (Caminho ../img/) */
+            barra.innerHTML = `
+                <div class="category-box">
+                    <i class="fas ${item.icon} category-icon"></i>
+                    <span class="category-name">${item.catName}</span>
+                </div>
+                <div id="bar-content" class="content-section">
+                    ${item.render()}
+                </div>
+                <div class="brand-section">
+                    <img src="../img/logo-branca.png" class="brand-logo" alt="Logo" onerror="this.style.display='none';">
+                </div>
+            `;
+            setTimeout(() => { const el = document.getElementById('bar-content'); if(el) el.classList.add('visible'); }, 50);
+            index = (index + 1) % barData.length;
+        };
+        renderFrame();
+        barInterval = setInterval(renderFrame, 5000); 
+    }
+
+    // --- FUNÇÕES PADRÃO DE PLAYER (Mover, Zoom, Arquivos) ---
+    function updateWrapperTransform() { wrapper.style.transform = `translate(${offsetX}px, ${offsetY}px) rotate(${rotation}deg) scale(${scaleX * zoom}, ${scaleY * zoom})`; }
+    updateWrapperTransform(); 
     function toggleControls() { controlsContainer.style.display = (controlsContainer.style.display === 'block') ? 'none' : 'block'; }
     function toggleBar() { barra.style.display = (barra.style.display === 'none') ? 'flex' : 'none'; }
     function toggleFullscreen() { if (!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); }
-    
-    function addMedia() { 
-        mediaInput.click(); 
-    }
-    
-    mediaInput.onchange = (event) => {
-        // --- (MODIFICADO) Interrompe o monitoramento de grade se mídias manuais forem adicionadas
-        if (gradeCheckInterval) {
-            clearInterval(gradeCheckInterval);
-            gradeCheckInterval = null;
-            gradeDirectoryHandle = null;
-            console.log("Monitoramento de grade interrompido. Carregando mídias manuais.");
-        }
-        
-        const files = Array.from(event.target.files);
-        const wasEmpty = mainPlaylist.length === 0; // Verifica se a playlist estava vazia
-        mainPlaylist = mainPlaylist.concat(files);
-        // Se a playlist estava vazia e agora tem arquivos, inicia a reprodução
-        if (wasEmpty && mainPlaylist.length > 0) {
-            loadMainMedia();
-        }
-    }
-
-    // --- LÓGICA DE REPRODUÇÃO (Inalterada) ---
-    function loadMainMedia() {
-        if (mainPlaylist.length === 0) return;
-
-        // Limpa qualquer temporizador de imagem anterior para evitar bugs
-        if (imageTimeout) clearTimeout(imageTimeout);
-
-        const file = mainPlaylist[mainIndex];
-        
-        // --- (NOVO) Adicionado tratamento de erro caso o 'file' seja inválido ---
-        if (!file) {
-            console.error("Tentativa de carregar mídia inválida no índice:", mainIndex);
-            // Tenta avançar para a próxima mídia para não parar o player
-            playNextMedia();
-            return;
-        }
-        
-        const url = URL.createObjectURL(file);
-
-        if (file.type.startsWith('video')) {
-            fallback.style.display = 'none';
-            media.style.display = 'block';
-            media.src = url;
-            media.play().catch(e => console.error("Erro ao reproduzir vídeo:", e));
-        } else { // Se for uma imagem
-            media.style.display = 'none';
-            fallback.style.display = 'block';
-            fallback.src = url;
-            // Inicia um temporizador para passar para a próxima mídia após IMAGE_DURATION
-            imageTimeout = setTimeout(playNextMedia, IMAGE_DURATION);
-        }
-    }
-
-    // --- FUNÇÃO PARA AVANÇAR A PLAYLIST (Inalterada) ---
-    function playNextMedia() {
-        if (mainPlaylist.length > 0) {
-            mainIndex = (mainIndex + 1) % mainPlaylist.length; // O operador % garante o loop infinito
-            loadMainMedia();
-        }
-    }
-    
+    function addMedia() { mediaInput.click(); }
+    mediaInput.onchange = (event) => { const files = Array.from(event.target.files); if (files.length > 0) { mainPlaylist = mainPlaylist.concat(files); if (mainPlaylist.length === files.length) loadMainMedia(); } }
+    function loadMainMedia() { if (mainPlaylist.length === 0) return; if (imageTimeout) clearTimeout(imageTimeout); const file = mainPlaylist[mainIndex]; const url = URL.createObjectURL(file); if (file.type.startsWith('video')) { fallback.style.display = 'none'; media.style.display = 'block'; media.src = url; media.play(); } else { media.style.display = 'none'; fallback.style.display = 'block'; fallback.src = url; imageTimeout = setTimeout(playNextMedia, 7000); } }
+    function playNextMedia() { if (mainPlaylist.length > 0) { mainIndex = (mainIndex + 1) % mainPlaylist.length; loadMainMedia(); } }
     media.addEventListener('ended', playNextMedia);
-
-    function reloadMidia() {
-        if (mainPlaylist.length > 0) {
-            mainIndex = 0;
-            loadMainMedia();
-        }
-    }
-
-    function resetMidias() {
-        // --- (MODIFICADO) Interrompe o monitoramento de grade ao resetar
-        if (gradeCheckInterval) {
-            clearInterval(gradeCheckInterval);
-            gradeCheckInterval = null;
-            gradeDirectoryHandle = null;
-            console.log("Monitoramento de grade interrompido.");
-        }
-        
-        // Limpa também o temporizador ao resetar
-        if (imageTimeout) clearTimeout(imageTimeout);
-        mainPlaylist = [];
-        mainIndex = 0;
-        media.pause();
-        media.removeAttribute('src');
-        fallback.removeAttribute('src');
-        media.load();
-    }
-
-    document.addEventListener('keydown', (e) => {
-        if (e.key.toLowerCase() === 'm') {
-            toggleControls();
-        }
-    });
-    
-    // --- FUNÇÕES DE TRANSFORMAÇÃO (Inalteradas) ---
-    function updateWrapperTransform() { const transformValue = `translate(${offsetX}px, ${offsetY}px) rotate(${rotation}deg) scale(${scaleX * zoom}, ${scaleY * zoom})`; wrapper.style.webkitTransform = transformValue; wrapper.style.transform = transformValue; }
+    function reloadMidia() { if (mainPlaylist.length > 0) loadMainMedia(); }
+    function resetMidias() { mainPlaylist = []; mainIndex = 0; media.src = ""; fallback.src = ""; }
     function rotateWrapper() { rotation = (rotation + 90) % 360; updateWrapperTransform(); }
     function zoomWrapperIn() { zoom += 0.05; updateWrapperTransform(); }
     function zoomWrapperOut() { zoom = Math.max(0.1, zoom - 0.05); updateWrapperTransform(); }
-    function moveWrapper(direction) { if (direction === 'up') offsetY -= 10; if (direction === 'down') offsetY += 10; if (direction === 'left') offsetX -= 10; if (direction === 'right') offsetX += 10; updateWrapperTransform(); }
-    function stretchWrapper(direction) { if (direction === 'horizontal+') scaleX += 0.05; if (direction === 'horizontal-') scaleX = Math.max(0.1, scaleX - 0.05); if (direction === 'vertical+') scaleY += 0.05; if (direction === 'vertical-') scaleY = Math.max(0.1, scaleY - 0.05); updateWrapperTransform(); }
-
-    // --- CONTROLE DE INATIVIDADE DO CURSOR (Inalterado) ---
-    function hideCursor() { document.body.style.cursor = 'none'; }
-    function showCursorAndResetTimer() { document.body.style.cursor = 'auto'; if (cursorIdleTimer) { clearTimeout(cursorIdleTimer); } cursorIdleTimer = setTimeout(hideCursor, 3000); }
-    document.addEventListener('mousemove', showCursorAndResetTimer);
-
-    // --- (NOVAS) FUNÇÕES DE LEITURA DE GRADE ---
-
-    /**
-     * Inicia o processo de seleção de pasta para monitoramento.
-     * Esta função é assíncrona (async) pois espera o utilizador escolher a pasta.
-     */
-    async function lerGradePasta() {
-        // 1. Verifica se o navegador suporta a API (requer HTTPS)
-        if (!window.showDirectoryPicker) {
-            alert('Erro: O seu navegador não suporta a seleção de pastas ou a página não está em HTTPS.');
-            return;
-        }
-
-        try {
-            // 2. Pede ao utilizador para selecionar uma pasta
-            const handle = await window.showDirectoryPicker();
-            
-            // 3. Limpa qualquer playlist ou monitoramento anterior
-            resetMidias(); 
-            
-            // 4. Armazena a referência da pasta
-            gradeDirectoryHandle = handle;
-            console.log(`Iniciando monitoramento da pasta: ${handle.name}`);
-
-            // 5. Faz a primeira verificação imediatamente
-            await scanGradeDirectory();
-            
-            // 6. Inicia o "timer" para verificar a pasta periodicamente
-            gradeCheckInterval = setInterval(scanGradeDirectory, GRADE_CHECK_INTERVAL_MS);
-
-        } catch (err) {
-            // O utilizador pode ter cancelado a seleção
-            console.error("Erro ao selecionar a pasta ou permissão negada:", err);
-        }
-    }
-
-    /**
-     * Verifica a pasta selecionada por arquivos de vídeo da grade.
-     * Esta função é assíncrona (async) pois a leitura de arquivos é assíncrona.
-     */
-    async function scanGradeDirectory() {
-        if (!gradeDirectoryHandle) return; // Sai se nenhuma pasta estiver selecionada
-
-        let foundFiles = []; // Array para armazenar os "handles" dos arquivos encontrados
-        
-        try {
-            // 1. Itera sobre todos os arquivos/pastas dentro da pasta selecionada
-            for await (const entry of gradeDirectoryHandle.values()) {
-                // 2. Verifica se é um arquivo (kind === 'file') e se o nome bate o padrão "video" + "numero" + ".mp4"
-                // A expressão regular /i torna a verificação "case-insensitive" (ignora maiúsculas/minúsculas)
-                if (entry.kind === 'file' && entry.name.match(/^video\d+\.mp4$/i)) {
-                    foundFiles.push(entry);
-                }
-            }
-
-            // 3. Ordena os arquivos numericamente
-            foundFiles.sort((a, b) => {
-                // Extrai o número do nome de cada arquivo
-                const numA = parseInt(a.name.match(/(\d+)/)[1]);
-                const numB = parseInt(b.name.match(/(\d+)/)[1]);
-                return numA - numB; // Ordena do menor para o maior
-            });
-
-            // 4. Compara a lista encontrada com a playlist atual
-            // Criamos "listas de nomes" para comparar facilmente
-            const newPlaylistNames = foundFiles.map(f => f.name);
-            const oldPlaylistNames = mainPlaylist.map(f => f.name);
-
-            // 5. Verifica se as listas são diferentes
-            // JSON.stringify é uma forma simples de comparar se os arrays são idênticos
-            if (JSON.stringify(newPlaylistNames) !== JSON.stringify(oldPlaylistNames)) {
-                console.log("Mudança na grade detetada. Atualizando playlist...");
-                console.log("Arquivos encontrados:", newPlaylistNames.join(', '));
-                
-                // 6. Converte os "handles" de arquivo (FileSystemFileHandle) em objetos "File"
-                // que a nossa função loadMainMedia() entende
-                const fileObjects = await Promise.all(
-                    foundFiles.map(fileHandle => fileHandle.getFile())
-                );
-
-                // 7. Atualiza a playlist principal
-                mainPlaylist = fileObjects;
-                
-                // 8. Reinicia a playlist do início
-                mainIndex = 0;
-                loadMainMedia();
-            }
-            
-        } catch (err) {
-            console.error("Erro ao ler a pasta da grade. A permissão pode ter sido revogada.", err);
-            // Para o monitoramento se houver um erro grave (ex: pasta apagada)
-            resetMidias(); 
-        }
-    }
-
-
-    // --- FUNÇÕES ESPECÍFICAS DO PLAYER VERTICAL (Inalteradas) ---
-    function ajustarAlturaBarra(direcao) { const bottomAtual = parseInt(getComputedStyle(barra).bottom) || 0; const novoBottom = direcao === 'up' ? bottomAtual + 10 : bottomAtual - 10; barra.style.bottom = `${novoBottom}px`; }
-    function atualizarHora() { const horaEl = document.getElementById('hora'); if(horaEl) { horaEl.textContent = new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}); } }
-
-    function ativarBarraShopping() {
-        if (commercialBarInterval) clearInterval(commercialBarInterval);
-        barra.innerHTML = `
-            <div id="shopping-info-container">
-                <div id="shopping-nome" contenteditable="true" spellcheck="false">Shopping Iguatemi</div>
-                <div id="shopping-info-alternada"></div>
-            </div>
-            <img src="img/logo-eletromidia-horizontal.png" alt="Logo" class="logo-eletromidia" onerror="this.onerror=null; this.src='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTSngqZzv7e6QBJRAN9L8zXvB9deAVNWW6tXQ&s';">
-        `;
-        const shoppingInformacoes = [
-            `<span><img src="https://cdn-icons-png.flaticon.com/512/1163/1163661.png" class="icon-decorado" alt="ícone clima"> Clima <span class="info-marker alerta">23°C</span></span>`,
-            `<span><img src="https://cdn-icons-png.flaticon.com/512/854/854878.png" class="icon-decorado" alt="ícone trânsito"> Trânsito <span class="info-marker positivo">Sem Lentidão</span></span>`,
-            `<span><img src="https://cdn-icons-png.flaticon.com/512/3358/3358623.png" class="icon-decorado" alt="ícone câmbio"> Dólar <span class="info-marker negativo">R$5,45</span></span>`
-        ];
-        let infoIndex = 0;
-        const updateShoppingInfo = () => {
-            const infoEl = document.getElementById('shopping-info-alternada');
-            if (infoEl) {
-                infoEl.style.opacity = 0;
-                setTimeout(() => {
-                    infoEl.innerHTML = shoppingInformacoes[infoIndex];
-                    infoEl.style.opacity = 1;
-                    infoIndex = (infoIndex + 1) % shoppingInformacoes.length;
-                }, 500);
-            }
-        };
-        updateShoppingInfo();
-        commercialBarInterval = setInterval(updateShoppingInfo, 4000);
-    }
-
-    function ativarBarraComercial() {
-        if (commercialBarInterval) clearInterval(commercialBarInterval);
-        barra.style.background = 'rgba(0, 0, 0, 0.75)'; barra.style.padding = '20px';
-        const informacoes = [ `<div style="display: flex; align-items: center; gap: 8px;"><span style="font-size: 12px; color: #ccc; font-weight: 600;">ÍNDICES</span><span style="font-weight: 600;">IBOVESPA</span><span style="color: #2ecc71;">+0,40%</span><span style="background: #2ecc71; color: white; font-size: 11px; font-weight: 600; padding: 2px 6px; border-radius: 4px;">137.824</span></div>`, `<div style="display: flex; align-items: center; gap: 8px;"><span style="font-size: 12px; color: #ccc; font-weight: 600;">CRIPTO</span><span style="font-weight: 600;">BITCOIN</span><span style="font-size: 18px; font-weight: bold;">R$ 345.243</span><span style="background-color: #e74c3c; color: white; font-size: 11px; padding: 2px 6px; border-radius: 4px;">-1.88%</span></div>`, `<div style="display: flex; align-items: center; gap: 8px;"><span style="font-weight: 600;">LENTIDÃO</span><span>SÃO PAULO</span><span style="background: #2ecc71; color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px;">22 km</span></div>`, `<span style="font-size: 12px; font-weight: 600;">EURO</span><span style="font-size: 20px; font-weight: bold;">R$ 6,41</span> | <span style="font-size: 12px; font-weight: 600;">DÓLAR</span><span style="font-size: 20px; font-weight: bold;">R$ 5,45</span>` ];
-        let infoIndex = 0;
-        const updateInfo = () => { const infoEl = barra.querySelector('#info-alternada'); if (infoEl) { infoEl.style.opacity = 0; setTimeout(() => { infoEl.innerHTML = informacoes[infoIndex]; infoEl.style.opacity = 1; infoIndex = (infoIndex + 1) % informacoes.length; }, 500); } };
-        barra.innerHTML = `<div id="info-alternada" style="transition: opacity 0.5s ease; flex-grow: 1; font-size: 15px;"></div><div class="relogio" style="display: flex; align-items: center; gap: 30px; font-size: 36px;"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTSngqZzv7e6QBJRAN9L8zXvB9deAVNWW6tXQ&s" style="height:40px;"><span id="hora"></span></div>`;
-        atualizarHora(); setInterval(atualizarHora, 60000);
-        updateInfo(); commercialBarInterval = setInterval(updateInfo, 4000);
-    }
-    
-    // --- BLOCO UNIVERSAL PARA CONTEÚDO DINÂMICO (Inalterado) ---
-    function startPlayerLogic() {
-        ativarBarraShopping();
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-        const dynamicContent = localStorage.getItem('dynamicContent');
-        const dynamicFormat = localStorage.getItem('dynamicFormat');
-
-        if (dynamicContent) {
-            const mediaContainer = document.getElementById('mediaWrapper');
-            if (mediaContainer) {
-                const videoTag = mediaContainer.querySelector('video');
-                const fallbackImg = mediaContainer.querySelector('#fallback');
-                if (videoTag) videoTag.style.display = 'none';
-                if (fallbackImg) fallbackImg.style.display = 'none';
-
-                const contentWrapper = document.createElement('div');
-                contentWrapper.style.cssText = 'position:absolute; top:0; left:0; width:100%; height:100%; z-index:1; overflow:hidden;';
-                contentWrapper.innerHTML = dynamicContent;
-
-                const overlay = document.createElement('div');
-                overlay.style.cssText = 'position:absolute; top:0; left:0; width:100%; height:100%; z-index:2;';
-
-                if (dynamicFormat === 'vertical' && !dynamicContent.includes('shorts')) {
-                    const iframe = contentWrapper.querySelector('iframe');
-                    if (iframe) {
-                        const aspectRatio = 9 / 16;
-                        iframe.style.width = `calc(100vh * ${aspectRatio})`;
-                        iframe.style.height = `100vh`;
-                        iframe.style.position = 'absolute';
-                        iframe.style.top = '50%';
-                        iframe.style.left = '50%';
-                        iframe.style.transform = 'translate(-50%, -50%)';
-                    }
-                }
-                
-                mediaContainer.appendChild(contentWrapper);
-                mediaContainer.appendChild(overlay);
-            }
-            localStorage.removeItem('dynamicContent');
-            localStorage.removeItem('dynamicFormat');
-        }
-        
-        startPlayerLogic();
-        showCursorAndResetTimer(); // Inicia o controle do cursor
-    });
-
-    // --- (Removido) Bloco window.onload redundante ---
-    // A lógica de 'DOMContentLoaded' já trata o carregamento inicial.
-
+    function moveWrapper(dir) { if (dir === 'up') offsetY -= 10; if (dir === 'down') offsetY += 10; if (dir === 'left') offsetX -= 10; if (dir === 'right') offsetX += 10; updateWrapperTransform(); }
+    function stretchWrapper(dir) { if (dir === 'horizontal+') scaleX += 0.05; else scaleX = Math.max(0.1, scaleX - 0.05); updateWrapperTransform(); }
+    function ajustarAlturaBarra(dir) { const bottomAtual = parseInt(getComputedStyle(barra).bottom) || 0; barra.style.bottom = `${dir === 'up' ? bottomAtual + 10 : bottomAtual - 10}px`; }
+    async function lerGradePasta() { if (!window.showDirectoryPicker) return alert('Navegador incompatível.'); try { const handle = await window.showDirectoryPicker(); mainPlaylist = []; for await (const entry of handle.values()) { if (entry.kind === 'file') mainPlaylist.push(await entry.getFile()); } mainIndex = 0; loadMainMedia(); } catch (err) { console.error(err); } }
+    document.addEventListener('keydown', (e) => { if (e.key.toLowerCase() === 'm') toggleControls(); });
+    document.addEventListener('DOMContentLoaded', iniciarBarraRotativa);
 </script>
-
 </body>
 </html>
