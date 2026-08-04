@@ -711,13 +711,16 @@
             fetchTemperature(lat, lon).then(t => currentTemp = t);
 
             const updateClock = () => {
-                const timeStr = new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}).replace(':', '<span class="blink">:</span>');
+                const now = new Date();
+                const timeStr = now.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}).replace(':', '<span class="blink">:</span>');
+                
+                // Alterna entre horário e temperatura a cada 5 segundos
+                const showTime = (now.getSeconds() % 10) < 5;
+                const mainText = showTime ? timeStr : `${currentTemp}°C`;
+
                 relogioBox.innerHTML = `
-                    <div style="font-size: 16px; color: #4cc9f0; margin-bottom: 5px; font-weight: bold; text-transform: uppercase;">${cityName}</div>
-                    <div style="display: flex; gap: 15px; align-items: center; justify-content: center;">
-                        <span style="font-size: 40px; color: white;">${timeStr}</span>
-                        <span style="font-size: 26px; color: #f39c12;">${currentTemp}°C</span>
-                    </div>
+                    <div style="font-size: 16px; color: #4cc9f0; margin-bottom: -5px; font-weight: bold; text-transform: uppercase;">${cityName}</div>
+                    <div style="font-size: 60px; color: white; font-weight: bold;">${mainText}</div>
                 `;
             };
 
@@ -748,7 +751,7 @@
         if (!checkPlayerAtivo()) return; const pa = playerAtivo;
         document.getElementById('input-x').value = pa.container.offsetLeft; document.getElementById('input-y').value = pa.container.offsetTop;
         document.getElementById('input-largura').value = pa.container.offsetWidth; document.getElementById('input-altura').value = pa.container.offsetHeight;
-        const isRelogio = (relogioBox.style.display === 'flex' && pa.container.style.width === '280px');
+        const isRelogio = (relogioBox.style.display === 'flex' && (pa.container.style.width === '280px'));
         document.getElementById('input-altura-midia').value = isRelogio ? pa.container.offsetHeight : 480; 
         controlsContainer.style.display = 'none'; presetLivreModal.style.display = 'block'; 
     }
