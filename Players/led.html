@@ -31,7 +31,6 @@
         /* Classe para destacar o Player Ativo */
         .player-ativo {
             z-index: 100;
-            /* Garantia extra de ausência de borda de foco */
             border: none !important;
             outline: none !important;
         }
@@ -40,10 +39,21 @@
             flex-grow: 1; position: relative; background: #000;
             overflow: hidden;
         }
+        
+        /* Efeito Blur Background */
+        .blur-element {
+            width: 100%; height: 100%; object-fit: cover;
+            position: absolute; top: 0; left: 0;
+            filter: blur(25px) brightness(0.6);
+            transform: scale(1.15); /* Evita vazamento de bordas claras */
+            z-index: 0;
+        }
+
         .media-video, .media-fallback {
             width: 100%; height: 100%; object-fit: contain;
             position: absolute; top: 0; left: 0;
             outline: none !important;
+            z-index: 1; /* Mantém a mídia principal à frente do blur */
         }
         
         /* Barra Comercial */
@@ -141,43 +151,22 @@
         .menu-grid li a.active { background-color: #2b2d42; border-radius: 10px; }
         
         .menu-grid li.controladora-select {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            color: white;
-            font-size: 13px;
-            grid-column: span 2;
-            background: rgba(30, 30, 48, 0.8);
-            border-radius: 12px;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            color: white; font-size: 13px; grid-column: span 2;
+            background: rgba(30, 30, 48, 0.8); border-radius: 12px;
         }
-        .menu-grid li.controladora-select label {
-            margin-bottom: 6px;
-            font-weight: 600;
-        }
+        .menu-grid li.controladora-select label { margin-bottom: 6px; font-weight: 600; }
         #player-selector {
-            background: #1e1e2f;
-            color: white;
-            border: 1px solid rgba(255,255,255,0.2);
-            padding: 6px 10px;
-            border-radius: 6px;
-            width: 85%;
-            outline: none;
+            background: #1e1e2f; color: white; border: 1px solid rgba(255,255,255,0.2);
+            padding: 6px 10px; border-radius: 6px; width: 85%; outline: none;
         }
 
         #preset-livre-modal {
-            display: none;
-            position: fixed; top: 50%; left: 50%;
+            display: none; position: fixed; top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            background-color: rgba(22, 22, 35, 0.95);
-            backdrop-filter: blur(16px);
-            color: white;
-            padding: 30px;
-            border: 1px solid rgba(255,255,255,0.15);
-            border-radius: 16px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.7);
-            z-index: 400;
-            width: 320px;
+            background-color: rgba(22, 22, 35, 0.95); backdrop-filter: blur(16px);
+            color: white; padding: 30px; border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 16px; box-shadow: 0 15px 35px rgba(0,0,0,0.7); z-index: 400; width: 320px;
         }
         #preset-livre-modal h3 { margin-top: 0; text-align: center; font-weight: 700; color: #4cc9f0; }
         .input-group { margin-bottom: 15px; }
@@ -188,19 +177,12 @@
         .modal-botoes button:hover { background: #2667cc; }
 
         .selection-overlay {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5);
-            cursor: crosshair;
-            z-index: 50;
-            display: none;
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); cursor: crosshair; z-index: 50; display: none;
         }
         .selection-box {
-            position: absolute;
-            border: 2px dashed #3a86ff;
-            background: rgba(58, 134, 255, 0.1);
-            box-sizing: border-box;
+            position: absolute; border: 2px dashed #3a86ff;
+            background: rgba(58, 134, 255, 0.1); box-sizing: border-box;
         }
     </style>
 </head>
@@ -212,26 +194,11 @@
 
     <div id="preset-livre-modal">
         <h3>Preset Personalizado</h3>
-        <div class="input-group">
-            <label for="input-x">Posição X (px)</label>
-            <input type="number" id="input-x" value="100">
-        </div>
-        <div class="input-group">
-            <label for="input-y">Posição Y (px)</label>
-            <input type="number" id="input-y" value="100">
-        </div>
-        <div class="input-group">
-            <label for="input-largura">Largura (px)</label>
-            <input type="number" id="input-largura" value="800">
-        </div>
-        <div class="input-group">
-            <label for="input-altura-midia">Altura Mídia (Relógio) (px)</label>
-            <input type="number" id="input-altura-midia" value="480">
-        </div>
-        <div class="input-group">
-            <label for="input-altura">Altura (px)</label>
-            <input type="number" id="input-altura" value="600">
-        </div>
+        <div class="input-group"><label for="input-x">Posição X (px)</label><input type="number" id="input-x" value="100"></div>
+        <div class="input-group"><label for="input-y">Posição Y (px)</label><input type="number" id="input-y" value="100"></div>
+        <div class="input-group"><label for="input-largura">Largura (px)</label><input type="number" id="input-largura" value="800"></div>
+        <div class="input-group"><label for="input-altura-midia">Altura Mídia (Relógio) (px)</label><input type="number" id="input-altura-midia" value="480"></div>
+        <div class="input-group"><label for="input-altura">Altura (px)</label><input type="number" id="input-altura" value="600"></div>
         <div class="modal-botoes">
             <button onclick="fecharModalPresetLivre()" style="background:#444;">Cancelar</button>
             <button onclick="aplicarPresetLivre()">Aplicar</button>
@@ -242,26 +209,28 @@
         <ul class="menu-grid">
             <li><a href="#" onclick="addMedia()"><i class="fa fa-plus fa-2x"></i>Add Mídia</a></li>
             <li><a href="#" onclick="lerGradePasta()"><i class="fa fa-folder-open fa-2x"></i>Ler Grade</a></li>
-            
             <li><a href="#" onclick="aplicarLayout('mub')"><i class="fa fa-desktop fa-2x"></i>Mub Premium</a></li>
             <li><a href="#" onclick="aplicarLayout('relogio')"><i class="fa fa-clock fa-2x"></i>Relógio</a></li>
+            <li><a href="#" onclick="aplicarLayout('relogio-recife')"><i class="fa fa-clock fa-2x"></i>Relógio Recife</a></li>
+            <li><a href="#" onclick="aplicarLayout('relogio-salvador')"><i class="fa fa-clock fa-2x"></i>Relógio Salvador</a></li>
+            
             <li><a href="#" onclick="aplicarLayout('coluna')"><i class="fa fa-columns fa-2x"></i>Coluna</a></li>
             <li><a href="#" onclick="abrirModalPresetLivre()"><i class="fa fa-ruler-combined fa-2x"></i>Preset Livre</a></li>
-            
             <li><a href="#" onclick="toggleBarraComercial()"><i class="fa fa-bars fa-2x"></i>Alternar Barra</a></li>
             <li><a href="#" onclick="toggleFullscreen()"><i class="fa fa-expand fa-2x"></i>Tela Cheia</a></li>
             <li><a href="#" onclick="resetMidias()"><i class="fa fa-trash fa-2x"></i>Resetar</a></li>
             <li id="move-button-li"><a href="#" onclick="toggleMover(this)"><i class="fa fa-arrows-alt fa-2x"></i>Ajustar Posição</a></li>
+            
             <li><a href="#" onclick="mostrarMenuControladora(true)"><i class="fa fa-cogs fa-2x"></i>Controladora</a></li> 
             <li><a href="#" onclick="toggleControls()"><i class="fa fa-eye-slash fa-2x"></i>Ocultar Menu</a></li>
-            
+            <li><a href="#" onclick="toggleBlur(this)"><i class="fa fa-adjust fa-2x"></i>Efeito Blur</a></li>
             <li><a href="#" onclick="ajustarModo('contain', this)"><i class="fa fa-compress fa-2x"></i>Ajustar</a></li>
             <li><a href="#" onclick="ajustarModo('fill', this)"><i class="fa fa-expand-arrows-alt fa-2x"></i>Esticar</a></li>
             <li><a href="#" onclick="ajustarModo('cover', this)"><i class="fa fa-clone fa-2x"></i>Preencher</a></li>
+            
             <li><a href="#" onclick="rotacionarMidia()"><i class="fa fa-redo fa-2x"></i>Rotacionar</a></li>
             <li><a href="#" onclick="resetarLayout()"><i class="fa fa-undo fa-2x"></i>Resetar Layout</a></li>
             <li><a href="#" onclick="salvarConfiguracao()"><i class="fa fa-save fa-2x"></i>Salvar</a></li>
-            
             <li><a href="#" onclick="carregarConfiguracao()"><i class="fa fa-folder-open fa-2x"></i>Carregar</a></li>
             <li><a href="#" onclick="toggleCortar(this)"><i class="fa fa-crop-alt fa-2x"></i>Cortar Mídia</a></li>
         </ul>
@@ -276,8 +245,7 @@
             
             <li class="controladora-select">
                 <label for="player-selector">Player Ativo:</label>
-                <select id="player-selector" onchange="selecionarPlayer(this.value)">
-                </select>
+                <select id="player-selector" onchange="selecionarPlayer(this.value)"></select>
             </li>
         </ul>
     </div>
@@ -297,6 +265,7 @@
     let playerAtivo = null; 
     let playerCounter = 0; 
     let commercialBarInterval = null; 
+    let tempInterval = null;
 
     let moverAtivo = false;
     let cortarAtivo = false;
@@ -304,9 +273,25 @@
     let isSelecting = false;
     let offsetX = 0, offsetY = 0;
 
+    // API Open-Meteo para Clima (Recife e Salvador)
+    async function fetchTemperature(lat, lon) {
+        try {
+            const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`);
+            if(response.ok) {
+                const data = await response.json();
+                return Math.round(data.current_weather.temperature);
+            }
+            return '--';
+        } catch (e) {
+            return '--';
+        }
+    }
+
     function getPlayerTemplate(id) {
         return `
             <div class="media-wrapper">
+                <video class="media-video-blur blur-element" autoplay muted playsinline preload="auto" style="display: none;"></video>
+                <img class="media-fallback-blur blur-element" style="display: none;" />
                 <video class="media-video" autoplay muted playsinline preload="auto"></video>
                 <img class="media-fallback" style="display: none;" />
                 <div class="selection-overlay">
@@ -326,10 +311,8 @@
         const newPlayerContainer = document.createElement('div');
         newPlayerContainer.id = `player-container-${playerCounter}`;
         newPlayerContainer.className = 'player-instance';
-        
         newPlayerContainer.style.top = `${50 + (playerCounter * 20)}px`;
         newPlayerContainer.style.left = `${50 + (playerCounter * 20)}px`;
-
         newPlayerContainer.innerHTML = getPlayerTemplate(playerCounter);
         document.body.appendChild(newPlayerContainer);
 
@@ -338,12 +321,15 @@
             container: newPlayerContainer,
             media: newPlayerContainer.querySelector('.media-video'),
             fallback: newPlayerContainer.querySelector('.media-fallback'),
+            mediaBlur: newPlayerContainer.querySelector('.media-video-blur'),
+            fallbackBlur: newPlayerContainer.querySelector('.media-fallback-blur'),
             mediaAtiva: newPlayerContainer.querySelector('.media-video'),
             barraComercial: newPlayerContainer.querySelector('.barra-comercial'),
             infoAlternada: newPlayerContainer.querySelector('.info-alternada'),
             hora: newPlayerContainer.querySelector('.hora'),
             overlay: newPlayerContainer.querySelector('.selection-overlay'),
             selectionBox: newPlayerContainer.querySelector('.selection-box'),
+            blurAtivo: false,
             rotacao: 0,
             crop: { x: 0, y: 0, w: 0, h: 0 },
             playlist: [],      
@@ -367,35 +353,22 @@
     }
     
     function removerPlayer() {
-        if (!playerAtivo) {
-            alert("Nenhum player selecionado para remover.");
-            return;
-        }
-        
-        if (players.length <= 1) {
-            alert("Não é possível remover o último player.");
-            return;
-        }
-        
+        if (!playerAtivo) { alert("Nenhum player selecionado para remover."); return; }
+        if (players.length <= 1) { alert("Não é possível remover o último player."); return; }
         const idParaRemover = playerAtivo.id;
-        
         if (playerAtivo.imageTimeout) clearTimeout(playerAtivo.imageTimeout);
         if (playerAtivo.gradeCheckInterval) clearInterval(playerAtivo.gradeCheckInterval);
         if (playerAtivo.currentObjectUrl) URL.revokeObjectURL(playerAtivo.currentObjectUrl);
-
         playerAtivo.container.remove();
         playerSelector.querySelector(`option[value="${idParaRemover}"]`).remove();
         players = players.filter(p => p.id !== idParaRemover);
-        
         selecionarPlayer(players[0].id);
     }
 
     function adicionarListenersAoPlayer(player) {
         player.container.addEventListener('mousedown', (e) => {
             if (moverAtivo && e.target === player.container) {
-                if (player.id !== playerAtivo.id) {
-                    selecionarPlayer(player.id);
-                }
+                if (player.id !== playerAtivo.id) selecionarPlayer(player.id);
                 isDragging = true;
                 offsetX = e.clientX - player.container.offsetLeft;
                 offsetY = e.clientY - player.container.offsetTop;
@@ -404,11 +377,9 @@
         });
 
         let startX, startY;
-
         player.overlay.addEventListener('mousedown', (e) => {
             if (!cortarAtivo) return;
-            e.preventDefault();
-            isSelecting = true;
+            e.preventDefault(); isSelecting = true;
             startX = e.clientX - player.overlay.getBoundingClientRect().left;
             startY = e.clientY - player.overlay.getBoundingClientRect().top;
             player.selectionBox.style.left = `${startX}px`;
@@ -422,9 +393,7 @@
             if (!isSelecting) return;
             const currentX = e.clientX - player.overlay.getBoundingClientRect().left;
             const currentY = e.clientY - player.overlay.getBoundingClientRect().top;
-            const width = currentX - startX;
-            const height = currentY - startY;
-
+            const width = currentX - startX; const height = currentY - startY;
             player.selectionBox.style.width = `${Math.abs(width)}px`;
             player.selectionBox.style.height = `${Math.abs(height)}px`;
             player.selectionBox.style.left = `${width > 0 ? startX : currentX}px`;
@@ -433,42 +402,33 @@
 
         player.overlay.addEventListener('mouseup', () => {
             if (!isSelecting) return;
-            isSelecting = false;
-            player.selectionBox.style.display = 'none';
-            
-            const rect = {
-                x: parseFloat(player.selectionBox.style.left),
-                y: parseFloat(player.selectionBox.style.top),
-                width: parseFloat(player.selectionBox.style.width),
-                height: parseFloat(player.selectionBox.style.height)
-            };
+            isSelecting = false; player.selectionBox.style.display = 'none';
+            const rect = { x: parseFloat(player.selectionBox.style.left), y: parseFloat(player.selectionBox.style.top), width: parseFloat(player.selectionBox.style.width), height: parseFloat(player.selectionBox.style.height) };
 
             if (rect.width > 0 && rect.height > 0) {
-                const containerWidth = player.overlay.offsetWidth;
-                const containerHeight = player.overlay.offsetHeight;
-
-                const scaleX = containerWidth / rect.width;
-                const scaleY = containerHeight / rect.height;
+                const scaleX = player.overlay.offsetWidth / rect.width;
+                const scaleY = player.overlay.offsetHeight / rect.height;
                 const newWidth = player.mediaAtiva.offsetWidth * scaleX;
                 const newHeight = player.mediaAtiva.offsetHeight * scaleY;
-                const newLeft = -rect.x * scaleX;
-                const newTop = -rect.y * scaleY;
+                const newLeft = -rect.x * scaleX; const newTop = -rect.y * scaleY;
                 
                 player.mediaAtiva.style.objectFit = 'cover';
-                player.mediaAtiva.style.width = `${newWidth}px`;
-                player.mediaAtiva.style.height = `${newHeight}px`;
-                player.mediaAtiva.style.top = `${newTop}px`;
-                player.mediaAtiva.style.left = `${newLeft}px`;
-
+                player.mediaAtiva.style.width = `${newWidth}px`; player.mediaAtiva.style.height = `${newHeight}px`;
+                player.mediaAtiva.style.top = `${newTop}px`; player.mediaAtiva.style.left = `${newLeft}px`;
                 player.crop = { x: newLeft, y: newTop, w: newWidth, h: newHeight };
                 toggleCortar(document.querySelector('.menu-grid a[onclick*="toggleCortar"]'));
             }
         });
 
-        // Só avança para a próxima mídia se o loop nativo estiver desligado (mais de 1 vídeo)
+        // Loop seguro e manual contra vazamento de memória em vídeos longos
         player.media.addEventListener('ended', () => {
             if (player.playlist.length > 1) {
                 playNextMedia(player);
+            } else if (player.playlist.length === 1) {
+                player.media.currentTime = 0;
+                player.mediaBlur.currentTime = 0; // Sincroniza o blur de fundo também
+                player.media.play().catch(e => console.error("Erro no loop manual", e));
+                if (player.blurAtivo) player.mediaBlur.play().catch(e => console.error("Erro blur", e));
             }
         });
     }
@@ -481,144 +441,87 @@
         }
     });
     document.addEventListener('mouseup', () => {
-        if (isDragging && playerAtivo) {
-            playerAtivo.container.style.cursor = 'default';
-        }
+        if (isDragging && playerAtivo) playerAtivo.container.style.cursor = 'default';
         isDragging = false;
     });
 
     function selecionarPlayer(playerId) {
         const id = parseInt(playerId);
         const playerAntigo = playerAtivo;
-
-        if (playerAntigo) {
-            playerAntigo.container.classList.remove('player-ativo');
-            playerAntigo.container.style.resize = 'both'; 
-        }
-        
+        if (playerAntigo) { playerAntigo.container.classList.remove('player-ativo'); playerAntigo.container.style.resize = 'both'; }
         playerAtivo = players.find(p => p.id === id);
-        
         if (playerAtivo) {
             playerAtivo.container.classList.add('player-ativo');
             playerSelector.value = id; 
-            
-            if (moverAtivo) {
-                playerAtivo.container.style.resize = 'none';
-            } else {
-                playerAtivo.container.style.resize = 'both';
-            }
+            if (moverAtivo) playerAtivo.container.style.resize = 'none';
+            else playerAtivo.container.style.resize = 'both';
         }
     }
 
     function sincronizarPlayers() {
         if (players.length === 0) return;
-        
         players.forEach(player => {
             if (player.playlist.length > 0) {
-                player.playlistIndex = 0;
-                loadPlayerMedia(player);
-            } 
-            else if (player.media && player.media.src) {
-                player.media.currentTime = 0;
+                player.playlistIndex = 0; loadPlayerMedia(player);
+            } else if (player.media && player.media.src) {
+                player.media.currentTime = 0; player.mediaBlur.currentTime = 0; 
                 player.media.play();
+                if (player.blurAtivo) player.mediaBlur.play();
             }
         });
         alert(`Sincronia enviada para ${players.length} players.`);
     }
 
     function checkPlayerAtivo() {
-        if (!playerAtivo) {
-            alert("Nenhum player está selecionado. Adicione um player ou selecione um no menu 'Controladora'.");
-            return false;
-        }
+        if (!playerAtivo) { alert("Nenhum player está selecionado."); return false; }
         return true;
     }
 
     function toggleControls() { controlsContainer.style.display = (controlsContainer.style.display === 'block') ? 'none' : 'block'; controladoraContainer.style.display = 'none'; }
-    function mostrarMenuControladora(ocultarPrincipal = true) { if (ocultarPrincipal) { controlsContainer.style.display = 'none'; } controladoraContainer.style.display = 'block'; }
+    function mostrarMenuControladora(ocultarPrincipal = true) { if (ocultarPrincipal) controlsContainer.style.display = 'none'; controladoraContainer.style.display = 'block'; }
     function voltarMenuPrincipal() { controladoraContainer.style.display = 'none'; controlsContainer.style.display = 'block'; }
     function toggleFullscreen() { if (!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); }
-    document.addEventListener('keydown', (e) => { if (e.key.toLowerCase() === 'm') { toggleControls(); } });
+    document.addEventListener('keydown', (e) => { if (e.key.toLowerCase() === 'm') toggleControls(); });
     
-    function addMedia() {
-        if (!checkPlayerAtivo()) return;
-        mediaInput.click();
-    }
+    function addMedia() { if (!checkPlayerAtivo()) return; mediaInput.click(); }
     
     mediaInput.onchange = (event) => {
-        if (!checkPlayerAtivo()) return; 
-        const pa = playerAtivo;
-        
-        if (pa.gradeCheckInterval) {
-            clearInterval(pa.gradeCheckInterval);
-            pa.gradeCheckInterval = null;
-            pa.gradeDirectoryHandle = null;
-        }
-        
-        const files = Array.from(event.target.files); 
-        if (files.length === 0) return;
-
+        if (!checkPlayerAtivo()) return; const pa = playerAtivo;
+        if (pa.gradeCheckInterval) { clearInterval(pa.gradeCheckInterval); pa.gradeCheckInterval = null; pa.gradeDirectoryHandle = null; }
+        const files = Array.from(event.target.files); if (files.length === 0) return;
         const wasEmpty = pa.playlist.length === 0;
         pa.playlist = pa.playlist.concat(files);
-
-        if (wasEmpty && pa.playlist.length > 0) {
-            loadPlayerMedia(pa);
-        }
-        
+        if (wasEmpty && pa.playlist.length > 0) loadPlayerMedia(pa);
         event.target.value = null; 
     };
 
     function resetMidias() {
-        if (!checkPlayerAtivo()) return;
-        const pa = playerAtivo;
-        
-        if (pa.gradeCheckInterval) {
-            clearInterval(pa.gradeCheckInterval);
-            pa.gradeCheckInterval = null;
-            pa.gradeDirectoryHandle = null;
-        }
-        
+        if (!checkPlayerAtivo()) return; const pa = playerAtivo;
+        if (pa.gradeCheckInterval) { clearInterval(pa.gradeCheckInterval); pa.gradeCheckInterval = null; pa.gradeDirectoryHandle = null; }
         if (pa.imageTimeout) clearTimeout(pa.imageTimeout);
-        if (pa.currentObjectUrl) {
-            URL.revokeObjectURL(pa.currentObjectUrl);
-            pa.currentObjectUrl = null;
-        }
+        if (pa.currentObjectUrl) { URL.revokeObjectURL(pa.currentObjectUrl); pa.currentObjectUrl = null; }
 
-        pa.playlist = [];
-        pa.playlistIndex = 0;
-        pa.imageTimeout = null;
-
-        pa.media.pause();
-        pa.media.removeAttribute('src');
-        pa.fallback.removeAttribute('src');
-        pa.media.load();
+        pa.playlist = []; pa.playlistIndex = 0; pa.imageTimeout = null;
+        pa.media.pause(); pa.mediaBlur.pause();
+        pa.media.removeAttribute('src'); pa.mediaBlur.removeAttribute('src'); 
+        pa.fallback.removeAttribute('src'); pa.fallbackBlur.removeAttribute('src');
+        pa.media.load(); pa.mediaBlur.load();
         
-        pa.media.style.display = 'block'; 
-        pa.fallback.style.display = 'none';
-
+        pa.media.style.display = 'block'; pa.fallback.style.display = 'none';
+        pa.mediaBlur.style.display = pa.blurAtivo ? 'block' : 'none'; 
+        pa.fallbackBlur.style.display = 'none';
         resetarCorte();
     }
 
     function loadPlayerMedia(player) {
         if (player.playlist.length === 0) return;
-
         if (player.imageTimeout) clearTimeout(player.imageTimeout);
         
-        // Estratégia Ant-Travamento para 1 único vídeo longo
-        // Deixamos o navegador fazer o loop nativo
-        if (player.playlist.length === 1 && player.playlist[0].type.startsWith('video')) {
-            player.media.loop = true;
-        } else {
-            player.media.loop = false;
-        }
+        player.media.loop = false; // Desativa o loop nativo
+        player.mediaBlur.loop = false; 
 
-        if (player.currentObjectUrl) {
-            URL.revokeObjectURL(player.currentObjectUrl);
-            player.currentObjectUrl = null;
-        }
-
+        if (player.currentObjectUrl) { URL.revokeObjectURL(player.currentObjectUrl); player.currentObjectUrl = null; }
         const file = player.playlist[player.playlistIndex];
-        
         if (!file) {
             console.error(`Erro: Mídia inválida no índice ${player.playlistIndex} para o Player ${player.id}.`);
             if (player.playlist.length > 1) playNextMedia(player);
@@ -628,227 +531,203 @@
         player.currentObjectUrl = URL.createObjectURL(file);
 
         if (file.type.startsWith('video')) {
-            player.fallback.style.display = 'none';
+            player.fallback.style.display = 'none'; player.fallbackBlur.style.display = 'none';
             player.media.style.display = 'block';
+            player.mediaBlur.style.display = player.blurAtivo ? 'block' : 'none';
+
             player.media.src = player.currentObjectUrl;
-            player.media.play().catch(e => console.error(`Erro ao reproduzir vídeo no Player ${player.id}:`, e));
+            player.mediaBlur.src = player.currentObjectUrl;
+
+            player.media.play().catch(e => console.error(e));
+            player.mediaBlur.play().catch(e => console.error(e));
             player.mediaAtiva = player.media;
         } else { 
-            player.media.style.display = 'none';
+            player.media.style.display = 'none'; player.mediaBlur.style.display = 'none';
             player.fallback.style.display = 'block';
+            player.fallbackBlur.style.display = player.blurAtivo ? 'block' : 'none';
+
             player.fallback.src = player.currentObjectUrl;
+            player.fallbackBlur.src = player.currentObjectUrl;
+
             player.mediaAtiva = player.fallback;
             player.imageTimeout = setTimeout(() => playNextMedia(player), IMAGE_DURATION);
         }
-        
         reaplicarEstilosMidia(player);
     }
 
     function playNextMedia(player) {
         if (player.playlist.length > 1) {
-            player.playlistIndex = (player.playlistIndex + 1) % player.playlist.length; 
-            loadPlayerMedia(player);
+            player.playlistIndex = (player.playlistIndex + 1) % player.playlist.length; loadPlayerMedia(player);
         }
     }
     
     function reaplicarEstilosMidia(player) {
-        const pa = player; 
-        const transformValue = `rotate(${pa.rotacao}deg)`; 
-        pa.mediaAtiva.style.webkitTransform = transformValue; 
-        pa.mediaAtiva.style.transform = transformValue; 
+        const pa = player; const transformValue = `rotate(${pa.rotacao}deg)`; 
+        pa.mediaAtiva.style.webkitTransform = transformValue; pa.mediaAtiva.style.transform = transformValue; 
         
         if (pa.crop && pa.crop.w > 0) {
-            pa.mediaAtiva.style.objectFit = 'cover';
-            pa.mediaAtiva.style.width = `${pa.crop.w}px`;
-            pa.mediaAtiva.style.height = `${pa.crop.h}px`;
-            pa.mediaAtiva.style.top = `${pa.crop.y}px`;
-            pa.mediaAtiva.style.left = `${pa.crop.x}px`;
+            pa.mediaAtiva.style.objectFit = 'cover'; pa.mediaAtiva.style.width = `${pa.crop.w}px`;
+            pa.mediaAtiva.style.height = `${pa.crop.h}px`; pa.mediaAtiva.style.top = `${pa.crop.y}px`; pa.mediaAtiva.style.left = `${pa.crop.x}px`;
         } else {
             pa.mediaAtiva.style.objectFit = pa.media.style.objectFit || 'contain';
-            pa.mediaAtiva.style.width = '100%';
-            pa.mediaAtiva.style.height = '100%';
-            pa.mediaAtiva.style.top = '0';
-            pa.mediaAtiva.style.left = '0';
+            pa.mediaAtiva.style.width = '100%'; pa.mediaAtiva.style.height = '100%';
+            pa.mediaAtiva.style.top = '0'; pa.mediaAtiva.style.left = '0';
+        }
+    }
+
+    function toggleBlur(element) {
+        if (!checkPlayerAtivo()) return;
+        const pa = playerAtivo;
+        pa.blurAtivo = !pa.blurAtivo;
+        
+        if(element) element.classList.toggle('active', pa.blurAtivo);
+        
+        if (pa.blurAtivo) {
+            if (pa.mediaAtiva === pa.media) pa.mediaBlur.style.display = 'block';
+            else pa.fallbackBlur.style.display = 'block';
+        } else {
+            pa.mediaBlur.style.display = 'none'; pa.fallbackBlur.style.display = 'none';
         }
     }
     
     async function lerGradePasta() {
-        if (!window.showDirectoryPicker) {
-            alert('Erro: O seu navegador não suporta a seleção de pastas ou a página não está em HTTPS/localhost.');
-            return;
-        }
-        
-        if (!checkPlayerAtivo()) return;
-        
-        const pa = playerAtivo;
-
+        if (!window.showDirectoryPicker) { alert('Erro: O seu navegador não suporta a seleção de pastas ou a página não está em HTTPS/localhost.'); return; }
+        if (!checkPlayerAtivo()) return; const pa = playerAtivo;
         try {
-            const handle = await window.showDirectoryPicker();
-            resetMidias(); 
-            pa.gradeDirectoryHandle = handle;
-
+            const handle = await window.showDirectoryPicker(); resetMidias(); pa.gradeDirectoryHandle = handle;
             await scanGradeDirectory(pa);
             pa.gradeCheckInterval = setInterval(() => scanGradeDirectory(pa), GRADE_CHECK_INTERVAL_MS);
-        } catch (err) {
-            console.error("Erro ao selecionar a pasta ou permissão negada:", err);
-        }
+        } catch (err) { console.error("Erro ao selecionar a pasta ou permissão negada:", err); }
     }
 
     async function scanGradeDirectory(player) {
         if (!player || !player.gradeDirectoryHandle) {
-            if (player && player.gradeCheckInterval) {
-                 clearInterval(player.gradeCheckInterval);
-                 player.gradeCheckInterval = null;
-            }
+            if (player && player.gradeCheckInterval) { clearInterval(player.gradeCheckInterval); player.gradeCheckInterval = null; }
             return;
         }
-
         let foundFiles = [];
         try {
             for await (const entry of player.gradeDirectoryHandle.values()) {
-                if (entry.kind === 'file' && entry.name.match(/^video\d+\.mp4$/i)) {
-                    foundFiles.push(entry);
-                }
+                if (entry.kind === 'file' && entry.name.match(/^video\d+\.mp4$/i)) foundFiles.push(entry);
             }
-
-            foundFiles.sort((a, b) => {
-                const numA = parseInt(a.name.match(/(\d+)/)[1]);
-                const numB = parseInt(b.name.match(/(\d+)/)[1]);
-                return numA - numB; 
-            });
-
-            const newPlaylistNames = foundFiles.map(f => f.name);
-            const oldPlaylistNames = player.playlist.map(f => f.name);
+            foundFiles.sort((a, b) => parseInt(a.name.match(/(\d+)/)[1]) - parseInt(b.name.match(/(\d+)/)[1]));
+            const newPlaylistNames = foundFiles.map(f => f.name); const oldPlaylistNames = player.playlist.map(f => f.name);
 
             if (JSON.stringify(newPlaylistNames) !== JSON.stringify(oldPlaylistNames)) {
-                const fileObjects = await Promise.all(
-                    foundFiles.map(fileHandle => fileHandle.getFile())
-                );
-
-                player.playlist = fileObjects;
-                player.playlistIndex = 0;
+                const fileObjects = await Promise.all(foundFiles.map(fileHandle => fileHandle.getFile()));
+                player.playlist = fileObjects; player.playlistIndex = 0;
                 
-                if (player.playlist.length > 0) {
-                    loadPlayerMedia(player);
-                } else {
+                if (player.playlist.length > 0) loadPlayerMedia(player);
+                else {
                     if (player.imageTimeout) clearTimeout(player.imageTimeout);
-                    if (player.currentObjectUrl) {
-                        URL.revokeObjectURL(player.currentObjectUrl);
-                        player.currentObjectUrl = null;
-                    }
-                    player.media.pause();
-                    player.media.removeAttribute('src');
-                    player.fallback.removeAttribute('src');
-                    player.media.load();
+                    if (player.currentObjectUrl) { URL.revokeObjectURL(player.currentObjectUrl); player.currentObjectUrl = null; }
+                    player.media.pause(); player.mediaBlur.pause();
+                    player.media.removeAttribute('src'); player.fallback.removeAttribute('src');
+                    player.mediaBlur.removeAttribute('src'); player.fallbackBlur.removeAttribute('src');
+                    player.media.load(); player.mediaBlur.load();
                 }
             }
         } catch (err) {
             console.error(`Erro ao ler a pasta da grade do Player ${player.id}.`, err);
-            if (player.gradeCheckInterval) {
-                clearInterval(player.gradeCheckInterval);
-                player.gradeCheckInterval = null;
-            }
+            if (player.gradeCheckInterval) { clearInterval(player.gradeCheckInterval); player.gradeCheckInterval = null; }
             player.gradeDirectoryHandle = null;
         }
     }
 
     function toggleMover(element) {
-        if (!checkPlayerAtivo()) {
-            element.classList.remove('active'); 
-            return;
-        }
-        
-        moverAtivo = !moverAtivo;
-        element.classList.toggle('active', moverAtivo);
-        
-        if (moverAtivo) {
-            playerAtivo.container.style.resize = 'none';
-            if (cortarAtivo) {
-                toggleCortar(document.querySelector('.menu-grid a[onclick*="toggleCortar"]'));
-            }
-        } else {
-            playerAtivo.container.style.resize = 'both';
-        }
+        if (!checkPlayerAtivo()) { element.classList.remove('active'); return; }
+        moverAtivo = !moverAtivo; element.classList.toggle('active', moverAtivo);
+        if (moverAtivo) { playerAtivo.container.style.resize = 'none'; if (cortarAtivo) toggleCortar(document.querySelector('.menu-grid a[onclick*="toggleCortar"]')); }
+        else playerAtivo.container.style.resize = 'both';
     }
     
     function ajustarModo(modo, element) { 
         if (!checkPlayerAtivo()) return;
-        document.querySelectorAll('.menu-grid a[onclick*="ajustarModo"]').forEach(a => a.classList.remove('active')); 
-        element.classList.add('active'); 
-        
+        document.querySelectorAll('.menu-grid a[onclick*="ajustarModo"]').forEach(a => a.classList.remove('active')); element.classList.add('active'); 
         resetarCorte(); 
-        playerAtivo.media.style.objectFit = modo; 
-        playerAtivo.fallback.style.objectFit = modo; 
+        playerAtivo.media.style.objectFit = modo; playerAtivo.fallback.style.objectFit = modo; 
     }
     
     function rotacionarMidia() { 
         if (!checkPlayerAtivo()) return;
-        const pa = playerAtivo;
-        pa.rotacao = (pa.rotacao + 90) % 360; 
-        reaplicarEstilosMidia(pa);
+        playerAtivo.rotacao = (playerAtivo.rotacao + 90) % 360; reaplicarEstilosMidia(playerAtivo);
     }
     
     function resetarLayout() { 
-        if (!checkPlayerAtivo()) return;
-        const pa = playerAtivo;
-        
+        if (!checkPlayerAtivo()) return; const pa = playerAtivo;
         pa.barraComercial.style.display = 'none'; 
-        if (commercialBarInterval) { 
-             clearInterval(commercialBarInterval);
-             commercialBarInterval = null;
-        }
+        if (commercialBarInterval) { clearInterval(commercialBarInterval); commercialBarInterval = null; }
+        if (tempInterval) { clearInterval(tempInterval); tempInterval = null; }
         relogioBox.style.display = 'none';
         
-        pa.container.style.top = '50%'; 
-        pa.container.style.left = '50%'; 
-        pa.container.style.width = '400px'; 
-        pa.container.style.height = '300px'; 
-        pa.container.style.transform = 'translate(-50%, -50%)'; 
-        pa.container.style.resize = 'both'; 
+        pa.container.style.top = '50%'; pa.container.style.left = '50%'; 
+        pa.container.style.width = '400px'; pa.container.style.height = '300px'; 
+        pa.container.style.transform = 'translate(-50%, -50%)'; pa.container.style.resize = 'both'; 
         resetarCorte();
     }
 
     function aplicarLayout(preset) {
-        if (!checkPlayerAtivo()) return;
-        const pa = playerAtivo;
-        
-        resetarLayout(); 
-        pa.container.style.transform = 'none';
+        if (!checkPlayerAtivo()) return; const pa = playerAtivo;
+        resetarLayout(); pa.container.style.transform = 'none';
         
         if (commercialBarInterval) clearInterval(commercialBarInterval);
+        if (tempInterval) clearInterval(tempInterval);
         relogioBox.style.display = 'none';
 
         if (preset === 'mub') { 
-            pa.container.style.top = '0px'; 
-            pa.container.style.left = '0px'; 
-            pa.container.style.width = '960px'; 
-            pa.container.style.height = '480px'; 
+            pa.container.style.top = '0px'; pa.container.style.left = '0px'; 
+            pa.container.style.width = '960px'; pa.container.style.height = '480px'; 
         }
         else if (preset === 'relogio') { 
             const alturaMidia = document.getElementById('input-altura-midia').value;
-            const larguraPlayer = '280px'; 
-            const alturaRelogio = '80px'; 
+            const larguraPlayer = '280px'; const alturaRelogio = '80px'; 
             
-            pa.container.style.top = '0px'; 
-            pa.container.style.left = '0px'; 
-            pa.container.style.width = larguraPlayer; 
-            pa.container.style.height = `${alturaMidia}px`; 
+            pa.container.style.top = '0px'; pa.container.style.left = '0px'; 
+            pa.container.style.width = larguraPlayer; pa.container.style.height = `${alturaMidia}px`; 
             
-            relogioBox.style.display = 'flex'; 
-            relogioBox.style.top = `${alturaMidia}px`; 
-            relogioBox.style.left = '0px'; 
-            relogioBox.style.width = larguraPlayer; 
-            relogioBox.style.height = alturaRelogio; 
+            relogioBox.style.display = 'flex'; relogioBox.style.top = `${alturaMidia}px`; 
+            relogioBox.style.left = '0px'; relogioBox.style.width = larguraPlayer; 
+            relogioBox.style.height = alturaRelogio; relogioBox.style.fontSize = '60px';
             
             const updateClock = () => { relogioBox.innerHTML = new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}).replace(':', '<span class="blink">:</span>'); }; 
-            updateClock(); 
-            commercialBarInterval = setInterval(updateClock, 1000); 
+            updateClock(); commercialBarInterval = setInterval(updateClock, 1000); 
+        }
+        else if (preset === 'relogio-recife' || preset === 'relogio-salvador') {
+            const alturaMidia = document.getElementById('input-altura-midia').value;
+            const larguraPlayer = '280px'; const alturaRelogio = '100px';
+
+            pa.container.style.top = '0px'; pa.container.style.left = '0px';
+            pa.container.style.width = larguraPlayer; pa.container.style.height = `${alturaMidia}px`;
+
+            relogioBox.style.display = 'flex'; relogioBox.style.flexDirection = 'column';
+            relogioBox.style.top = `${alturaMidia}px`; relogioBox.style.left = '0px';
+            relogioBox.style.width = larguraPlayer; relogioBox.style.height = alturaRelogio;
+
+            let cityName = preset === 'relogio-recife' ? 'RECIFE' : 'SALVADOR';
+            let lat = preset === 'relogio-recife' ? -8.05 : -12.97;
+            let lon = preset === 'relogio-recife' ? -34.88 : -38.51;
+            let currentTemp = '--';
+            
+            fetchTemperature(lat, lon).then(t => currentTemp = t);
+
+            const updateClock = () => {
+                const timeStr = new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}).replace(':', '<span class="blink">:</span>');
+                relogioBox.innerHTML = `
+                    <div style="font-size: 16px; color: #4cc9f0; margin-bottom: 5px; font-weight: bold; text-transform: uppercase;">${cityName}</div>
+                    <div style="display: flex; gap: 15px; align-items: center; justify-content: center;">
+                        <span style="font-size: 40px; color: white;">${timeStr}</span>
+                        <span style="font-size: 26px; color: #f39c12;">${currentTemp}°C</span>
+                    </div>
+                `;
+            };
+
+            updateClock();
+            commercialBarInterval = setInterval(updateClock, 1000);
+            tempInterval = setInterval(() => { fetchTemperature(lat, lon).then(t => currentTemp = t); }, 600000); // Att a cada 10 min
         }
         else if (preset === 'coluna') {
-            pa.container.style.top = '0px'; 
-            pa.container.style.left = '0px'; 
-            pa.container.style.width = '768px'; 
-            pa.container.style.height = '960px';
+            pa.container.style.top = '0px'; pa.container.style.left = '0px'; 
+            pa.container.style.width = '768px'; pa.container.style.height = '960px';
             pa.barraComercial.style.display = 'flex';
             
             const informacoes = [ 
@@ -856,85 +735,45 @@
                 `<div style="display: flex; align-items: center; gap: 8px;"><img src='https://cdn-icons-png.flaticon.com/512/3358/3358623.png' class='icon-decorado' alt='Ícone Mercado'><span style="font-size: 10px; color: #ccc;">DÓLAR</span><span style="font-weight: bold;">R$ 5,45</span><span style="background-color: #e74c3c; color: white; font-size: 9px; padding: 2px 4px; border-radius: 4px;">-0.27%</span></div>` 
             ];
             let infoIndex = 0;
-            
-            const updateInfo = () => { 
-                const infoEl = pa.infoAlternada;
-                if (!infoEl) return;
-                infoEl.style.opacity = 0; 
-                setTimeout(() => { infoEl.innerHTML = informacoes[infoIndex]; infoEl.style.opacity = 1; infoIndex = (infoIndex + 1) % informacoes.length; }, 500); 
-            };
-            
-            const atualizarHora = () => { 
-                const horaEl = pa.hora;
-                if(horaEl) horaEl.textContent = new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}); 
-            };
-            
+            const updateInfo = () => { const infoEl = pa.infoAlternada; if (!infoEl) return; infoEl.style.opacity = 0; setTimeout(() => { infoEl.innerHTML = informacoes[infoIndex]; infoEl.style.opacity = 1; infoIndex = (infoIndex + 1) % informacoes.length; }, 500); };
+            const atualizarHora = () => { const horaEl = pa.hora; if(horaEl) horaEl.textContent = new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}); };
             atualizarHora(); updateInfo();
             commercialBarInterval = setInterval(() => { updateInfo(); atualizarHora(); }, 4000);
         }
     }
     
-    function toggleBarraComercial() {
-        if (!checkPlayerAtivo()) return;
-        const pa = playerAtivo;
-        pa.barraComercial.style.display = (pa.barraComercial.style.display === 'flex') ? 'none' : 'flex';
-    }
+    function toggleBarraComercial() { if (!checkPlayerAtivo()) return; playerAtivo.barraComercial.style.display = (playerAtivo.barraComercial.style.display === 'flex') ? 'none' : 'flex'; }
     
     function abrirModalPresetLivre() { 
-        if (!checkPlayerAtivo()) return;
-        const pa = playerAtivo;
-        document.getElementById('input-x').value = pa.container.offsetLeft;
-        document.getElementById('input-y').value = pa.container.offsetTop;
-        document.getElementById('input-largura').value = pa.container.offsetWidth;
-        document.getElementById('input-altura').value = pa.container.offsetHeight;
+        if (!checkPlayerAtivo()) return; const pa = playerAtivo;
+        document.getElementById('input-x').value = pa.container.offsetLeft; document.getElementById('input-y').value = pa.container.offsetTop;
+        document.getElementById('input-largura').value = pa.container.offsetWidth; document.getElementById('input-altura').value = pa.container.offsetHeight;
         const isRelogio = (relogioBox.style.display === 'flex' && pa.container.style.width === '280px');
         document.getElementById('input-altura-midia').value = isRelogio ? pa.container.offsetHeight : 480; 
-        
-        controlsContainer.style.display = 'none'; 
-        presetLivreModal.style.display = 'block'; 
+        controlsContainer.style.display = 'none'; presetLivreModal.style.display = 'block'; 
     }
     
     function fecharModalPresetLivre() { presetLivreModal.style.display = 'none'; }
     
     function aplicarPresetLivre() { 
-        if (!checkPlayerAtivo()) return;
-        const pa = playerAtivo;
-        const x = document.getElementById('input-x').value; 
-        const y = document.getElementById('input-y').value; 
-        const largura = document.getElementById('input-largura').value; 
-        const altura = document.getElementById('input-altura').value; 
-        
-        resetarLayout(); 
-        pa.container.style.transform = 'none'; 
-        pa.container.style.left = `${x}px`; 
-        pa.container.style.top = `${y}px`; 
-        pa.container.style.width = `${largura}px`; 
-        pa.container.style.height = `${altura}px`; 
-        fecharModalPresetLivre(); 
+        if (!checkPlayerAtivo()) return; const pa = playerAtivo;
+        const x = document.getElementById('input-x').value; const y = document.getElementById('input-y').value; 
+        const largura = document.getElementById('input-largura').value; const altura = document.getElementById('input-altura').value; 
+        resetarLayout(); pa.container.style.transform = 'none'; pa.container.style.left = `${x}px`; pa.container.style.top = `${y}px`; 
+        pa.container.style.width = `${largura}px`; pa.container.style.height = `${altura}px`; fecharModalPresetLivre(); 
     }
 
     function toggleCortar(element) {
-        if (!checkPlayerAtivo()) return;
-        const pa = playerAtivo;
-        
-        cortarAtivo = !cortarAtivo;
-        element.classList.toggle('active', cortarAtivo);
+        if (!checkPlayerAtivo()) return; const pa = playerAtivo;
+        cortarAtivo = !cortarAtivo; element.classList.toggle('active', cortarAtivo);
         pa.overlay.style.display = cortarAtivo ? 'block' : 'none';
-        
-        if (cortarAtivo && moverAtivo) {
-            toggleMover(document.querySelector('#move-button-li a'));
-        }
+        if (cortarAtivo && moverAtivo) toggleMover(document.querySelector('#move-button-li a'));
     }
     
     function resetarCorte() {
-        if (!playerAtivo) return;
-        const pa = playerAtivo;
-        
-        pa.crop = { x: 0, y: 0, w: 0, h: 0 }; 
-        pa.media.style.objectFit = 'contain';
-        pa.fallback.style.objectFit = 'contain';
+        if (!playerAtivo) return; const pa = playerAtivo;
+        pa.crop = { x: 0, y: 0, w: 0, h: 0 }; pa.media.style.objectFit = 'contain'; pa.fallback.style.objectFit = 'contain';
         reaplicarEstilosMidia(pa);
-
         document.querySelectorAll('.menu-grid a[onclick*="ajustarModo"]').forEach(a => a.classList.remove('active')); 
         const containBtn = document.querySelector('.menu-grid a[onclick*="ajustarModo(\'contain\'"]');
         if (containBtn) containBtn.classList.add('active');
@@ -942,16 +781,7 @@
 
     function salvarConfiguracao() {
         const configMosaico = players.map(p => {
-            return {
-                id: p.id,
-                pos: { top: p.container.style.top, left: p.container.style.left },
-                tam: { width: p.container.style.width, height: p.container.style.height },
-                transform: p.container.style.transform,
-                modoAjuste: p.media.style.objectFit || 'contain',
-                crop: p.crop,
-                rotacao: p.rotacao,
-                resize: p.container.style.resize 
-            };
+            return { id: p.id, pos: { top: p.container.style.top, left: p.container.style.left }, tam: { width: p.container.style.width, height: p.container.style.height }, transform: p.container.style.transform, modoAjuste: p.media.style.objectFit || 'contain', crop: p.crop, rotacao: p.rotacao, resize: p.container.style.resize, blurAtivo: p.blurAtivo };
         });
         localStorage.setItem('configPlayerMosaico', JSON.stringify(configMosaico));
         alert(`Configuração do mosaico com ${players.length} players foi salva!`);
@@ -959,65 +789,41 @@
 
     function carregarConfiguracao() {
         const configStr = localStorage.getItem('configPlayerMosaico');
-        if (!configStr) {
-            alert('Nenhuma configuração de mosaico salva.');
-            return;
-        }
-        
+        if (!configStr) { alert('Nenhuma configuração de mosaico salva.'); return; }
         const configMosaico = JSON.parse(configStr);
-        
         players.forEach(p => {
             if (p.imageTimeout) clearTimeout(p.imageTimeout);
             if (p.gradeCheckInterval) clearInterval(p.gradeCheckInterval);
             if (p.currentObjectUrl) URL.revokeObjectURL(p.currentObjectUrl);
             p.container.remove();
         });
-        players = [];
-        playerSelector.innerHTML = '';
-        playerCounter = 0;
-        playerAtivo = null;
-        
+        players = []; playerSelector.innerHTML = ''; playerCounter = 0; playerAtivo = null;
         if (commercialBarInterval) clearInterval(commercialBarInterval);
+        if (tempInterval) clearInterval(tempInterval);
         relogioBox.style.display = 'none';
         
         configMosaico.forEach(config => {
-            adicionarPlayer(); 
-            const pa = playerAtivo; 
+            adicionarPlayer(); const pa = playerAtivo; 
+            pa.container.style.top = config.pos.top; pa.container.style.left = config.pos.left;
+            pa.container.style.width = config.tam.width; pa.container.style.height = config.tam.height;
+            pa.container.style.transform = config.transform; pa.container.style.resize = config.resize || 'both'; 
+            pa.blurAtivo = config.blurAtivo || false;
             
-            pa.container.style.top = config.pos.top;
-            pa.container.style.left = config.pos.left;
-            pa.container.style.width = config.tam.width;
-            pa.container.style.height = config.tam.height;
-            pa.container.style.transform = config.transform;
-            pa.container.style.resize = config.resize || 'both'; 
-            
-            pa.media.style.objectFit = config.modoAjuste;
-            pa.fallback.style.objectFit = config.modoAjuste;
+            pa.media.style.objectFit = config.modoAjuste; pa.fallback.style.objectFit = config.modoAjuste;
             const modoBtn = document.querySelector(`.menu-grid a[onclick*="'${config.modoAjuste}'"]`);
-            if (modoBtn) {
-                 document.querySelectorAll('.menu-grid a[onclick*="ajustarModo"]').forEach(a => a.classList.remove('active')); 
-                 modoBtn.classList.add('active');
-            }
-            
-            pa.rotacao = config.rotacao || 0;
-            pa.crop = config.crop || { x: 0, y: 0, w: 0, h: 0 };
+            if (modoBtn) { document.querySelectorAll('.menu-grid a[onclick*="ajustarModo"]').forEach(a => a.classList.remove('active')); modoBtn.classList.add('active'); }
+            pa.rotacao = config.rotacao || 0; pa.crop = config.crop || { x: 0, y: 0, w: 0, h: 0 };
             reaplicarEstilosMidia(pa); 
         });
         
-        if (players.length > 0) {
-            selecionarPlayer(players[0].id);
-        }
-        
+        if (players.length > 0) selecionarPlayer(players[0].id);
         moverAtivo = (playerAtivo && playerAtivo.container.style.resize === 'none');
         const moverBtn = document.querySelector('#move-button-li a');
         if (moverBtn) moverBtn.classList.toggle('active', moverAtivo);
-
         alert(`Configuração carregada com sucesso!`);
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
-        adicionarPlayer();
-    });
+    document.addEventListener('DOMContentLoaded', () => { adicionarPlayer(); });
 </script>
 
 </body>
