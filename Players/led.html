@@ -94,7 +94,7 @@
             background: rgba(0, 0, 0, 0.9); color: white;
             display: none; justify-content: center; align-items: center;
             font-size: 60px; font-weight: bold; z-index: 20;
-            border-top: 2px solid #3a86ff;
+            /* Borda removida conforme solicitado */
         }
         .blink { animation: blink 1s step-start infinite; }
         @keyframes blink { 50% { opacity: 0; } }
@@ -703,7 +703,6 @@
             relogioBox.style.top = `${alturaMidia}px`; relogioBox.style.left = '0px';
             relogioBox.style.width = larguraPlayer; relogioBox.style.height = alturaRelogio;
 
-            let cityName = preset === 'relogio-recife' ? 'RECIFE' : 'SALVADOR';
             let lat = preset === 'relogio-recife' ? -8.05 : -12.97;
             let lon = preset === 'relogio-recife' ? -34.88 : -38.51;
             let currentTemp = '--';
@@ -719,7 +718,6 @@
                 const mainText = showTime ? timeStr : `${currentTemp}°C`;
 
                 relogioBox.innerHTML = `
-                    <div style="font-size: 16px; color: #4cc9f0; margin-bottom: -5px; font-weight: bold; text-transform: uppercase;">${cityName}</div>
                     <div style="font-size: 60px; color: white; font-weight: bold;">${mainText}</div>
                 `;
             };
