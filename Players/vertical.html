@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Player Vertical Pro | Creative Hub</title>
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Oswald:wght@300;400;500;700&display=swap" rel="stylesheet">
+  
+  <style>
+    /* [DIRETRIZ DE DESIGN: PALETA] 
+       Não alterar as variáveis de cor para manter identidade visual do projeto.
+    */
+    :root { 
+        --primary-gradient: linear-gradient(135deg, #0d6efd 0%, #00d4ff 100%);
+        --glass-border: rgba(255, 255, 255, 0.1);
+        --dark-bg: #0a0a0c;
+        --text-main: #ffffff;
+        --text-muted: #a0a0a8;
+        --green-trend: #00c853; /* Verde Neon para altas */
+        --red-trend: #ff3d00;   /* Vermelho Neon para baixas */
+    }
+
+    html, body {
+      margin: 0; padding: 0; background: var(--dark-bg); overflow: hidden;
+      width: 100vw; height: 100vh; font-family: 'Plus Jakarta Sans', sans-serif;
+      display: flex; justify-content: center; align-items: center;
+    }
+
+    /* Container Principal */
+    #player-wrapper {
+      width: 1080px; height: 1920px;
+      background: black;
+      position: relative;
+      box-shadow: 0 0 50px rgba(0,0,0,0.9);
+      display: flex; flex-direction: column;
+      justify-content: flex-end; align-items: center;
+      transform-origin: center center;
+    }
+
+    #mediaWrapper {
+      width: 100%; height: 100%;
+      background: black; position: absolute; top:0; left:0; overflow: hidden;
+    }
+
+    #media, #fallback { width: 100%; height: 100%; object-fit: cover; }
+    
+    /* [DIRETRIZ DE DESIGN: BARRA DE INFORMAÇÕES]
+       - Altura fixa: 68px (Compacta e Elegante)
+       - Largura: 97% (Margem leve nas bordas)
+       - Cor: Cinza Chumbo quase sólido (Opacity 0.92) com Blur (Glassmorphism sutil)
+       - Borda: Fina e translúcida (1px rgba white 0.08)
+    */
+    #barra {
+      position: absolute; bottom: 97px; left: 50%; 
+      width: 97%; height: 68px;
+      background: rgba(30, 30, 30, 0.92); 
+      backdrop-filter: blur(8px);
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0 15px;
+      color: #ffffff; z-index: 200;
+      transform: translateX(-50%); 
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 5px 20px rgba(0,0,0,0.4);
+      box-sizing: border-box; overflow: hidden;
+    }
+
+    /* [LAYOUT DA BARRA] Direita: Logo da Empresa */
+    .brand-section {
+        order: 3; display: flex; align-items: center; 
+        border-left: 1px solid rgba(255,255,255,0.1);
+        padding-left: 15px; height: 60%;
+    }
+    .brand-logo { height: 26px; width: auto; object-fit: contain; opacity: 0.9; }
+
+    /* [LAYOUT DA BARRA] Centro: Dados Dinâmicos */
+    .content-section {
+        order: 2; flex-grow: 1; display: flex; align-items: center; justify-content: flex-start;
+        padding: 0 20px; font-family: 'Oswald', sans-serif;
+        opacity: 0; transition: opacity 0.5s ease; height: 100%;
+    }
+    .content-section.visible { opacity: 1; }
+
+    /* [LAYOUT DA BARRA] Esquerda: Ícone da Categoria */
+    .category-box {
+        order: 1; background: rgba(255,255,255,0.06);
+        width: 42px; height: 42px; border-radius: 10px;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        gap: 0px; flex-shrink: 0;
+    }
+    .category-icon { font-size: 16px; color: white; opacity: 0.9; }
+    .category-name { font-size: 6px; text-transform: uppercase; font-weight: 700; color: #888; letter-spacing: 0.5px; margin-top: 2px; }
+
+    /* Utilitários de Layout Interno */
+    .bar-split-container { display: flex; align-items: center; height: 100%; width: 100%; }
+    .bar-separator { width: 1px; height: 35px; background: rgba(255,255,255,0.15); margin: 0 15px; }
+    .data-group { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; }
+    
+    /* Tipografia de Dados - Manter Oswald para números */
+    .data-label { font-size: 8px; text-transform: uppercase; color: #888; letter-spacing: 1px; margin-bottom: 2px; font-weight: 400; }
+    .data-value { font-size: 22px; font-weight: 500; line-height: 1; color: white; }
+    
+    .trend-up { color: var(--green-trend); font-size: 11px; font-weight: 600; display: flex; align-items: center; gap:3px; }
+    .trend-down { color: var(--red-trend); font-size: 11px; font-weight: 600; display: flex; align-items: center; gap:3px; }
+
+    /* Grid de Clima Específico */
+    .weather-details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 15px; }
+    .weather-detail-item { display: flex; align-items: center; gap: 5px; font-size: 9px; color: #ccc; font-weight: 300; }
+
+    /* [DIRETRIZ DE DESIGN: MENU DE CONTROLES]
+       - Estilo Glassmorphism pesado (Blur 20px)
+       - Botões em Grid de 4 colunas
+       - Ícones centralizados com texto abaixo
+       - Botão clicável em 100% da área (<a> ocupa tudo)
+    */
+    #controls-container {
+      position: fixed; top: 50%; left: 50%;
+      z-index: 1000; display: none;
+      transform: translate(-50%, -50%);
+      background: rgba(10, 10, 12, 0.95);
+      backdrop-filter: blur(20px);
+      padding: 25px; border-radius: 25px;
+      border: 1px solid var(--glass-border);
+      box-shadow: 0 30px 60px rgba(0,0,0,0.8);
+      width: 85%; max-width: 600px; max-height: 80vh; overflow-y: auto;
+    }
+    .menu-header { text-align: center; margin-bottom: 20px; }
+    .menu-header h2 { font-size: 18px; color: var(--text-main); margin: 0; }
+    .menu-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    .menu-grid li { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--glass-border); border-radius: 12px; transition: all 0.2s ease; overflow: hidden; }
+    .menu-grid li:hover { background: rgba(13, 110, 253, 0.15); border-color: #0d6efd; transform: translateY(-3px); }
+    .menu-grid li a { text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-main); font-size: 11px; font-weight: 600; gap: 8px; padding: 15px 5px; width: 100%; height: 100%; box-sizing: border-box; }
+    .menu-grid li i { font-size: 20px; color: var(--text-muted); }
+    .menu-grid li:hover i { color: #0d6efd; }
+    .btn-hide-item { background: var(--accent-gradient) !important; border: none !important; }
+    #controls-container::-webkit-scrollbar { width: 5px; }
+    #controls-container::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 10px; }
+  </style>
+  <script src="player-runtime.js"></script>
+</head>
+<body>
+
+  <div id="player-wrapper">
+    <div id="mediaWrapper">
+      <video id="media" autoplay muted playsinline></video>
+      <img id="fallback" style="display: none;" />
+      <div id="barra"></div>
+    </div>
+  </div>
+
+  <input type="file" id="mediaInput" accept="video/mp4,image/*" multiple style="display: none;">
+
+  <div id="controls-container">
+    <div class="menu-header"><h2>PAINEL DE CONTROLE</h2></div>
+    <ul class="menu-grid">
+      <li><a href="../index.html"><i class="fas fa-home"></i>HOME</a></li>
+      
+      <li><a href="javascript:void(0)" onclick="addMedia()"><i class="fa fa-plus-circle"></i>Add Mídia</a></li>
+      <li><a href="javascript:void(0)" onclick="reloadMidia()"><i class="fa fa-sync"></i>Recarregar</a></li>
+      <li><a href="javascript:void(0)" onclick="resetMidias()"><i class="fa fa-trash-alt"></i>Resetar</a></li>
+      <li class="btn-hide-item"><a href="javascript:void(0)" onclick="toggleControls()"><i class="fa fa-eye-slash" style="color:white"></i>Ocultar</a></li>
+      <li><a href="javascript:void(0)" onclick="iniciarBarraRotativa()"><i class="fa fa-play"></i>Iniciar Barra</a></li>
+      <li><a href="javascript:void(0)" onclick="toggleBar()"><i class="fa fa-minus-square"></i>Exibir Barra</a></li>
+      <li><a href="javascript:void(0)" onclick="toggleFullscreen()"><i class="fa fa-expand"></i>Tela Cheia</a></li>
+      <li><a href="javascript:void(0)" onclick="ajustarAlturaBarra('up')"><i class="fa fa-chevron-up"></i>Barra ↑</a></li>
+      <li><a href="javascript:void(0)" onclick="ajustarAlturaBarra('down')"><i class="fa fa-chevron-down"></i>Barra ↓</a></li>
+      <li><a href="javascript:void(0)" onclick="rotateWrapper()"><i class="fa fa-rotate-right"></i>Girar</a></li>
+      <li><a href="javascript:void(0)" onclick="zoomWrapperIn()"><i class="fa fa-magnifying-glass-plus"></i>Zoom +</a></li>
+      <li><a href="javascript:void(0)" onclick="zoomWrapperOut()"><i class="fa fa-magnifying-glass-minus"></i>Zoom -</a></li>
+      <li><a href="javascript:void(0)" onclick="moveWrapper('up')"><i class="fa fa-arrow-up"></i>Subir</a></li>
+      <li><a href="javascript:void(0)" onclick="moveWrapper('down')"><i class="fa fa-arrow-down"></i>Descer</a></li>
+      <li><a href="javascript:void(0)" onclick="moveWrapper('left')"><i class="fa fa-arrow-left"></i>Esquerda</a></li>
+      <li><a href="javascript:void(0)" onclick="moveWrapper('right')"><i class="fa fa-arrow-right"></i>Direita</a></li>
+      <li><a href="javascript:void(0)" onclick="stretchWrapper('horizontal+')"><i class="fa fa-arrows-left-right"></i>Largura +</a></li>
+      <li><a href="javascript:void(0)" onclick="stretchWrapper('horizontal-')"><i class="fa fa-compress"></i>Largura -</a></li>
+      <li><a href="javascript:void(0)" onclick="lerGradePasta()"><i class="fa fa-folder-tree"></i>Grade</a></li>
+    </ul>
+  </div>
+
+<script>
+    const wrapper = document.getElementById('player-wrapper');
+    const media = document.getElementById('media');
+    const fallback = document.getElementById('fallback');
+    const mediaInput = document.getElementById('mediaInput');
+    const controlsContainer = document.getElementById('controls-container');
+    const barra = document.getElementById('barra');
+    
+    let imageTimeout = null; mainPlaylist = []; mainIndex = 0;
+    
+    /* [CONFIGURAÇÃO DE TELA] Inicia em 270deg para Telas Verticais deitadas à esquerda */
+    let zoom = 1, rotation = 270, offsetX = 0, offsetY = 0, scaleX = 1, scaleY = 1;
+    let barInterval = null;
+
+    /* [LÓGICA DE DADOS DA BARRA]
+       - Utilize ícones BRANCOS (color:white) para legibilidade no fundo escuro.
+       - Divida o conteúdo em: Clima, Finanças e Cripto.
+       - Use 'bar-split-container' para dividir informações complexas com linhas verticais.
+    */
+    const barData = [
+        {
+            type: 'weather',
+            icon: 'fa-temperature-half',
+            catName: 'AGORA',
+            render: () => `
+                <div class="bar-split-container">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <i class="fas fa-cloud-sun" style="font-size:24px; color:white;"></i>
+                        <span class="data-value" style="font-size:26px;">27°C</span>
+                    </div>
+                    
+                    <div class="bar-separator"></div>
+                    
+                    <div class="weather-details-grid">
+                        <div class="weather-detail-item"><i class="fas fa-umbrella"></i> 0% Chuva</div>
+                        <div class="weather-detail-item"><i class="fas fa-wind"></i> 17km/h</div>
+                        <div class="weather-detail-item"><i class="fas fa-arrow-down" style="color:var(--green-trend)"></i> Min 17°</div>
+                        <div class="weather-detail-item"><i class="fas fa-arrow-up" style="color:var(--red-trend)"></i> Max 30°</div>
+                    </div>
+                </div>
+            `
+        },
+        {
+            type: 'finance',
+            icon: 'fa-chart-line',
+            catName: 'ÍNDICES',
+            render: () => `
+                <div class="bar-split-container" style="justify-content: flex-start; gap:20px;">
+                    <div class="data-group">
+                        <span class="data-label">IBOVESPA</span>
+                        <div style="display:flex; align-items:center; gap:6px;">
+                            <span class="data-value">126.9k</span>
+                            <span class="trend-up"><i class="fas fa-caret-up"></i> 0,45%</span>
+                        </div>
+                    </div>
+                    <div class="bar-separator"></div>
+                    <div class="data-group">
+                        <span class="data-label">DÓLAR</span>
+                        <div style="display:flex; align-items:center; gap:6px;">
+                            <span class="data-value">R$ 5,45</span>
+                            <span class="trend-down"><i class="fas fa-caret-down"></i> 0,10%</span>
+                        </div>
+                    </div>
+                    <div class="bar-separator"></div>
+                    <div class="data-group">
+                        <span class="data-label">EURO</span>
+                        <div style="display:flex; align-items:center; gap:6px;">
+                            <span class="data-value">R$ 6,12</span>
+                            <span class="trend-up"><i class="fas fa-caret-up"></i> 0,22%</span>
+                        </div>
+                    </div>
+                </div>
+            `
+        },
+        {
+            type: 'crypto',
+            icon: 'fa-coins',
+            catName: 'CRIPTO',
+            render: () => `
+                <div class="bar-split-container" style="justify-content: flex-start; gap:25px;">
+                    <div class="data-row" style="display:flex; align-items:center; gap:10px;">
+                        <i class="fab fa-bitcoin" style="font-size:22px; color:white;"></i>
+                        <div class="data-group">
+                            <span class="data-label">BITCOIN</span>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <span class="data-value">R$ 468k</span>
+                                <span class="trend-up"><i class="fas fa-caret-up"></i> 0,9%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bar-separator"></div>
+                    <div class="data-row" style="display:flex; align-items:center; gap:10px;">
+                        <i class="fab fa-ethereum" style="font-size:22px; color:white;"></i>
+                        <div class="data-group">
+                            <span class="data-label">ETHEREUM</span>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <span class="data-value">R$ 18k</span>
+                                <span class="trend-down"><i class="fas fa-caret-down"></i> 1,2%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `
+        }
+    ];
+
+    function iniciarBarraRotativa() {
+        if (barInterval) clearInterval(barInterval);
+        let index = 0;
+        const renderFrame = () => {
+            const item = barData[index];
+            /* Renderiza: Box Categoria + Conteúdo Dinâmico + Logo (Caminho ../img/) */
+            barra.innerHTML = `
+                <div class="category-box">
+                    <i class="fas ${item.icon} category-icon"></i>
+                    <span class="category-name">${item.catName}</span>
+                </div>
+                <div id="bar-content" class="content-section">
+                    ${item.render()}
+                </div>
+                <div class="brand-section">
+                    <img src="../img/logo-branca.png" class="brand-logo" alt="Logo" onerror="this.style.display='none';">
+                </div>
+            `;
+            setTimeout(() => { const el = document.getElementById('bar-content'); if(el) el.classList.add('visible'); }, 50);
+            index = (index + 1) % barData.length;
+        };
+        renderFrame();
+        barInterval = setInterval(renderFrame, 5000); 
+    }
+
+    // --- FUNÇÕES PADRÃO DE PLAYER (Mover, Zoom, Arquivos) ---
+    function updateWrapperTransform() { wrapper.style.transform = `translate(${offsetX}px, ${offsetY}px) rotate(${rotation}deg) scale(${scaleX * zoom}, ${scaleY * zoom})`; }
+    updateWrapperTransform(); 
+    function toggleControls() { controlsContainer.style.display = (controlsContainer.style.display === 'block') ? 'none' : 'block'; }
+    function toggleBar() { barra.style.display = (barra.style.display === 'none') ? 'flex' : 'none'; }
+    function toggleFullscreen() { if (!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); }
+    function addMedia() { mediaInput.click(); }
+    mediaInput.onchange = (event) => { const files = Array.from(event.target.files); if (files.length > 0) { mainPlaylist = mainPlaylist.concat(files); if (mainPlaylist.length === files.length) loadMainMedia(); } }
+    function loadMainMedia() { if (mainPlaylist.length === 0) return; if (imageTimeout) clearTimeout(imageTimeout); const file = mainPlaylist[mainIndex]; const url = URL.createObjectURL(file); if (file.type.startsWith('video')) { fallback.style.display = 'none'; media.style.display = 'block'; media.src = url; media.play(); } else { media.style.display = 'none'; fallback.style.display = 'block'; fallback.src = url; imageTimeout = setTimeout(playNextMedia, 7000); } }
+    function playNextMedia() { if (mainPlaylist.length > 0) { mainIndex = (mainIndex + 1) % mainPlaylist.length; loadMainMedia(); } }
+    media.addEventListener('ended', playNextMedia);
+    function reloadMidia() { if (mainPlaylist.length > 0) loadMainMedia(); }
+    function resetMidias() { mainPlaylist = []; mainIndex = 0; media.src = ""; fallback.src = ""; }
+    function rotateWrapper() { rotation = (rotation + 90) % 360; updateWrapperTransform(); }
+    function zoomWrapperIn() { zoom += 0.05; updateWrapperTransform(); }
+    function zoomWrapperOut() { zoom = Math.max(0.1, zoom - 0.05); updateWrapperTransform(); }
+    function moveWrapper(dir) { if (dir === 'up') offsetY -= 10; if (dir === 'down') offsetY += 10; if (dir === 'left') offsetX -= 10; if (dir === 'right') offsetX += 10; updateWrapperTransform(); }
+    function stretchWrapper(dir) { if (dir === 'horizontal+') scaleX += 0.05; else scaleX = Math.max(0.1, scaleX - 0.05); updateWrapperTransform(); }
+    function ajustarAlturaBarra(dir) { const bottomAtual = parseInt(getComputedStyle(barra).bottom) || 0; barra.style.bottom = `${dir === 'up' ? bottomAtual + 10 : bottomAtual - 10}px`; }
+    async function lerGradePasta() { if (!window.showDirectoryPicker) return alert('Navegador incompatível.'); try { const handle = await window.showDirectoryPicker(); mainPlaylist = []; for await (const entry of handle.values()) { if (entry.kind === 'file') mainPlaylist.push(await entry.getFile()); } mainIndex = 0; loadMainMedia(); } catch (err) { console.error(err); } }
+    document.addEventListener('keydown', (e) => { if (e.key.toLowerCase() === 'm') toggleControls(); });
+    document.addEventListener('DOMContentLoaded', iniciarBarraRotativa);
+    const runtimeMediaEngine = PlayerRuntime.createPlaylistEngine({
+        video: media,
+        fallback,
+        input: mediaInput,
+        imageDurationMs: 7000,
+        label: 'Player Vertical'
+    });
+
+    media.addEventListener('ended', () => runtimeMediaEngine.nextMedia());
+    window.addMedia = () => runtimeMediaEngine.addMedia();
+    window.loadMainMedia = () => runtimeMediaEngine.loadMainMedia();
+    window.playNextMedia = () => runtimeMediaEngine.nextMedia();
+    window.reloadMidia = () => runtimeMediaEngine.reloadMidia();
+    window.resetMidias = () => runtimeMediaEngine.resetMidias();
+    window.lerGradePasta = () => runtimeMediaEngine.lerGradePasta();
+</script>
+</body>
+</html>

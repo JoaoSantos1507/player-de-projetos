@@ -1,0 +1,46 @@
+127.0.0.1 - - [05/Aug/2026 07:29:12] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [05/Aug/2026 07:29:25] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [05/Aug/2026 07:29:48] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [05/Aug/2026 07:29:49] "GET /img/01.png HTTP/1.1" 200 -
+127.0.0.1 - - [05/Aug/2026 07:29:49] code 404, message File not found
+127.0.0.1 - - [05/Aug/2026 07:29:49] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [05/Aug/2026 07:29:50] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [05/Aug/2026 07:29:50] "GET /img/01.png HTTP/1.1" 200 -
+127.0.0.1 - - [05/Aug/2026 07:29:50] code 404, message File not found
+127.0.0.1 - - [05/Aug/2026 07:29:50] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [05/Aug/2026 07:29:50] "GET /Players/Comercial.html HTTP/1.1" 200 -
+127.0.0.1 - - [05/Aug/2026 07:29:50] "GET /Players/player-runtime.js HTTP/1.1" 200 -
+127.0.0.1 - - [05/Aug/2026 07:29:51] "GET /img/logo-branca.png HTTP/1.1" 200 -
+127.0.0.1 - - [05/Aug/2026 07:29:51] "GET /Players/Comercial%20Premium.html HTTP/1.1" 200 -
+127.0.0.1 - - [05/Aug/2026 07:29:52] "GET /Players/Tvminuto.html HTTP/1.1" 200 -
+127.0.0.1 - - [05/Aug/2026 07:29:52] "GET /Players/Residencial.html HTTP/1.1" 200 -
+127.0.0.1 - - [05/Aug/2026 07:29:53] "GET /Players/vertical.html HTTP/1.1" 200 -
+127.0.0.1 - - [05/Aug/2026 07:29:53] "GET /Players/led.html?preset=mub HTTP/1.1" 200 -
+127.0.0.1 - - [05/Aug/2026 07:29:54] "GET /Players/led.html?preset=coluna HTTP/1.1" 200 -
+127.0.0.1 - - [05/Aug/2026 07:29:54] "GET /Players/led.html?preset=relogio-recife HTTP/1.1" 200 -
+127.0.0.1 - - [05/Aug/2026 07:29:55] "GET /Players/teste%20de%20midia.html HTTP/1.1" 200 -
+127.0.0.1 - - [05/Aug/2026 07:30:14] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [05/Aug/2026 07:30:14] "GET /img/01.png HTTP/1.1" 200 -
+127.0.0.1 - - [05/Aug/2026 07:30:35] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [05/Aug/2026 07:30:35] "GET /img/01.png HTTP/1.1" 200 -
+127.0.0.1 - - [05/Aug/2026 07:30:35] "GET /Players/led.html?preset=mub HTTP/1.1" 200 -
+127.0.0.1 - - [05/Aug/2026 07:30:35] "GET /Players/player-runtime.js HTTP/1.1" 200 -
+127.0.0.1 - - [05/Aug/2026 07:30:36] code 404, message File not found
+127.0.0.1 - - [05/Aug/2026 07:30:36] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [05/Aug/2026 07:30:36] "GET /Players/led.html?preset=coluna HTTP/1.1" 200 -
+127.0.0.1 - - [05/Aug/2026 07:30:36] "GET /Players/led.html?preset=relogio-recife HTTP/1.1" 200 -
+127.0.0.1 - - [05/Aug/2026 07:32:09] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [05/Aug/2026 07:38:50] "GET /Players/player-runtime.js HTTP/1.1" 200 -
+127.0.0.1 - - [05/Aug/2026 07:38:50] "GET /Players/Comercial.html HTTP/1.1" 200 -
+127.0.0.1 - - [05/Aug/2026 07:38:50] "GET /Players/player-runtime.js HTTP/1.1" 200 -
+127.0.0.1 - - [05/Aug/2026 07:38:50] "GET /img/logo-branca.png HTTP/1.1" 200 -
+127.0.0.1 - - [05/Aug/2026 07:38:51] code 404, message File not found
+127.0.0.1 - - [05/Aug/2026 07:38:51] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [05/Aug/2026 07:57:03] "GET /Players/Comercial.html HTTP/1.1" 200 -
+127.0.0.1 - - [05/Aug/2026 07:57:21] "GET /Players/Comercial.html HTTP/1.1" 200 -
+127.0.0.1 - - [05/Aug/2026 07:57:21] "GET /Players/player-runtime.js HTTP/1.1" 200 -
+127.0.0.1 - - [05/Aug/2026 07:57:21] "GET /img/logo-branca.png HTTP/1.1" 200 -
+127.0.0.1 - - [05/Aug/2026 07:57:21] code 404, message File not found
+127.0.0.1 - - [05/Aug/2026 07:57:21] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [05/Aug/2026 07:57:22] "GET /Players/led.html?preset=coluna HTTP/1.1" 200 -
+127.0.0.1 - - [05/Aug/2026 07:57:22] "GET /Players/Comercial%20Premium.html HTTP/1.1" 200 -
