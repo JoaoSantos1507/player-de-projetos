@@ -3,365 +3,332 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Digital Signage Player | Creative Hub</title>
+  <title>Digital Signage Player | HUB</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
-  
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+
   <style>
-    :root { 
-        --primary-gradient: linear-gradient(135deg, #0d6efd 0%, #00d4ff 100%);
-        --accent-gradient: linear-gradient(135deg, #fd5d0d 0%, #ffa260 100%);
-        --ia-gradient: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
-        --glass-bg: rgba(255, 255, 255, 0.05);
-        --glass-border: rgba(255, 255, 255, 0.1);
-        --dark-bg: #0a0a0c;
-        --text-main: #ffffff;
-        --text-muted: #a0a0a8;
+    :root {
+      --bg: #080a0f;
+      --surface: rgba(255, 255, 255, 0.055);
+      --surface-strong: rgba(255, 255, 255, 0.09);
+      --border: rgba(255, 255, 255, 0.12);
+      --text: #f8fafc;
+      --muted: #a8b3c4;
+      --blue: #3b82f6;
+      --cyan: #22d3ee;
+      --green: #22c55e;
+      --amber: #f59e0b;
     }
-    
+
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
-    body { 
-        font-family: 'Plus Jakarta Sans', sans-serif; 
-        background-color: var(--dark-bg); 
-        background-image: 
-            radial-gradient(circle at 20% 30%, rgba(13, 110, 253, 0.15) 0%, transparent 40%),
-            radial-gradient(circle at 80% 70%, rgba(253, 93, 13, 0.1) 0%, transparent 40%);
-        color: var(--text-main); 
-        height: 100vh; 
-        overflow: hidden; 
-        display: flex;
-        align-items: center;
+    html, body { min-height: 100%; }
+
+    body {
+      font-family: 'Plus Jakarta Sans', Arial, sans-serif;
+      background:
+        linear-gradient(180deg, rgba(28, 33, 44, 0.86) 0%, rgba(8, 10, 15, 1) 42%),
+        #080a0f;
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
     }
 
-    /* Container de Movimentação */
-    #main-container { 
-        display: flex; 
-        width: 300vw; 
-        transition: transform 0.8s cubic-bezier(0.65, 0, 0.35, 1); 
-    }
-    #main-container.source-choice-active { transform: translateX(-100vw); }
-    #main-container.url-input-active { transform: translateX(-200vw); }
-
-    .panel { 
-        width: 100vw; 
-        height: 100vh; 
-        display: flex; 
-        justify-content: center; 
-        align-items: center; 
-        padding: 40px; 
+    .hub-shell {
+      width: min(1180px, calc(100vw - 32px));
+      margin: 0 auto;
+      padding: 28px 0 36px;
     }
 
-    .container-content { 
-        position: relative; 
-        background: var(--glass-bg);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border: 1px solid var(--glass-border);
-        padding: 50px; 
-        border-radius: 30px; 
-        box-shadow: 0 25px 50px rgba(0,0,0,0.3); 
-        text-align: center; 
-        width: 100%;
-        max-width: 1000px; 
+    .hub-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 14px 0 24px;
+      border-bottom: 1px solid var(--border);
     }
 
-    .logo { max-width: 320px; height: auto; margin-bottom: 40px; filter: drop-shadow(0 5px 15px rgba(0,0,0,0.3)); }
-
-    /* Estilo dos Cards/Links */
-    .player-links { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
-    
-    .player-link { 
-        background: rgba(255,255,255,0.03); 
-        color: var(--text-main); 
-        border: 1px solid var(--glass-border);
-        text-decoration: none; 
-        padding: 25px 15px; 
-        border-radius: 18px; 
-        font-size: 15px; 
-        font-weight: 600; 
-        transition: all 0.3s ease; 
-        display: flex; 
-        flex-direction: column; 
-        align-items: center; 
-        gap: 12px;
-        cursor: pointer;
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      min-width: 0;
     }
 
-    .player-link i { font-size: 24px; opacity: 0.8; transition: transform 0.3s ease; }
+    .brand img {
+      width: min(260px, 48vw);
+      height: auto;
+      display: block;
+      object-fit: contain;
+    }
 
-    .player-link:hover { 
-        background: rgba(255,255,255,0.08);
-        border-color: #0d6efd;
-        transform: translateY(-5px);
-        box-shadow: 0 10px 20px rgba(13, 110, 253, 0.2);
+    .hub-title {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 0;
     }
-    .player-link:hover i { transform: scale(1.2); color: #0d6efd; }
 
-    /* Botões Flutuantes Superiores */
-    .top-action-btn {
-        position: absolute; top: 30px; width: 45px; height: 45px;
-        border-radius: 14px; display: flex; align-items: center; justify-content: center;
-        cursor: pointer; transition: all 0.3s ease; border: 1px solid var(--glass-border);
-        background: var(--glass-bg); color: white;
+    .hub-title h1 {
+      font-size: clamp(24px, 3.2vw, 42px);
+      line-height: 1;
+      font-weight: 800;
+      letter-spacing: 0;
     }
-    #media-trigger-button { left: 30px; }
-    #ia-generator-button { 
-        left: 85px; 
-        background: var(--ia-gradient); 
-        background-size: 400% 400%;
-    }
-    .top-action-btn:hover { transform: scale(1.1); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
 
-    /* Formulários e Inputs */
-    .form-group { text-align: left; margin-bottom: 20px; }
-    label { display: block; margin-bottom: 8px; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); }
-    
-    input, select { 
-        width: 100%; padding: 14px 18px; border-radius: 12px; border: 1px solid var(--glass-border); 
-        background: rgba(0,0,0,0.2); color: white; font-size: 15px; outline: none; transition: 0.3s;
+    .hub-title span {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0;
     }
-    input:focus, select:focus { border-color: #0d6efd; background: rgba(0,0,0,0.4); }
 
-    .main-btn { 
-        background: var(--accent-gradient); color: white; border: none; padding: 16px; 
-        border-radius: 12px; font-weight: 700; font-size: 16px; cursor: pointer; 
-        transition: all 0.3s ease; margin-top: 10px; box-shadow: 0 10px 20px rgba(253, 93, 13, 0.2);
+    .status-strip {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
     }
-    .main-btn:hover { transform: translateY(-2px); box-shadow: 0 15px 25px rgba(253, 93, 13, 0.3); opacity: 0.9; }
 
-    /* Modal IA */
-    #ia-modal {
-        position: fixed; inset: 0; background: rgba(0,0,0,0.85); 
-        backdrop-filter: blur(10px); display: flex; justify-content: center;
-        align-items: center; z-index: 1000; opacity: 0; visibility: hidden; transition: 0.4s;
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 34px;
+      padding: 0 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: #dbeafe;
+      background: rgba(255, 255, 255, 0.055);
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
     }
-    #ia-modal.visible { opacity: 1; visibility: visible; }
-    .ia-modal-content {
-        background: #16161a; padding: 40px; border-radius: 24px;
-        width: 90%; max-width: 650px; border: 1px solid var(--glass-border);
-    }
-    .ia-modal-close { position: absolute; top: 20px; right: 25px; font-size: 28px; color: var(--text-muted); cursor: pointer; }
 
-    /* Responsividade */
-    @media (max-width: 768px) {
-        .panel { padding: 15px; }
-        .container-content { padding: 30px 20px; border-radius: 20px; }
-        .player-links { grid-template-columns: 1fr 1fr; }
-        .logo { max-width: 200px; }
+    .status-pill i { color: var(--cyan); }
+
+    .hub-content {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 22px;
+      padding-top: 24px;
+    }
+
+    .section-block {
+      display: grid;
+      gap: 12px;
+    }
+
+    .section-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      color: #dbeafe;
+      font-size: 13px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0;
+    }
+
+    .section-heading::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .player-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .player-link {
+      min-height: 116px;
+      color: var(--text);
+      text-decoration: none;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      display: grid;
+      grid-template-columns: 42px 1fr;
+      gap: 14px;
+      align-items: center;
+      transition: transform 170ms ease, border-color 170ms ease, background-color 170ms ease, box-shadow 170ms ease;
+      min-width: 0;
+    }
+
+    .player-link:hover {
+      transform: translateY(-2px);
+      border-color: rgba(96, 165, 250, 0.78);
+      background: var(--surface-strong);
+      box-shadow: 0 14px 34px rgba(0, 0, 0, 0.32);
+    }
+
+    .player-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(59, 130, 246, 0.16);
+      color: #bfdbfe;
+      font-size: 19px;
+      flex: 0 0 auto;
+    }
+
+    .player-link[data-tone="green"] .player-icon { background: rgba(34, 197, 94, 0.14); color: #bbf7d0; }
+    .player-link[data-tone="amber"] .player-icon { background: rgba(245, 158, 11, 0.16); color: #fde68a; }
+    .player-link[data-tone="cyan"] .player-icon { background: rgba(34, 211, 238, 0.15); color: #a5f3fc; }
+
+    .player-copy {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      min-width: 0;
+    }
+
+    .player-copy strong {
+      font-size: 16px;
+      line-height: 1.15;
+      font-weight: 800;
+      overflow-wrap: anywhere;
+    }
+
+    .player-copy span {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.25;
+    }
+
+    .player-link.is-primary {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.26), rgba(34, 211, 238, 0.12));
+      border-color: rgba(96, 165, 250, 0.52);
+    }
+
+    @media (max-width: 980px) {
+      .hub-header {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .status-strip { justify-content: flex-start; }
+      .player-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 560px) {
+      .hub-shell { width: min(100vw - 20px, 1180px); padding-top: 16px; }
+      .brand { align-items: flex-start; flex-direction: column; }
+      .player-grid { grid-template-columns: 1fr; }
+      .player-link { min-height: 96px; }
     }
   </style>
 </head>
 <body>
-
-  <div id="ia-modal">
-    <div class="ia-modal-content">
-        <div class="ia-modal-close" title="Fechar">&times;</div>
-        <h2 style="margin-bottom:10px;"><i class="fas fa-wand-magic-sparkles" style="color:#e73c7e"></i> Gerador Criativo</h2>
-        <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 25px;">Transforme links em vinhetas profissionais com IA.</p>
-        
-        <div class="form-group">
-            <label>URL do Logo Principal*</label>
-            <div style="display:flex; gap:10px;">
-                <input type="text" id="ia-input-1" placeholder="https://..." style="flex:2">
-                <select id="ia-anim-1" style="flex:1">
-                    <option value="anim-fade-in-zoom">Zoom</option>
-                    <option value="anim-float">Flutuar</option>
-                    <option value="anim-pulse">Pulsar</option>
-                    <option value="anim-spin">Girar</option>
-                </select>
-            </div>
+  <main class="hub-shell">
+    <header class="hub-header">
+      <div class="brand">
+        <img src="img/01.png" alt="Eletromidia">
+        <div class="hub-title">
+          <span>Central de players</span>
+          <h1>HUB</h1>
         </div>
-        
-        <div class="form-group">
-            <label>Textura de Fundo</label>
-            <div style="display:flex; gap:10px;">
-                <input type="text" id="ia-input-2" placeholder="URL da imagem..." style="flex:2">
-                <select id="ia-anim-2" style="flex:1">
-                    <option value="anim-kenburns">Ken Burns</option>
-                    <option value="anim-fade-in">Fade</option>
-                </select>
-            </div>
+      </div>
+
+      <div class="status-strip" aria-label="Status">
+        <span class="status-pill"><i class="fa-solid fa-layer-group"></i> Menus padronizados</span>
+        <span class="status-pill"><i class="fa-solid fa-repeat"></i> Loop contínuo</span>
+      </div>
+    </header>
+
+    <section class="hub-content" aria-label="Players disponíveis">
+      <div class="section-block">
+        <div class="section-heading">Comercial</div>
+        <div class="player-grid">
+          <a href="Players/Comercial.html" class="player-link is-primary">
+            <span class="player-icon"><i class="fa-regular fa-handshake"></i></span>
+            <span class="player-copy"><strong>Comercial</strong><span>Barra Comercial</span></span>
+          </a>
+          <a href="Players/Comercial Premium.html" class="player-link is-primary">
+            <span class="player-icon"><i class="fa-regular fa-gem"></i></span>
+            <span class="player-copy"><strong>Comercial Premium</strong><span>Barra Comercial</span></span>
+          </a>
+          <a href="Players/Comercial.html" class="player-link" data-tone="cyan">
+            <span class="player-icon"><i class="fa-solid fa-plane-departure"></i></span>
+            <span class="player-copy"><strong>Aeroporto</strong><span>Barra Comercial</span></span>
+          </a>
+          <a href="Players/Tvminuto.html" class="player-link" data-tone="green">
+            <span class="player-icon"><i class="fa-solid fa-tv"></i></span>
+            <span class="player-copy"><strong>TV Minuto</strong><span>Horizontal</span></span>
+          </a>
         </div>
+      </div>
 
-        <div class="form-group">
-            <label>Onde deseja reproduzir?</label>
-            <select id="ia-player-select">
-                <option value="Players/residencial.html" data-format="horizontal">🏠 Residencial</option>
-                <option value="Players/comercial.html" data-format="horizontal">🏢 Comercial</option>
-                <option value="Players/vertical.html" data-format="vertical">📱 Totem Vertical</option>
-                <option value="Players/led.html" data-format="horizontal">📺 Painel de LED</option>
-            </select>
+      <div class="section-block">
+        <div class="section-heading">Vertical e relógios</div>
+        <div class="player-grid">
+          <a href="Players/vertical.html" class="player-link" data-tone="green">
+            <span class="player-icon"><i class="fa-solid fa-mobile-screen-button"></i></span>
+            <span class="player-copy"><strong>Totens</strong><span>Vertical</span></span>
+          </a>
+          <a href="Players/vertical.html" class="player-link" data-tone="green">
+            <span class="player-icon"><i class="fa-solid fa-bus"></i></span>
+            <span class="player-copy"><strong>Abrigo</strong><span>Vertical</span></span>
+          </a>
+          <a href="Players/led.html?preset=relogio-recife" class="player-link" data-tone="amber">
+            <span class="player-icon"><i class="fa-regular fa-clock"></i></span>
+            <span class="player-copy"><strong>Relógio Recife</strong><span>Com temperatura</span></span>
+          </a>
+          <a href="Players/led.html?preset=relogio-salvador" class="player-link" data-tone="amber">
+            <span class="player-icon"><i class="fa-regular fa-clock"></i></span>
+            <span class="player-copy"><strong>Relógio Salvador</strong><span>Com temperatura</span></span>
+          </a>
         </div>
-        <button id="ia-generate-button" class="main-btn" style="width:100%; background: var(--ia-gradient); background-size: 400% 400%;">Gerar Mídia Digital</button>
-    </div>
-  </div>
+      </div>
 
-  <div id="main-container">
-    <div id="selection-panel" class="panel">
-        <div class="container-content">
-            <div id="media-trigger-button" class="top-action-btn" title="Link Externo"><i class="fas fa-link"></i></div>
-            <div id="ia-generator-button" class="top-action-btn" title="Gerador IA"><i class="fas fa-wand-magic-sparkles"></i></div>
-            
-            <img src="img/01.png" alt="Logo" class="logo">
-            
-            <div class="player-links">
-                <a href="Players/Residencial.html" class="player-link"><i class="far fa-building"></i>Residencial</a>
-                <a href="Players/Comercial.html" class="player-link"><i class="far fa-handshake"></i>Comercial</a>
-                <a href="Players/Comercial Premium.html" class="player-link"><i class="far fa-gem"></i>Premium</a>
-                <a href="Players/Comercial.html" class="player-link"><i class="fas fa-plane"></i>Aeroporto</a>
-                <a href="Players/Tvminuto.html" class="player-link"><i class="fas fa-tv"></i>TV Minuto</a>
-                <a href="Players/vertical.html" class="player-link"><i class="fas fa-mobile-alt"></i>Totem</a>
-                <a href="Players/vertical.html" class="player-link"><i class="fas fa-train"></i>Mub CPTM</a>
-                <a href="Players/vertical.html" class="player-link"><i class="fas fa-bus-alt"></i>Abrigo</a>
-                <a href="Players/led.html" class="player-link"><i class="far fa-square"></i>LEDs</a>
-            </div>
+      <div class="section-block">
+        <div class="section-heading">LED e MUB</div>
+        <div class="player-grid">
+          <a href="Players/led.html?preset=mub" class="player-link is-primary">
+            <span class="player-icon"><i class="fa-solid fa-train-subway"></i></span>
+            <span class="player-copy"><strong>MUB CPTM</strong><span>Barra Comercial</span></span>
+          </a>
+          <a href="Players/led.html?preset=mub" class="player-link is-primary">
+            <span class="player-icon"><i class="fa-solid fa-display"></i></span>
+            <span class="player-copy"><strong>MUB Premium</strong><span>Barra Comercial</span></span>
+          </a>
+          <a href="Players/led.html?preset=coluna" class="player-link" data-tone="cyan">
+            <span class="player-icon"><i class="fa-solid fa-columns"></i></span>
+            <span class="player-copy"><strong>LED Coluna</strong><span>Barra Comercial</span></span>
+          </a>
+          <a href="Players/led.html" class="player-link" data-tone="green">
+            <span class="player-icon"><i class="fa-solid fa-table-cells-large"></i></span>
+            <span class="player-copy"><strong>LED Livre</strong><span>Mosaico</span></span>
+          </a>
         </div>
-    </div>
+      </div>
 
-    <div id="source-choice-panel" class="panel">
-        <div class="container-content">
-            <div class="back-button top-action-btn" style="left:30px;"><i class="fas fa-arrow-left"></i></div>
-            <h2 style="margin-bottom:30px;">Qual a fonte da mídia?</h2>
-            <div class="player-links" style="grid-template-columns: repeat(2, 1fr);">
-                <div class="player-link" data-source="YouTube"><i class="fa-brands fa-youtube"></i>YouTube</div>
-                <div class="player-link" data-source="Drive"><i class="fa-brands fa-google-drive"></i>Drive</div>
-                <div class="player-link" data-source="MP4"><i class="fa-solid fa-file-video"></i>Vídeo MP4</div>
-                <div class="player-link" data-source="Vimeo"><i class="fa-brands fa-vimeo-v"></i>Vimeo</div>
-            </div>
+      <div class="section-block">
+        <div class="section-heading">Outros</div>
+        <div class="player-grid">
+          <a href="Players/Residencial.html" class="player-link" data-tone="amber">
+            <span class="player-icon"><i class="fa-regular fa-building"></i></span>
+            <span class="player-copy"><strong>Residencial</strong><span>Com informativos</span></span>
+          </a>
+          <a href="Players/teste de midia.html" class="player-link" data-tone="cyan">
+            <span class="player-icon"><i class="fa-regular fa-file-pdf"></i></span>
+            <span class="player-copy"><strong>PDF Vertical</strong><span>Sequencial</span></span>
+          </a>
         </div>
-    </div>
-
-    <div id="url-input-panel" class="panel">
-        <div class="container-content" style="max-width: 500px;">
-            <div class="back-button top-action-btn" style="left:30px;"><i class="fas fa-arrow-left"></i></div>
-            <h2 id="url-panel-title" style="margin-bottom:25px;">Carregar Mídia</h2>
-            
-            <div class="form-group">
-                <label id="url-panel-label">URL da Mídia</label>
-                <input type="text" id="media-url" placeholder="Cole o link aqui...">
-            </div>
-            
-            <div class="form-group">
-                <label>Ambiente de Destino</label>
-                <select id="player-select">
-                    <option value="Players/residencial.html">Residencial</option>
-                    <option value="Players/comercial.html">Comercial</option>
-                    <option value="Players/vertical.html">Totem Shopping</option>
-                    <option value="Players/led.html">Painel LED</option>
-                </select>
-            </div>
-            
-            <button id="play-button" class="main-btn" style="width:100%;">Iniciar Reprodução</button>
-        </div>
-    </div>
-  </div>
-
-<script>
-    /* O SEU SCRIPT ORIGINAL CONTINUA AQUI - ELE É 100% COMPATÍVEL */
-    const mainContainer = document.getElementById('main-container');
-    let selectedSource = '';
-
-    const mediaTriggerButton = document.getElementById('media-trigger-button');
-    const backButtons = document.querySelectorAll('.back-button');
-    const sourceChoiceButtons = document.querySelectorAll('#source-choice-panel .player-link');
-    const playButton = document.getElementById('play-button');
-    const mediaUrlInput = document.getElementById('media-url');
-    const playerSelect = document.getElementById('player-select');
-    const urlPanelTitle = document.getElementById('url-panel-title');
-    const urlPanelLabel = document.getElementById('url-panel-label');
-
-    const iaGeneratorButton = document.getElementById('ia-generator-button');
-    const iaModal = document.getElementById('ia-modal');
-    const iaModalClose = document.querySelector('.ia-modal-close');
-    const iaGenerateButton = document.getElementById('ia-generate-button');
-    const iaPlayerSelect = document.getElementById('ia-player-select');
-    const iaInputs = {
-        logo: document.getElementById('ia-input-1'),
-        background: document.getElementById('ia-input-2'),
-    };
-    const iaAnims = {
-        logo: document.getElementById('ia-anim-1'),
-        background: document.getElementById('ia-anim-2'),
-    }
-
-    mediaTriggerButton.addEventListener('click', () => mainContainer.classList.add('source-choice-active'));
-
-    backButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            if (mainContainer.classList.contains('url-input-active')) {
-                mainContainer.classList.remove('url-input-active');
-                mainContainer.classList.add('source-choice-active');
-            } else if (mainContainer.classList.contains('source-choice-active')) {
-                mainContainer.classList.remove('source-choice-active');
-            }
-        });
-    });
-
-    sourceChoiceButtons.forEach(button => {
-        if (button.dataset.source) {
-            button.addEventListener('click', () => {
-                selectedSource = button.dataset.source;
-                urlPanelTitle.textContent = `Mídia: ${selectedSource}`;
-                urlPanelLabel.textContent = `Link do ${selectedSource}`;
-                mediaUrlInput.value = ''; mediaUrlInput.focus();
-                mainContainer.classList.remove('source-choice-active');
-                mainContainer.classList.add('url-input-active');
-            });
-        }
-    });
-    
-    playButton.addEventListener('click', () => {
-        const url = mediaUrlInput.value.trim();
-        if (!url) { alert('Insira a URL.'); return; }
-        let contentCode = '';
-        if (selectedSource === 'YouTube') {
-            const id = getYouTubeId(url);
-            contentCode = `<iframe width="100%" height="100%" src="https://www.youtube.com/embed/${id}?autoplay=1&mute=1&loop=1&playlist=${id}" frameborder="0" allow="autoplay" allowfullscreen></iframe>`;
-        } else if (selectedSource === 'MP4') {
-            contentCode = `<video src="${url}" width="100%" height="100%" autoplay loop muted style="object-fit: cover;"></video>`;
-        } else if (selectedSource === 'Drive') {
-            const id = getDriveId(url);
-            contentCode = `<iframe src="https://drive.google.com/file/d/${id}/preview" width="100%" height="100%"></iframe>`;
-        } else if (selectedSource === 'Vimeo') {
-            const id = getVimeoId(url);
-            contentCode = `<iframe src="https://player.vimeo.com/video/${id}?autoplay=1&loop=1&muted=1" width="100%" height="100%" frameborder="0"></iframe>`;
-        }
-
-        if (contentCode) {
-            localStorage.setItem('dynamicContent', contentCode);
-            window.location.href = playerSelect.value;
-        }
-    });
-
-    iaGeneratorButton.addEventListener('click', () => iaModal.classList.add('visible'));
-    iaModalClose.addEventListener('click', () => iaModal.classList.remove('visible'));
-
-    // Funções auxiliares (IDs de vídeo)
-    function getYouTubeId(url) {
-        const reg = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=|shorts\/)([^#&?]*).*/;
-        const m = url.match(reg); return (m&&m[2].length==11)?m[2]:null;
-    }
-    function getDriveId(url) {
-        const m = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/); return m?m[1]:null;
-    }
-    function getVimeoId(url) {
-        const m = url.match(/vimeo\.com\/(?:video\/)?(\d+)/); return m?m[1]:null;
-    }
-
-    // Lógica simplificada de geração IA para o exemplo
-    iaGenerateButton.addEventListener('click', async () => {
-        const logo = iaInputs.logo.value;
-        if(!logo) return alert("Logo obrigatório");
-        iaGenerateButton.textContent = "Processando...";
-        
-        // Simulação da sua função original de cor e geração
-        setTimeout(() => {
-            const contentCode = `<div style="background:#111; height:100vh; display:flex; align-items:center; justify-content:center;"><img src="${logo}" style="max-width:80%; animation: pulse 2s infinite;"></div><style>@keyframes pulse {0%{transform:scale(1)} 50%{transform:scale(1.05)} 100%{transform:scale(1)}}</style>`;
-            localStorage.setItem('dynamicContent', contentCode);
-            window.location.href = iaPlayerSelect.value;
-        }, 1500);
-    });
-</script>
+      </div>
+    </section>
+  </main>
 </body>
 </html>
